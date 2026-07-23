@@ -1,0 +1,7 @@
+import {
+  "aurasuisui/bimap",
+}
+
+options(
+  "is-main": true,
+)
