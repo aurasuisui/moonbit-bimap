@@ -34,6 +34,7 @@ fn intopt(o : Int?) -> String {
   }
 }
 
+///|
 fn main {
   let countries : @bimap.BiMap[String, String] = @bimap.new()
   countries.insert("China", "CN") |> ignore
@@ -56,11 +57,11 @@ fn main {
 
   println("=== strict, non-overwriting insert ===")
   match countries.insert_no_overwrite("France", "FR") {
-    Ok(()) => println("added France <-> FR")
+    Ok(_) => println("added France <-> FR")
     Err((l, r)) => println("refused \{l} <-> \{r}: a side already exists")
   }
   match countries.insert_no_overwrite("China", "XX") {
-    Ok(()) => println("added China <-> XX")
+    Ok(_) => println("added China <-> XX")
     Err((l, r)) => println("refused \{l} <-> \{r}: a side already exists")
   }
 }

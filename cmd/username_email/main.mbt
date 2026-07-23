@@ -16,6 +16,7 @@ fn show(opt : String?) -> String {
   }
 }
 
+///|
 fn main {
   let directory : @bimap.BiMap[String, String] = @bimap.new()
   directory.insert("alice", "alice@example.com") |> ignore
@@ -31,7 +32,9 @@ fn main {
   println(
     "carol@example.com -> \{show(directory.get_by_right("carol@example.com"))}",
   )
-  println("bob@example.com   -> \{show(directory.get_by_right("bob@example.com"))}")
+  println(
+    "bob@example.com   -> \{show(directory.get_by_right("bob@example.com"))}",
+  )
 
   println("=== all pairs in insertion order ===")
   for pair in directory.iter() {
