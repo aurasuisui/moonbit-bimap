@@ -1,0 +1,29 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  check-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup MoonBit
+        uses: hustcer/setup-moonbit@v1
+        with:
+          version: latest
+      - name: Format check
+        run: moon fmt --check
+      - name: Type check
+        run: moon check
+      - name: Interface check (mbti up-to-date)
+        run: |
+          moon info
+          git diff --exit-code
+      - name: Run tests
+        run: moon test
+      - name: Build
+        run: moon build
