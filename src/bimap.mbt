@@ -313,7 +313,7 @@ pub fn[L, R] BiMap::capacity(self : BiMap[L, R]) -> Int {
 
 ///|
 /// Return all pairs as an array in left-key insertion order.
-pub fn[L : Hash + Eq, R : Hash + Eq] BiMap::into_array(
+pub fn[L : Hash + Eq, R] BiMap::into_array(
   self : BiMap[L, R],
 ) -> Array[(L, R)] {
   let result : Array[(L, R)] = []

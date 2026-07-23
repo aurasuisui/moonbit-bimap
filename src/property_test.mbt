@@ -13,7 +13,7 @@
 /// Assert every black-box observable invariant of `m`.
 fn[L : Hash + Eq + Debug, R : Hash + Eq + Debug] check_bijection(
   m : @aurasuisui/bimap.BiMap[L, R],
-) -> Unit! {
+) -> Unit raise {
   let arr = m.into_array()
   // order/forward count agrees with self.len
   @test.assert_eq(arr.length(), m.len())
