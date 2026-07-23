@@ -57,6 +57,12 @@ failed to open credentials file: ~/.moon/credentials.json, please login first
 unattended execution session that built this package. Everything short of the authenticated
 upload is complete and verified.
 
+> **Note:** `moon publish --dry-run` is also gated behind the same credentials check (the
+> login is verified before any packaging work), so there is no unattended way to pre-validate
+> the upload. After `moon login`, a plain `moon publish` is all that remains; the package
+> structure itself is already known-good (the pre-publish checklist below is fully satisfied,
+> and `moon build` / `moon check` pass).
+
 ## Pre-publish checklist (already satisfied)
 
 - [x] `moon.mod` has `name`, `version = "0.1.0"`, `license = "Apache-2.0"`, `readme`,
