@@ -1,0 +1,352 @@
+{
+  "source_dir": "C:\\Users\\aurasui\\Desktop\\moonbit-dev\\moonbit-bimap",
+  "name": "aurasuisui/bimap",
+  "packages": [
+    {
+      "is-main": false,
+      "is-third-party": false,
+      "root-path": "C:\\Users\\aurasui\\Desktop\\moonbit-dev\\moonbit-bimap\\src",
+      "root": "aurasuisui/bimap",
+      "rel": "",
+      "files": {
+        "C:\\Users\\aurasui\\Desktop\\moonbit-dev\\moonbit-bimap\\src\\bimap.mbt": {
+          "backend": [
+            "Wasm",
+            "WasmGC",
+            "Js",
+            "Native",
+            "LLVM"
+          ],
+          "optlevel": [
+            "Release",
+            "Debug"
+          ]
+        },
+        "C:\\Users\\aurasui\\Desktop\\moonbit-dev\\moonbit-bimap\\src\\bimap_api.mbt": {
+          "backend": [
+            "Wasm",
+            "WasmGC",
+            "Js",
+            "Native",
+            "LLVM"
+          ],
+          "optlevel": [
+            "Release",
+            "Debug"
+          ]
+        },
+        "C:\\Users\\aurasui\\Desktop\\moonbit-dev\\moonbit-bimap\\src\\bimap_iter.mbt": {
+          "backend": [
+            "Wasm",
+            "WasmGC",
+            "Js",
+            "Native",
+            "LLVM"
+          ],
+          "optlevel": [
+            "Release",
+            "Debug"
+          ]
+        },
+        "C:\\Users\\aurasui\\Desktop\\moonbit-dev\\moonbit-bimap\\src\\bimap_traits.mbt": {
+          "backend": [
+            "Wasm",
+            "WasmGC",
+            "Js",
+            "Native",
+            "LLVM"
+          ],
+          "optlevel": [
+            "Release",
+            "Debug"
+          ]
+        },
+        "C:\\Users\\aurasui\\Desktop\\moonbit-dev\\moonbit-bimap\\src\\hashtable.mbt": {
+          "backend": [
+            "Wasm",
+            "WasmGC",
+            "Js",
+            "Native",
+            "LLVM"
+          ],
+          "optlevel": [
+            "Release",
+            "Debug"
+          ]
+        },
+        "C:\\Users\\aurasui\\Desktop\\moonbit-dev\\moonbit-bimap\\src\\lib.mbt": {
+          "backend": [
+            "Wasm",
+            "WasmGC",
+            "Js",
+            "Native",
+            "LLVM"
+          ],
+          "optlevel": [
+            "Release",
+            "Debug"
+          ]
+        }
+      },
+      "wbtest-files": {},
+      "test-files": {
+        "C:\\Users\\aurasui\\Desktop\\moonbit-dev\\moonbit-bimap\\src\\arbitrary_test.mbt": {
+          "backend": [
+            "Wasm",
+            "WasmGC",
+            "Js",
+            "Native",
+            "LLVM"
+          ],
+          "optlevel": [
+            "Release",
+            "Debug"
+          ]
+        },
+        "C:\\Users\\aurasui\\Desktop\\moonbit-dev\\moonbit-bimap\\src\\bench_test.mbt": {
+          "backend": [
+            "Wasm",
+            "WasmGC",
+            "Js",
+            "Native",
+            "LLVM"
+          ],
+          "optlevel": [
+            "Release",
+            "Debug"
+          ]
+        },
+        "C:\\Users\\aurasui\\Desktop\\moonbit-dev\\moonbit-bimap\\src\\bimap_test.mbt": {
+          "backend": [
+            "Wasm",
+            "WasmGC",
+            "Js",
+            "Native",
+            "LLVM"
+          ],
+          "optlevel": [
+            "Release",
+            "Debug"
+          ]
+        },
+        "C:\\Users\\aurasui\\Desktop\\moonbit-dev\\moonbit-bimap\\src\\coverage_test.mbt": {
+          "backend": [
+            "Wasm",
+            "WasmGC",
+            "Js",
+            "Native",
+            "LLVM"
+          ],
+          "optlevel": [
+            "Release",
+            "Debug"
+          ]
+        },
+        "C:\\Users\\aurasui\\Desktop\\moonbit-dev\\moonbit-bimap\\src\\edge_test.mbt": {
+          "backend": [
+            "Wasm",
+            "WasmGC",
+            "Js",
+            "Native",
+            "LLVM"
+          ],
+          "optlevel": [
+            "Release",
+            "Debug"
+          ]
+        },
+        "C:\\Users\\aurasui\\Desktop\\moonbit-dev\\moonbit-bimap\\src\\more_test.mbt": {
+          "backend": [
+            "Wasm",
+            "WasmGC",
+            "Js",
+            "Native",
+            "LLVM"
+          ],
+          "optlevel": [
+            "Release",
+            "Debug"
+          ]
+        },
+        "C:\\Users\\aurasui\\Desktop\\moonbit-dev\\moonbit-bimap\\src\\property_test.mbt": {
+          "backend": [
+            "Wasm",
+            "WasmGC",
+            "Js",
+            "Native",
+            "LLVM"
+          ],
+          "optlevel": [
+            "Release",
+            "Debug"
+          ]
+        },
+        "C:\\Users\\aurasui\\Desktop\\moonbit-dev\\moonbit-bimap\\src\\traits_test.mbt": {
+          "backend": [
+            "Wasm",
+            "WasmGC",
+            "Js",
+            "Native",
+            "LLVM"
+          ],
+          "optlevel": [
+            "Release",
+            "Debug"
+          ]
+        },
+        "C:\\Users\\aurasui\\Desktop\\moonbit-dev\\moonbit-bimap\\src\\types_test.mbt": {
+          "backend": [
+            "Wasm",
+            "WasmGC",
+            "Js",
+            "Native",
+            "LLVM"
+          ],
+          "optlevel": [
+            "Release",
+            "Debug"
+          ]
+        }
+      },
+      "mbt-md-files": {},
+      "deps": [
+        {
+          "path": "moonbitlang/core/debug",
+          "alias": "debug",
+          "fspath": "C:\\Users\\aurasui\\.moon\\lib\\core\\debug"
+        },
+        {
+          "path": "moonbitlang/core/prelude",
+          "alias": "prelude",
+          "fspath": "C:\\Users\\aurasui\\.moon\\lib\\core\\prelude"
+        },
+        {
+          "path": "moonbitlang/core/quickcheck",
+          "alias": "quickcheck",
+          "fspath": "C:\\Users\\aurasui\\.moon\\lib\\core\\quickcheck"
+        },
+        {
+          "path": "moonbitlang/core/test",
+          "alias": "test",
+          "fspath": "C:\\Users\\aurasui\\.moon\\lib\\core\\test"
+        }
+      ],
+      "wbtest-deps": [
+        {
+          "path": "moonbitlang/core/prelude",
+          "alias": "prelude",
+          "fspath": "C:\\Users\\aurasui\\.moon\\lib\\core\\prelude"
+        }
+      ],
+      "test-deps": [
+        {
+          "path": "moonbitlang/core/prelude",
+          "alias": "prelude",
+          "fspath": "C:\\Users\\aurasui\\.moon\\lib\\core\\prelude"
+        }
+      ],
+      "artifact": "C:\\Users\\aurasui\\Desktop\\moonbit-dev\\moonbit-bimap\\_build\\wasm-gc\\debug\\check\\bimap.mi",
+      "check-command": [
+        "check",
+        "-error-format",
+        "json",
+        "C:\\Users\\aurasui\\Desktop\\moonbit-dev\\moonbit-bimap\\src\\bimap.mbt",
+        "C:\\Users\\aurasui\\Desktop\\moonbit-dev\\moonbit-bimap\\src\\bimap_api.mbt",
+        "C:\\Users\\aurasui\\Desktop\\moonbit-dev\\moonbit-bimap\\src\\bimap_iter.mbt",
+        "C:\\Users\\aurasui\\Desktop\\moonbit-dev\\moonbit-bimap\\src\\bimap_traits.mbt",
+        "C:\\Users\\aurasui\\Desktop\\moonbit-dev\\moonbit-bimap\\src\\hashtable.mbt",
+        "C:\\Users\\aurasui\\Desktop\\moonbit-dev\\moonbit-bimap\\src\\lib.mbt",
+        "-o",
+        "C:\\Users\\aurasui\\Desktop\\moonbit-dev\\moonbit-bimap\\_build\\wasm-gc\\debug\\check\\bimap.mi",
+        "-pkg",
+        "aurasuisui/bimap",
+        "-pkg-type",
+        "library",
+        "-std-path",
+        "C:\\Users\\aurasui\\.moon\\lib\\core\\_build\\wasm-gc\\release\\bundle",
+        "-i",
+        "C:\\Users\\aurasui\\.moon\\lib\\core\\_build\\wasm-gc\\release\\bundle\\debug\\debug.mi:debug",
+        "-i",
+        "C:\\Users\\aurasui\\.moon\\lib\\core\\_build\\wasm-gc\\release\\bundle\\prelude\\prelude.mi:prelude",
+        "-i",
+        "C:\\Users\\aurasui\\.moon\\lib\\core\\_build\\wasm-gc\\release\\bundle\\quickcheck\\quickcheck.mi:quickcheck",
+        "-i",
+        "C:\\Users\\aurasui\\.moon\\lib\\core\\_build\\wasm-gc\\release\\bundle\\test\\test.mi:test",
+        "-pkg-sources",
+        "aurasuisui/bimap:C:\\Users\\aurasui\\Desktop\\moonbit-dev\\moonbit-bimap\\src",
+        "-target",
+        "wasm-gc",
+        "-workspace-path",
+        "C:\\Users\\aurasui\\Desktop\\moonbit-dev\\moonbit-bimap",
+        "-all-pkgs",
+        "C:\\Users\\aurasui\\Desktop\\moonbit-dev\\moonbit-bimap\\_build\\wasm-gc\\debug\\check\\all_pkgs.json"
+      ],
+      "wbtest-check-command": null,
+      "test-check-command": [
+        "check",
+        "-error-format",
+        "json",
+        "C:\\Users\\aurasui\\Desktop\\moonbit-dev\\moonbit-bimap\\src\\arbitrary_test.mbt",
+        "C:\\Users\\aurasui\\Desktop\\moonbit-dev\\moonbit-bimap\\src\\bench_test.mbt",
+        "C:\\Users\\aurasui\\Desktop\\moonbit-dev\\moonbit-bimap\\src\\bimap_test.mbt",
+        "C:\\Users\\aurasui\\Desktop\\moonbit-dev\\moonbit-bimap\\src\\coverage_test.mbt",
+        "C:\\Users\\aurasui\\Desktop\\moonbit-dev\\moonbit-bimap\\src\\edge_test.mbt",
+        "C:\\Users\\aurasui\\Desktop\\moonbit-dev\\moonbit-bimap\\src\\more_test.mbt",
+        "C:\\Users\\aurasui\\Desktop\\moonbit-dev\\moonbit-bimap\\src\\property_test.mbt",
+        "C:\\Users\\aurasui\\Desktop\\moonbit-dev\\moonbit-bimap\\src\\traits_test.mbt",
+        "C:\\Users\\aurasui\\Desktop\\moonbit-dev\\moonbit-bimap\\src\\types_test.mbt",
+        "-doctest-only",
+        "C:\\Users\\aurasui\\Desktop\\moonbit-dev\\moonbit-bimap\\src\\bimap.mbt",
+        "-doctest-only",
+        "C:\\Users\\aurasui\\Desktop\\moonbit-dev\\moonbit-bimap\\src\\bimap_api.mbt",
+        "-doctest-only",
+        "C:\\Users\\aurasui\\Desktop\\moonbit-dev\\moonbit-bimap\\src\\bimap_iter.mbt",
+        "-doctest-only",
+        "C:\\Users\\aurasui\\Desktop\\moonbit-dev\\moonbit-bimap\\src\\bimap_traits.mbt",
+        "-doctest-only",
+        "C:\\Users\\aurasui\\Desktop\\moonbit-dev\\moonbit-bimap\\src\\hashtable.mbt",
+        "-doctest-only",
+        "C:\\Users\\aurasui\\Desktop\\moonbit-dev\\moonbit-bimap\\src\\lib.mbt",
+        "-include-doctests",
+        "-o",
+        "C:\\Users\\aurasui\\Desktop\\moonbit-dev\\moonbit-bimap\\_build\\wasm-gc\\debug\\check\\bimap.blackbox_test.mi",
+        "-pkg",
+        "aurasuisui/bimap_blackbox_test",
+        "-pkg-type",
+        "library",
+        "-std-path",
+        "C:\\Users\\aurasui\\.moon\\lib\\core\\_build\\wasm-gc\\release\\bundle",
+        "-i",
+        "C:\\Users\\aurasui\\Desktop\\moonbit-dev\\moonbit-bimap\\_build\\wasm-gc\\debug\\check\\bimap.mi:bimap",
+        "-i",
+        "C:\\Users\\aurasui\\.moon\\lib\\core\\_build\\wasm-gc\\release\\bundle\\debug\\debug.mi:debug",
+        "-i",
+        "C:\\Users\\aurasui\\.moon\\lib\\core\\_build\\wasm-gc\\release\\bundle\\prelude\\prelude.mi:prelude",
+        "-i",
+        "C:\\Users\\aurasui\\.moon\\lib\\core\\_build\\wasm-gc\\release\\bundle\\quickcheck\\quickcheck.mi:quickcheck",
+        "-i",
+        "C:\\Users\\aurasui\\.moon\\lib\\core\\_build\\wasm-gc\\release\\bundle\\test\\test.mi:test",
+        "-pkg-sources",
+        "aurasuisui/bimap_blackbox_test:C:\\Users\\aurasui\\Desktop\\moonbit-dev\\moonbit-bimap\\src",
+        "-target",
+        "wasm-gc",
+        "-blackbox-test",
+        "-workspace-path",
+        "C:\\Users\\aurasui\\Desktop\\moonbit-dev\\moonbit-bimap",
+        "-all-pkgs",
+        "C:\\Users\\aurasui\\Desktop\\moonbit-dev\\moonbit-bimap\\_build\\wasm-gc\\debug\\check\\all_pkgs.json"
+      ],
+      "supported-targets": [
+        "Wasm",
+        "WasmGC",
+        "Js",
+        "Native",
+        "LLVM"
+      ]
+    }
+  ],
+  "deps": [],
+  "backend": "wasm-gc",
+  "opt_level": "debug",
+  "source": "src"
+}
