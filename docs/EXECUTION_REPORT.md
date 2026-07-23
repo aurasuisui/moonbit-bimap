@@ -54,7 +54,11 @@ moon build              ✅ PASS (0 error)
 1. **`moon publish` 未执行**——需 `moon login`(交互式浏览器 OAuth)。包已完全发布就绪,
    见 `PUBLISH.md`(含逐步命令与发布前清单,全部已满足)。
 2. **`cmd/` 示例**为独立 module,引用**已发布**的 `aurasuisui/bimap@0.1.0`,故在发布前
-   不参与根 workspace 构建(与 indexmap 同款做法)。发布后可 `moon run cmd/<name>` 运行。
+   不参与根 workspace 构建(与 indexmap 同款做法)。**但本会话已用临时 workspace
+   (把 cmd 纳入 members、本地解析 bimap)实测验证:两个示例均 `moon check` 通过且
+   `moon run` 输出正确**(正反向查找、保序迭代、C2 改绑、索引访问、`insert_no_overwrite`
+   拒绝冲突均符合预期),验证后恢复 indexmap 的"排除出 workspace"布局以把 CI 解析风险降到零。
+   验证过程还真抓出一个 bug:`Ok(())` 不是合法 MoonBit 模式(Unit 载荷应用 `Ok(_)` 匹配),已修复。
 
 ## 关键技术决策(均已记入 CHANGELOG「Notes / Deviations」)
 
