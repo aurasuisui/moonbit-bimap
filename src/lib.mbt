@@ -30,3 +30,36 @@
 ///|
 /// Library version string.
 pub const VERSION : String = "0.1.0"
+
+///|
+/// The result of `insert`, describing which existing pair(s) were displaced.
+/// Mirrors Rust `bimap::Overwritten`.
+///
+/// - `Neither` — a brand-new pair; nothing was displaced (case C0).
+/// - `Left(l, old_r)` — the left key `l` was already bound to `old_r`, which is
+///   displaced (case C2).
+/// - `Right(old_l, r)` — the right value `r` was already bound to `old_l`, which
+///   is displaced (case C3).
+/// - `Both((l, old_r), (old_l, r))` — both sides conflicted; the two old pairs
+///   collapse into the single new pair and the length decreases by one (case C4).
+/// - `Pair(l, r)` — the exact pair already existed; the insert is idempotent
+///   (case C1).
+pub enum Overwritten[L, R] {
+  Neither
+  Left(L, R)
+  Right(L, R)
+  Both((L, R), (L, R))
+  Pair(L, R)
+} derive(Debug, Eq)
+
+///|
+/// Create a new, empty `BiMap`.
+pub fn[L : Hash + Eq, R : Hash + Eq] new() -> BiMap[L, R] {
+  BiMap::new()
+}
+
+///|
+/// Create a new, empty `BiMap` with capacity for at least `cap` pairs.
+pub fn[L : Hash + Eq, R : Hash + Eq] with_capacity(cap : Int) -> BiMap[L, R] {
+  BiMap::with_capacity(cap)
+}
