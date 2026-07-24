@@ -116,6 +116,9 @@ let r = m.insert("a", 2)     // Both((a,4),(c,2))  {a↔2}  — len 2→1!
 7. **A rebind (C2) keeps the left key's insertion position** — rebinding `l` to a new right
    value does not move `l` to the end of the order. This is an intentional, order-preserving
    extension over Rust's remove-then-reinsert behavior (see CHANGELOG).
+8. **`BiMap` is not thread-safe.** It is mutable and its iterators are fail-fast; concurrent
+   reads/writes from multiple threads are undefined behavior. Use one `BiMap` per thread, or
+   guard shared access with external synchronization.
 
 ## API Overview
 

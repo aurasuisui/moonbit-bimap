@@ -218,3 +218,75 @@ test "wb: invariants hold for a String-keyed map after mixed ops" {
   m.insert("e", 5) |> ignore
   check_whitebox(m)
 }
+
+// ---------------------------------------------------------------------------
+// HashDoS: adversarial total-collision keys (RELEASE_TEST_CHECKLIST Tier 2/3)
+// ---------------------------------------------------------------------------
+//
+// The library's `Hash` for BiMap combines pair fingerprints commutatively, and
+// the internal Robin Hood table places entries purely by `Hash::hash(key)`. So
+// a key type whose hash is constant floods one probe chain. This test proves
+// the table stays CORRECT under that flood (no hang, no wrong answers, removal
+// works) and QUANTIFIES the degradation: probe distance grows ~linearly, which
+// is the documented weakness (README Gotcha #2) — graceful but undefended.
+
+///|
+/// A key whose `Hash` deliberately collapses every value onto the same bucket.
+/// `Eq` still distinguishes by `id`, so all keys are kept (a genuine flood).
+struct CollidingKey {
+  id : Int
+} derive(Eq, Debug)
+
+///|
+impl Hash for CollidingKey with fn hash_combine(self, hasher) {
+  // Adversarial: every key contributes the same hash (self.id * 0 == 0).
+  Hash::hash_combine(self.id * 0, hasher)
+}
+
+///|
+test "wb/hashdos: total-collision keys stay correct and removal still works" {
+  let m : BiMap[CollidingKey, Int] = BiMap::new()
+  let n = 200
+  let mut i = 0
+  while i < n {
+    m.insert({ id: i }, i) |> ignore
+    i = i + 1
+  }
+  @test.assert_eq(m.len, n)
+  check_whitebox(m)
+  // every key resolves on BOTH sides despite all hashing to one chain
+  let mut j = 0
+  while j < n {
+    @test.assert_eq(m.get_by_left({ id: j }), Some(j))
+    @test.assert_eq(m.get_by_right(j), Some({ id: j }))
+    j = j + 1
+  }
+  // removal under total collision is still correct
+  @test.assert_eq(m.remove_by_left({ id: 100 }), Some(100))
+  @test.assert_eq(m.get_by_left({ id: 100 }), None)
+  @test.assert_eq(m.get_by_right(100), None)
+  check_whitebox(m)
+  @test.assert_eq(m.len, n - 1)
+}
+
+///|
+test "wb/hashdos: probe distance degrades linearly under total collision" {
+  let m : BiMap[CollidingKey, Int] = BiMap::new()
+  let n = 200
+  let mut i = 0
+  while i < n {
+    m.insert({ id: i }, i) |> ignore
+    i = i + 1
+  }
+  // All forward-table keys share one home bucket, so they form a single probe
+  // chain. The max probe distance is therefore ~linear in n (NOT O(1)) — this
+  // is the expected, documented degradation, asserted here to make the
+  // vulnerability concrete and measurable rather than merely theoretical.
+  // (The backward table is keyed by Int, which hashes normally, so only the
+  // forward chain degrades.)
+  if m.forward.max_probe_distance < n / 2 {
+    @test.fail("expected a long probe chain under total hash collision")
+  }
+  // and the live count is still exactly n (no leaked / lost entries)
+  @test.assert_eq(m.forward.len, n)
+}
