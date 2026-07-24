@@ -8,9 +8,7 @@
 
 ## §0 参考实现:Rust `bimap` crate 的真实行为(已核实,照此对齐)
 
-来自 `bimap-rs` v0.6.3(Apache-2.0/MIT)。**完整源码已下载到 `reference/`(只读):
-`enum Overwritten` 定义在 `reference/bimap_lib.rs:228`,`insert`/`insert_no_overwrite` 等方法
-实现在 `reference/bimap_hash.rs`。** `insert` 返回 `Overwritten` 枚举,共 5 个变体;
+来自 `bimap-rs` v0.6.3(Apache-2.0/MIT)。**`insert` 返回 `Overwritten` 枚举,共 5 个变体;
 精确重插返回 `Pair`,不是 `Neither`。
 
 ```rust

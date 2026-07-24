@@ -32,8 +32,7 @@
 | 6 | **`DEVPLAN.md`** | 架构设计稿:为什么这么设计、内化 indexmap 什么、BiMap 特有的坑 | 想理解"为什么"时读 |
 | 7 | **`申报书.md`** | 一页申报书内容(过审用,也是你的"需求规格"复核) | 收尾发布前读 |
 | 8 | **`drafts/README.md` / `drafts/CONTRIBUTING.md` / `drafts/CHANGELOG.md`** | 文档草稿,直接拷进项目根目录再按实际微调 | 收尾阶段 |
-| 9 | **`reference/`(目录)** | Rust `bimap` crate v0.6.3 源码(只读对照)。**语义不确定时查 `reference/bimap_hash.rs`**,导览见 `reference/README.md` | 编码随手查 |
-| 10 | **`START_PROMPT.md` + `WATCHDOG.md`** | 作者用:启动执行会话的开场 prompt + 无人看守的自动自检/续跑看门狗 | 启动时 |
+| 9 | **`START_PROMPT.md` + `WATCHDOG.md`** | 作者用:启动执行会话的开场 prompt + 无人看守的自动自检/续跑看门狗 | 启动时 |
 
 > **作者(不是执行会话)启动执行会话时**:把 `START_PROMPT.md` 里 `---` 之间的内容粘给新会话即可。
 

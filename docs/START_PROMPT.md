@@ -11,8 +11,8 @@
 ## 大方向(这几条不能偏,其余细节你自己定)
 
 1. **文档是唯一依据**。先读 `moonbit-bimap/docs/INDEX.md`,按它的顺序读完 `EXECUTION.md` /
-   `SPEC.md` / `MOONBIT_REF.md` 再动手。`SPEC.md` 是 API 真源;语义拿不准就查 `reference/`
-   里的 Rust `bimap` 源码(只读)和 `../moonbit-indexmap/src/`(Robin Hood 引擎从这移植)。
+   `SPEC.md` / `MOONBIT_REF.md` 再动手。`SPEC.md` 是 API 真源;语义拿不准就对照 `SPEC.md §0`
+   摘录的 Rust `bimap` 真实行为,以及 `../moonbit-indexmap/src/`(Robin Hood 引擎从这移植)。
 2. **独立成包,不依赖 `aurasuisui/indexmap`**,但内化它的工程范式。
 3. **必须与 indexmap 有实质性区别**(BiMap = 双向一一对应,正交问题)——见 `docs/申报书.md`。
 4. 插入 API:`insert() -> Overwritten` 枚举 + `insert_no_overwrite() -> Result[Unit,(L,R)]`;
