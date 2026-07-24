@@ -214,7 +214,7 @@ to_inverse() -> BiMap[R, L]
 
 ---
 
-## 十、测试策略(详见 `TESTS.md`)
+## 十、测试策略(测试文件划分见 `../CONTRIBUTING.md` 测试指南)
 
 - **属性测试打核心不变量**(QuickCheck):随机操作序列后断言"两侧互逆 + 五处计数一致"。最高价值。
 - **两语义 × 五情形(C0–C4)矩阵**全覆盖,重点 C4。
@@ -230,7 +230,7 @@ to_inverse() -> BiMap[R, L]
 ```
 moonbit-bimap/
   moon.mod
-  docs/                  # 本文档体系(INDEX/EXECUTION/SPEC/MOONBIT_REF/TESTS/DEVPLAN/申报书)
+  docs/                  # 文档体系(枢纽 README/SPEC/MOONBIT_REF/SESSION_PLAYBOOK/DEVPLAN/申报书)
   src/
     hashtable.mbt        # 私有纯 Robin Hood 引擎(内化自 indexmap,去顺序耦合)
     bimap.mbt            # BiMap 主体:两表 + order + positions + put_pair/remove_pair + 两语义
@@ -245,7 +245,7 @@ moonbit-bimap/
   .github/workflows/ci.yml
 ```
 
-里程碑(详见 `EXECUTION.md §1`):M0 骨架 → M1 HashTab 引擎 → M2 BiMap 骨架+不变量 →
+里程碑划分:M0 骨架 → M1 HashTab 引擎 → M2 BiMap 骨架+不变量 →
 M3 完整 API → M4 traits+迭代 → M5 压力+示例+文档+发布。
 
 ### 开发命令(沿用 indexmap)
