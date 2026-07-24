@@ -24,10 +24,9 @@
 
 ///|
 /// Assert every white-box invariant of `m`.
-fn check_whitebox[
-  L : Hash + Eq + Debug,
-  R : Hash + Eq + Debug,
-](m : BiMap[L, R]) -> Unit raise {
+fn[L : Hash + Eq + Debug, R : Hash + Eq + Debug] check_whitebox(
+  m : BiMap[L, R],
+) -> Unit raise {
   // --- five counters agree -------------------------------------------------
   @test.assert_eq(m.forward.len, m.len)
   @test.assert_eq(m.backward.len, m.len)
@@ -187,7 +186,9 @@ test "wb: the 25% tombstone threshold triggers a clearing rehash" {
   }
   @test.assert_eq(m.len, 10)
   if !saw_reset {
-    @test.fail("expected the 25% tombstone threshold to trigger a clearing rehash")
+    @test.fail(
+      "expected the 25% tombstone threshold to trigger a clearing rehash",
+    )
   }
 }
 

@@ -4,6 +4,50 @@ All notable changes to `moonbit-bimap` are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/), and this project
 adheres to [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Added (test suite — no public API or behavior change)
+Expanded the test suite from 203 to 229 tests, closing the high-value gaps in
+`TEST_CHECKLIST.md`:
+
+- **Differential / model tests** (`model_test.mbt`): identical op sequences are
+  driven through the real `BiMap` and a naive `Array[(L,R)]` oracle, asserting
+  exact content+order agreement after every step — catches wrong-survivor bugs
+  the self-consistency check cannot see.
+- **White-box invariant tests** (`bimap_wbtest.mbt`, MoonBit `_wbtest.mbt`):
+  assert the strong form of the invariants on the private fields — five-counter
+  agreement, `positions[order[i]]==i`, `mask`/power-of-two buckets on both
+  tables, bucket-level mutual inverse, and `tombstone_count` accuracy (including
+  proof that the 25% tombstone rehash fires).
+- **Iterator-contract tests** (`iter_test.mbt`): simultaneous iterators advance
+  independently; `collect()` materializes the right count/order (the observable
+  effect of `size_hint`).
+- **Genericity / robustness** (`generics_test.mbt`): a user-defined struct used
+  as the left key and on both sides; portable 32-bit `Int` boundary keys;
+  capacity stays bounded across fill→drain→refill cycles.
+- **HashDoS** (`bimap_wbtest.mbt`): a constant-hash key floods one probe chain;
+  the table stays correct and removal works, with `max_probe_distance` shown to
+  degrade ~linearly (the documented commutative-hash weakness, README Gotcha #2).
+
+### Notes
+- **Thread safety stated explicitly**: README Gotcha #8 — `BiMap` is not
+  thread-safe (mutable + fail-fast iterators).
+- `size_hint` is passed to `Iter::new` but MoonBit exposes no public accessor to
+  read it back, so (like the fail-fast `abort`) it is asserted only via its
+  observable effect (`collect()`), not directly.
+- `Int` boundary tests use the portable 32-bit extremes: MoonBit's `Int` width
+  is backend-dependent and there is no `Int::MIN`/`Int::MAX` constant.
+
+### Future work (tracked, not in scope for v0.1.0)
+- **Performance benchmark + CI regression gate** — `bench_test.mbt` is a
+  correctness stress suite, not a timing benchmark; a real perf gate needs
+  external timing tooling in CI.
+- **Cross-backend CI matrix** — CI currently runs one backend; the library is
+  pure MoonBit with no backend-specific code, so `wasm-gc`/`wasm32`/`js`/
+  `native` are expected to pass but are not yet gated. Recommend extending
+  `ci.yml` with a `moon test --target <…>` matrix.
+- **Mutation testing** — no standard MoonBit mutation tool yet; deferred.
+
 ## [0.1.0] - 2026-07-24
 
 ### Added

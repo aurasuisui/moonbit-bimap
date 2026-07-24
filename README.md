@@ -160,7 +160,7 @@ Runnable example packages live in [`cmd/`](cmd/):
 
 ```bash
 moon check   # type check
-moon test    # run all 203 tests
+moon test    # run all 229 tests
 moon fmt     # format
 moon build   # build
 ```

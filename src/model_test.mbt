@@ -77,19 +77,17 @@ fn oracle_insert(arr : Array[(Int, Int)], l : Int, r : Int) -> Unit {
         oracle_remove_at(arr, j)
       }
     }
-    (Some(i), None) => {
+    (Some(i), None) =>
       // C2: rebind l to r, keeping l's position.
       arr[i] = (l, r)
-    }
     (None, Some(j)) => {
       // C3: r was bound to another left key at j; drop it, append (l, r).
       oracle_remove_at(arr, j)
       arr.push((l, r))
     }
-    (None, None) => {
+    (None, None) =>
       // C0: fresh pair.
       arr.push((l, r))
-    }
   }
 }
 
@@ -113,7 +111,11 @@ fn oracle_remove_right(arr : Array[(Int, Int)], r : Int) -> Unit {
 
 ///|
 /// Model `insert_no_overwrite`: insert only if neither side is present.
-fn oracle_insert_no_overwrite(arr : Array[(Int, Int)], l : Int, r : Int) -> Unit {
+fn oracle_insert_no_overwrite(
+  arr : Array[(Int, Int)],
+  l : Int,
+  r : Int,
+) -> Unit {
   if oracle_index_of_left(arr, l) is Some(_) ||
     oracle_index_of_right(arr, r) is Some(_) {
     ()
