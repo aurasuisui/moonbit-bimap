@@ -47,6 +47,21 @@ Expanded the test suite from 203 to 229 tests, closing the high-value gaps in
   `native` are expected to pass but are not yet gated. Recommend extending
   `ci.yml` with a `moon test --target <…>` matrix.
 - **Mutation testing** — no standard MoonBit mutation tool yet; deferred.
+- **Differential testing vs Rust `bimap`** — `model_test.mbt` only diffs against a naive
+  `Array` oracle, not the Rust origin crate. A real cross-implementation diff (shared op
+  stream → Rust `Overwritten` values) is the remaining item to reach the "standard library"
+  bar; tracked for v0.1.x.
+
+### Process
+- **Release gate documented.** `docs/RELEASE_CHECKLIST.md` is now the single source for the
+  pre-publish checklist: Tier 0–4 coverage + a non-test "release gate" section (version-stamp
+  consistency across `moon.mod`/`lib.mbt::VERSION`/README badge/CHANGELOG title, zero-dependency
+  claim, `moon publish --dry-run`, `pkg.generated.mbti` diff, `cmd/*` examples runnable against
+  the published version, SPDX/attribution retention, five-step CI green) + a gap registry. The
+  convention: every `moon publish` / version bump must clear it and log a checkmark line in
+  this CHANGELOG. Cross-backend (`wasm-gc`/`native`) is a manual pre-release check by convention,
+  not an automated CI matrix. Integrated into the `docs/` hub and the Doc Sync Convention in
+  `CONTRIBUTING.md`. Supersedes the ad-hoc `TEST_CHECKLIST.md` in the parent workspace.
 
 ## [0.1.0] - 2026-07-24
 

@@ -152,12 +152,14 @@ The full doc map lives in **`docs/README.md`** (the hub). For a new session:
 **`docs/SESSION_PLAYBOOK.md`** (discuss-plan → execute → stuck-rules → watchdog → write-back).
 
 Key docs: `docs/SPEC.md` (API source of truth when behavior is ambiguous), `docs/MOONBIT_REF.md`
-(MoonBit idiom cheatsheet), `docs/DEVPLAN.md` (archived design rationale), `docs/申报书.md`
+(MoonBit idiom cheatsheet), `docs/RELEASE_CHECKLIST.md` (**release gate — run before every
+`moon publish`**), `docs/DEVPLAN.md` (archived design rationale), `docs/申报书.md`
 (hackathon application).
 
 **Before you finish any task**, follow the Doc Sync Convention in CONTRIBUTING.md (update
 SPEC/README/CHANGELOG as the change demands) and update the `docs/README.md` map if you add or
-remove a doc — this is how knowledge carries across independent sessions.
+remove a doc — this is how knowledge carries across independent sessions. **Before any
+`moon publish` / version bump**, run `docs/RELEASE_CHECKLIST.md` (release gate) end-to-end.
 
 ## Licensing / provenance
 

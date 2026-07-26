@@ -27,6 +27,7 @@
 | [`../CHANGELOG.md`](../CHANGELOG.md) | 发布历史 + 每次决策的 Notes/Deviations | 想知道改过什么 |
 | [`../CLAUDE.md`](../CLAUDE.md) | Claude 会话自动加载的入口 | 每个会话开头 |
 | [`SPEC.md`](SPEC.md) | **API 唯一真源**:签名/返回类型/语义,行为拿不准时以此为准 | 动公开 API |
+| [`RELEASE_CHECKLIST.md`](RELEASE_CHECKLIST.md) | **发布门禁**:每次 bump 版本前必须逐项全绿的 Tier 0–4 + 发布前必检门禁 | 准备发版 |
 | [`MOONBIT_REF.md`](MOONBIT_REF.md) | MoonBit 语法/惯用法速查(来自 indexmap,非 bimap 专属) | 写 MoonBit 卡壳 |
 | [`SESSION_PLAYBOOK.md`](SESSION_PLAYBOOK.md) | **任务会话手册**:讨论方案→执行→卡住决策→看门狗→知识回写 | 开新任务会话 |
 | `README.md`(本文件) | 文档枢纽/全量地图 | 不知道读哪份 |
@@ -46,3 +47,7 @@
 
 **开任务会话**(测试 / 改进 / 新功能):
 `CLAUDE.md` → `SESSION_PLAYBOOK.md`(整套流程) → 按任务读 `SPEC.md` / `CONTRIBUTING.md`。
+
+**准备发版**(bump `moon.mod` 版本):
+`CLAUDE.md` → [`RELEASE_CHECKLIST.md`](RELEASE_CHECKLIST.md)(逐项全绿 + 发布前必检门禁 + 缺口登记)
+→ 勾选结果记一行进 `CHANGELOG.md`。
