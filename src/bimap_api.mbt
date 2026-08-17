@@ -35,7 +35,7 @@ pub fn[L : Hash + Eq, R : Hash + Eq] BiMap::insert_no_overwrite(
 ///|
 /// Return the pair at insertion-order index `i`, or `None` if `i` is out of
 /// bounds.
-pub fn[L : Hash + Eq, R : Hash + Eq] BiMap::get_index(
+pub fn[L : Hash + Eq, R] BiMap::get_index(
   self : BiMap[L, R],
   i : Int,
 ) -> (L, R)? {
@@ -51,7 +51,7 @@ pub fn[L : Hash + Eq, R : Hash + Eq] BiMap::get_index(
 
 ///|
 /// Return the insertion-order index of left key `l`, or `None` if absent.
-pub fn[L : Hash + Eq, R : Hash + Eq] BiMap::get_index_of_left(
+pub fn[L : Hash + Eq, R] BiMap::get_index_of_left(
   self : BiMap[L, R],
   l : L,
 ) -> Int? {
@@ -75,15 +75,13 @@ pub fn[L : Hash + Eq, R : Hash + Eq] BiMap::get_index_of_right(
 
 ///|
 /// Return the earliest-inserted pair, or `None` if the map is empty.
-pub fn[L : Hash + Eq, R : Hash + Eq] BiMap::first(
-  self : BiMap[L, R],
-) -> (L, R)? {
+pub fn[L : Hash + Eq, R] BiMap::first(self : BiMap[L, R]) -> (L, R)? {
   self.get_index(0)
 }
 
 ///|
 /// Return the most-recently-inserted pair, or `None` if the map is empty.
-pub fn[L : Hash + Eq, R : Hash + Eq] BiMap::last(self : BiMap[L, R]) -> (L, R)? {
+pub fn[L : Hash + Eq, R] BiMap::last(self : BiMap[L, R]) -> (L, R)? {
   if self.order.length() == 0 {
     return None
   }

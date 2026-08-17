@@ -10,9 +10,7 @@
 /// Return a lazy iterator over `(left, right)` pairs in left-key insertion
 /// order. Supports `for (l, r) in m { ... }`. Aborts if the map is mutated
 /// during iteration.
-pub fn[L : Hash + Eq, R : Hash + Eq] BiMap::iter(
-  self : BiMap[L, R],
-) -> Iter[(L, R)] {
+pub fn[L : Hash + Eq, R] BiMap::iter(self : BiMap[L, R]) -> Iter[(L, R)] {
   let mut pos = 0
   let len = self.order.length()
   let version = self.version
@@ -38,9 +36,7 @@ pub fn[L : Hash + Eq, R : Hash + Eq] BiMap::iter(
 ///|
 /// Return a lazy iterator over the left keys in insertion order. Aborts if the
 /// map is mutated during iteration.
-pub fn[L : Hash + Eq, R : Hash + Eq] BiMap::lefts(
-  self : BiMap[L, R],
-) -> Iter[L] {
+pub fn[L : Hash + Eq, R] BiMap::lefts(self : BiMap[L, R]) -> Iter[L] {
   let mut pos = 0
   let len = self.order.length()
   let version = self.version
@@ -65,9 +61,7 @@ pub fn[L : Hash + Eq, R : Hash + Eq] BiMap::lefts(
 ///|
 /// Return a lazy iterator over the right values in insertion order. Aborts if
 /// the map is mutated during iteration.
-pub fn[L : Hash + Eq, R : Hash + Eq] BiMap::rights(
-  self : BiMap[L, R],
-) -> Iter[R] {
+pub fn[L : Hash + Eq, R] BiMap::rights(self : BiMap[L, R]) -> Iter[R] {
   let mut pos = 0
   let len = self.order.length()
   let version = self.version

@@ -54,12 +54,12 @@ pub enum Overwritten[L, R] {
 
 ///|
 /// Create a new, empty `BiMap`.
-pub fn[L : Hash + Eq, R : Hash + Eq] new() -> BiMap[L, R] {
+pub fn[L : Hash + Eq, R] new() -> BiMap[L, R] {
   BiMap::new()
 }
 
 ///|
 /// Create a new, empty `BiMap` with capacity for at least `cap` pairs.
-pub fn[L : Hash + Eq, R : Hash + Eq] with_capacity(cap : Int) -> BiMap[L, R] {
+pub fn[L : Hash + Eq, R] with_capacity(cap : Int) -> BiMap[L, R] {
   BiMap::with_capacity(cap)
 }

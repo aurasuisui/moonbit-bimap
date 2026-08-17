@@ -33,15 +33,13 @@ struct BiMap[L, R] {
 
 ///|
 /// Create a new, empty `BiMap` with default capacity.
-pub fn[L : Hash + Eq, R : Hash + Eq] BiMap::new() -> BiMap[L, R] {
+pub fn[L : Hash + Eq, R] BiMap::new() -> BiMap[L, R] {
   BiMap::with_capacity(MIN_CAPACITY)
 }
 
 ///|
 /// Create a new, empty `BiMap` with capacity for at least `cap` pairs.
-pub fn[L : Hash + Eq, R : Hash + Eq] BiMap::with_capacity(
-  cap : Int,
-) -> BiMap[L, R] {
+pub fn[L : Hash + Eq, R] BiMap::with_capacity(cap : Int) -> BiMap[L, R] {
   let real_cap = if cap < MIN_CAPACITY {
     MIN_CAPACITY
   } else {
@@ -207,25 +205,19 @@ fn[L : Hash + Eq, R : Hash + Eq] BiMap::finish_insert(
 
 ///|
 /// Return the right value bound to left key `l` (forward lookup).
-pub fn[L : Hash + Eq, R : Hash + Eq] BiMap::get_by_left(
-  self : BiMap[L, R],
-  l : L,
-) -> R? {
+pub fn[L : Hash + Eq, R] BiMap::get_by_left(self : BiMap[L, R], l : L) -> R? {
   self.forward.get(l)
 }
 
 ///|
 /// Return the left key bound to right value `r` (reverse lookup).
-pub fn[L : Hash + Eq, R : Hash + Eq] BiMap::get_by_right(
-  self : BiMap[L, R],
-  r : R,
-) -> L? {
+pub fn[L, R : Hash + Eq] BiMap::get_by_right(self : BiMap[L, R], r : R) -> L? {
   self.backward.get(r)
 }
 
 ///|
 /// Return `true` if left key `l` is present.
-pub fn[L : Hash + Eq, R : Hash + Eq] BiMap::contains_left(
+pub fn[L : Hash + Eq, R] BiMap::contains_left(
   self : BiMap[L, R],
   l : L,
 ) -> Bool {
@@ -234,7 +226,7 @@ pub fn[L : Hash + Eq, R : Hash + Eq] BiMap::contains_left(
 
 ///|
 /// Return `true` if right value `r` is present.
-pub fn[L : Hash + Eq, R : Hash + Eq] BiMap::contains_right(
+pub fn[L, R : Hash + Eq] BiMap::contains_right(
   self : BiMap[L, R],
   r : R,
 ) -> Bool {

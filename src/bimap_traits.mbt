@@ -24,10 +24,7 @@ fn[L : Hash, R : Hash] pair_fingerprint(l : L, r : R) -> Int {
 ///|
 /// Order-independent equality: two BiMaps are equal iff they contain the same
 /// (left, right) pairs, regardless of insertion order.
-pub impl[L : Hash + Eq, R : Hash + Eq] Eq for BiMap[L, R] with fn equal(
-  self,
-  other,
-) {
+pub impl[L : Hash + Eq, R : Eq] Eq for BiMap[L, R] with fn equal(self, other) {
   if self.len != other.len {
     return false
   }
@@ -52,7 +49,7 @@ pub impl[L : Hash + Eq, R : Hash + Eq] Eq for BiMap[L, R] with fn equal(
 /// Note: a commutative combination is weaker against deliberate hash-collision
 /// attacks than an order-sensitive one. That is acceptable for a set-like
 /// container; take care if you use a BiMap as a key in another hash container.
-pub impl[L : Hash + Eq, R : Hash + Eq] Hash for BiMap[L, R] with fn hash_combine(
+pub impl[L : Hash + Eq, R : Hash] Hash for BiMap[L, R] with fn hash_combine(
   self,
   hasher,
 ) {
@@ -113,7 +110,7 @@ pub impl[L : Show + Hash + Eq, R : Show] Show for BiMap[L, R] with fn output(
 
 ///|
 /// The default BiMap is empty.
-pub impl[L : Hash + Eq, R : Hash + Eq] Default for BiMap[L, R] with fn default() {
+pub impl[L : Hash + Eq, R] Default for BiMap[L, R] with fn default() {
   BiMap::new()
 }
 
