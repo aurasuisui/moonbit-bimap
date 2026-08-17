@@ -295,10 +295,10 @@ test "reinserting all after a full drain restores content" {
 ///|
 test "contains_left/right agree with get_by_left/right" {
   let m = @aurasuisui/bimap.BiMap::from_array([("a", 1), ("b", 2), ("c", 3)])
-  @test.assert_eq(m.contains_left("a"), m.get_by_left("a").is_some())
-  @test.assert_eq(m.contains_left("zzz"), m.get_by_left("zzz").is_some())
-  @test.assert_eq(m.contains_right(2), m.get_by_right(2).is_some())
-  @test.assert_eq(m.contains_right(999), m.get_by_right(999).is_some())
+  @test.assert_eq(m.contains_left("a"), m.get_by_left("a") is Some(_))
+  @test.assert_eq(m.contains_left("zzz"), m.get_by_left("zzz") is Some(_))
+  @test.assert_eq(m.contains_right(2), m.get_by_right(2) is Some(_))
+  @test.assert_eq(m.contains_right(999), m.get_by_right(999) is Some(_))
 }
 
 ///|

@@ -269,12 +269,6 @@ fn[K, V] HashTab::rehash(self : HashTab[K, V], new_cap : Int) -> Unit {
 // ---------------------------------------------------------------------------
 
 ///|
-/// Create a new, empty hash table with default capacity.
-fn[K, V] HashTab::new() -> HashTab[K, V] {
-  HashTab::with_capacity(MIN_CAPACITY)
-}
-
-///|
 /// Create a new hash table with at least `cap` buckets (rounded to a power of
 /// two, never below MIN_CAPACITY).
 fn[K, V] HashTab::with_capacity(cap : Int) -> HashTab[K, V] {

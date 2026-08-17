@@ -379,7 +379,8 @@ test "C2 rebind leaves the index unchanged" {
 
 ///|
 test "from_array on an empty array yields an empty map" {
-  let m = @aurasuisui/bimap.BiMap::from_array([])
+  let m : @aurasuisui/bimap.BiMap[String, Int] = @aurasuisui/bimap.BiMap::from_array([],
+  )
   @test.assert_eq(m.is_empty(), true)
 }
 

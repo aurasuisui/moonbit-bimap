@@ -81,7 +81,7 @@ pub impl[L : Debug + Hash + Eq, R : Debug] Debug for BiMap[L, R] with fn to_repr
   let mut i = 0
   while i < arr.length() {
     let (l, r) = arr[i]
-    entries.push((to_repr(l), to_repr(r)))
+    entries.push((Debug::to_repr(l), Debug::to_repr(r)))
     i = i + 1
   }
   Repr::opaque_("BiMap", Repr::map(entries))
