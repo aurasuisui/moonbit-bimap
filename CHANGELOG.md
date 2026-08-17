@@ -29,6 +29,44 @@ Expanded the test suite from 203 to 229 tests, closing the high-value gaps in
   the table stays correct and removal works, with `max_probe_distance` shown to
   degrade ~linearly (the documented commutative-hash weakness, README Gotcha #2).
 
+### Changed
+- **Trait bounds minimized across the public API** (18 signatures, all moonc
+  `[0053]` unused-bound warnings eliminated). Completes the minimization begun
+  with `into_array` (see its note below in the v0.1.0 section):
+  - Write-path / two-sided methods keep `L : Hash + Eq, R : Hash + Eq`:
+    `insert`, `insert_no_overwrite`, `remove_by_left`, `remove_by_right`,
+    `from_array`, `copy`, `to_inverse`, `get_index_of_right`.
+  - One-sided read-only methods now constrain only the side they query:
+    `new`, `with_capacity`, `get_by_left`, `contains_left`, `get_index`,
+    `get_index_of_left`, `first`, `last`, `iter`, `lefts`, `rights` are
+    `[L : Hash + Eq, R]`; `get_by_right`, `contains_right` are
+    `[L, R : Hash + Eq]`.
+  - Trait impls tighten likewise: `Eq` keeps `R : Eq` (value comparison) but
+    drops `R : Hash`; `Hash` keeps `R : Hash` but drops `R : Eq`; `Default`
+    needs only `L : Hash + Eq`.
+  Relaxing bounds is strictly source-compatible (no caller can break) and
+  matches Rust's bounds-on-methods convention; `pkg.generated.mbti`
+  regenerated. No behavior change (229/229 tests). SPEC §7/§8 and the
+  MOONBIT_REF examples were updated to match (including fixing the
+  pre-existing SPEC §7 `Arbitrary` drift noted under v0.1.0). This supersedes
+  the "tolerate warnings" strategy inherited from indexmap: the project now
+  targets zero warnings — `moon check --deny-warn` and `moon test --deny-warn`
+  pass locally; CI intentionally stays without `--deny-warn` because it tracks
+  `version: latest`.
+
+### Removed
+- Private, never-called `HashTab::new()` (default-capacity constructor of the
+  internal engine; all construction goes through `with_capacity`). No public
+  API change.
+
+### Fixed
+- Remaining moonc 0.10.8 warnings: deprecated free `to_repr(x)` replaced with
+  the qualified `Debug::to_repr(x)` in the `Debug` impl, deprecated
+  `.is_some()` calls in tests replaced with the `is Some(_)` pattern form, and
+  `from_array([])` in an edge test now carries an explicit
+  `BiMap[String, Int]` annotation instead of leaving the type variables to
+  default to `Unit`.
+
 ### Notes
 - **Thread safety stated explicitly**: README Gotcha #8 — `BiMap` is not
   thread-safe (mutable + fail-fast iterators).

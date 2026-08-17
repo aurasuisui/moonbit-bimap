@@ -282,12 +282,12 @@ pub fn into_array(self) -> Array[(L, R)]
 
 ```moonbit
 pub impl[L : Debug + Hash + Eq, R : Debug] Debug for BiMap[L, R]      // Repr::opaque_("BiMap", ...)
-pub impl[L : Hash + Eq, R : Hash + Eq] Default for BiMap[L, R]        // 空表
+pub impl[L : Hash + Eq, R] Default for BiMap[L, R]                     // 空表
 pub impl[L : Show + Hash + Eq, R : Show] Show for BiMap[L, R]         // 可选,推荐
-pub impl[L : Hash + Eq, R : Hash + Eq] Eq for BiMap[L, R]             // **顺序无关**
-pub impl[L : Hash + Eq, R : Hash + Eq] Hash for BiMap[L, R]           // **可交换组合**
+pub impl[L : Hash + Eq, R : Eq] Eq for BiMap[L, R]                    // **顺序无关**
+pub impl[L : Hash + Eq, R : Hash] Hash for BiMap[L, R]                // **可交换组合**
 pub impl[L : Show + Hash + Eq, R : ToJson] ToJson for BiMap[L, R]     // 键用 l.to_string()
-pub impl[L : @quickcheck.Arbitrary + Hash + Eq, R : @quickcheck.Arbitrary]
+pub impl[L : @quickcheck.Arbitrary + Hash + Eq, R : @quickcheck.Arbitrary + Hash + Eq]
   @quickcheck.Arbitrary for BiMap[L, R]                               // from_array(arbitrary pairs)
 ```
 
@@ -351,7 +351,13 @@ struct BiMap[L, R] {
 ```
 
 常量:`MIN_CAPACITY=16`、负载因子 `3/4`、`TOMBSTONE_HASH=-1`、`NO_DISTANCE=-1`。
-类型约束:`BiMap[L : Hash + Eq, R : Hash + Eq]`。
+类型约束:**按方法最小化**(struct 本身无约束)。写路径方法(`insert`、`insert_no_overwrite`、
+`remove_by_left/right`、`from_array`、`copy`、`to_inverse`、`get_index_of_right`)需双侧
+`Hash + Eq`;单侧只读方法只约束被查询的一侧——`new`、`with_capacity`、`get_by_left`、
+`contains_left`、`get_index`、`get_index_of_left`、`first`、`last`、`iter`、`lefts`、
+`rights`、`into_array` 为 `[L : Hash + Eq, R]`,`get_by_right`、`contains_right` 为
+`[L, R : Hash + Eq]`。trait impl 同理收紧:`Eq` 需 `R : Eq`(比值)、`Hash` 需 `R : Hash`、
+`Default` 仅需 `L : Hash + Eq`(见 §7)。
 
 ---
 

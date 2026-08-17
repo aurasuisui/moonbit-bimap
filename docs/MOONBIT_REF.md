@@ -306,7 +306,7 @@ fn[K : Hash + Eq, V] HashTab::rehash(self, new_cap : Int) -> Unit {
 ## §4 迭代器(`Iter::new` + fail-fast)——源自 `map.mbt:814-884`
 
 ```moonbit
-pub fn[L : Hash + Eq, R : Hash + Eq] BiMap::iter(self : BiMap[L, R]) -> Iter[(L, R)] {
+pub fn[L : Hash + Eq, R] BiMap::iter(self : BiMap[L, R]) -> Iter[(L, R)] {
   let mut pos = 0
   let len = self.order.length()
   let version = self.version
@@ -343,7 +343,7 @@ pub impl[L : Debug + Hash + Eq, R : Debug] Debug for BiMap[L, R] with fn to_repr
   let iter = self.iter()
   while true {
     match iter.next() {
-      Some((l, r)) => entries.push((to_repr(l), to_repr(r)))
+      Some((l, r)) => entries.push((Debug::to_repr(l), Debug::to_repr(r)))
       None => break
     }
   }
@@ -366,7 +366,7 @@ pub impl[K : Hash + Eq, V : Hash] Hash for IndexMap[K, V] with fn hash_combine(s
 ```
 **bimap 正确做法(可交换累加)**——核心思路:
 ```moonbit
-pub impl[L : Hash + Eq, R : Hash + Eq] Hash for BiMap[L, R] with fn hash_combine(self, hasher) {
+pub impl[L : Hash + Eq, R : Hash] Hash for BiMap[L, R] with fn hash_combine(self, hasher) {
   // 对每对 (l, r) 计算一个 hash 值,用可交换运算(加法)累加,最后喂给 hasher
   let mut acc : Int = 0
   let iter = self.iter()
@@ -387,7 +387,7 @@ pub impl[L : Hash + Eq, R : Hash + Eq] Hash for BiMap[L, R] with fn hash_combine
 
 ### Eq(**顺序无关**,与 indexmap 不同)——`map.mbt:1131` 是顺序相关版,**bimap 改写**:
 ```moonbit
-pub impl[L : Hash + Eq, R : Hash + Eq] Eq for BiMap[L, R] with fn equal(self, other) {
+pub impl[L : Hash + Eq, R : Eq] Eq for BiMap[L, R] with fn equal(self, other) {
   if self.len() != other.len() { return false }
   let iter = self.iter()
   while true {
@@ -489,7 +489,7 @@ test "qc: bijection invariant holds after random ops" {
 
 | 报错 | 多半原因 | 修法 |
 |---|---|---|
-| trait bound 不满足 | 公开方法缺 `[L : Hash + Eq, R : Hash + Eq]` | 凡是进哈希表/比较的都加约束 |
+| trait bound 不满足 | 公开方法缺约束 | 进哈希表/比较的**那一侧**加约束:写路径双侧 `Hash + Eq`,只读方法只加被查询侧(见 SPEC §8) |
 | 不能修改 `self.xxx` | `self` 参数没标 `mut` 或 struct 字段没 `mut` | struct 字段加 `mut`;方法 `self : BiMap[L,R]`(MoonBit 引用语义,字段 mut 即可改) |
 | `Iter::new` 类型错 | 闭包返回类型不是 `T?` 或缺 `size_hint` | 照 §4 模板 |
 | `debug_inspect` 快照不稳 | 循环里用 debug_inspect 多变值 | 改 `@test.assert_eq` |
@@ -502,6 +502,7 @@ test "qc: bijection invariant holds after random ops" {
 ## §8 关于 `[0083]` 弃用警告
 
 indexmap 在 `moon check` 下有 14 个 `[0083]` 警告(对多 trait 约束的类型参数做点调用,
-如 `key.hash()`),**选择不修**,因为 CI 不带 `--deny-warn`。bimap 可沿用同样策略:
-能容忍就容忍,保证 `moon check` **0 error** 即可,警告不阻塞。若想干净,
-把 `x.hash()` 改成 `Hash::hash_combine(x, hasher)` 形式。
+如 `key.hash()`),**选择不修**,因为 CI 不带 `--deny-warn`。bimap 起初沿用同样策略,
+**2026-08 的 zero-warnings 任务后改为全部清零**:`moon check` / `moon test` 均 0 警告,
+本地按 `--deny-warn` 验收(CI 仍不带,因其跟踪 `version: latest`,见 CHANGELOG
+[Unreleased])。若想干净,把 `x.hash()` 改成 `Hash::hash_combine(x, hasher)` 形式。
