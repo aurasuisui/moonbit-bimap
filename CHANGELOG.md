@@ -4,7 +4,7 @@ All notable changes to `moonbit-bimap` are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/), and this project
 adheres to [Semantic Versioning](https://semver.org/).
 
-## [Unreleased]
+## [0.1.1] - 2026-08-18
 
 ### Added (test suite — no public API or behavior change)
 Expanded the test suite from 203 to 229 tests, closing the high-value gaps in

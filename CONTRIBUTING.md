@@ -207,6 +207,12 @@ test "descriptive english name" {
 - `BiMap`, two insert semantics, bidirectional lookup/removal, index access, order
   preservation, `to_inverse`, standard traits, fail-fast iterators, examples, tests, CI.
 
+### v0.1.1 — Hardening
+- Test suite 203 → 229 (differential model, white-box invariants, iterator contract,
+  generics, HashDoS). Zero compiler warnings: dead code removed, deprecated API uses
+  replaced, trait bounds minimized to the per-side minimum (`moon check/test --deny-warn`
+  clean). See CHANGELOG `[0.1.1]` for details.
+
 ### v0.2.0 — Planned (not in scope for the hackathon)
 - `BiBTreeMap` (sorted variant), `retain`, set-view adapters, richer entry-style helpers.
 
