@@ -65,25 +65,25 @@
 
 > 这一节是两份原清单都缺、但每次发版必须过的**非测试类门禁**。> 历史:`indexmap` 出过 VERSION 不一致(Known Issue #1),bimap 须避免重蹈。
 
-- [ ] **版本号三处一致**:`moon.mod` 里的 `version` == `src/lib.mbt` 的 `VERSION` 常量 == `README.md`
+- [x] **版本号三处一致**:`moon.mod` 里的 `version` == `src/lib.mbt` 的 `VERSION` 常量 == `README.md`
       徽章/安装说明里的 `@aurasuisui/bimap@<x.y.z>` == `CHANGELOG.md` 顶部的版本段标题。
-- [ ] **零依赖声明确实成立**:`moon.mod` 无 `deps` 段;"纯 MoonBit、零依赖"(不依赖 `aurasuisui/indexmap`,
+- [x] **零依赖声明确实成立**:`moon.mod` 无 `deps` 段;"纯 MoonBit、零依赖"(不依赖 `aurasuisui/indexmap`,
       Robin Hood 引擎是就地适配,非 import)——README/CONTRIBUTING/CLAUDE 三处口径一致。
-- [ ] **接口快照已刷新并提交**:`moon info` 后 `git diff --exit-code` 干净(`pkg.generated.mbti`
+- [x] **接口快照已刷新并提交**:`moon info` 后 `git diff --exit-code` 干净(`pkg.generated.mbti`
       无未提交改动)。改过任何公开签名就必须同步提交。
-- [ ] **`moon publish --dry-run` 通过**:确认 mooncakes 能打包、README 描述能解析、无缺失字段。
-- [ ] **`cmd/*` 示例对已发布版本可跑**:`moon run cmd/username_email` 与 `moon run cmd/country_code`
+- [x] **`moon publish --dry-run` 通过**:确认 mooncakes 能打包、README 描述能解析、无缺失字段。
+- [x] **`cmd/*` 示例对已发布版本可跑**:`moon run cmd/username_email` 与 `moon run cmd/country_code`
       手动跑通(它们 import 的是**已发布**的 `aurasuisui/bimap@<x.y.z>`,故须先 publish 再验,或本地
       软链核对)。**勿把 `cmd/*` 加进 `moon.work` 的 members**(见 CLAUDE.md "cmd/ examples" 节)。
-- [ ] **SPDX 头与署名留存**:源文件 Apache-2.0 SPDX 头在;README/CONTRIBUTING/CLAUDE 的"Acknowledgements"
+- [x] **SPDX 头与署名留存**:源文件 Apache-2.0 SPDX 头在;README/CONTRIBUTING/CLAUDE 的"Acknowledgements"
       段保留三处署名——Robin Hood 引擎源自 `aurasuisui/indexmap`(Apache-2.0)、BiMap 语义源自 Rust
       `bimap`(MIT/Apache-2.0)、概念参考 Guava `BiMap`(Apache-2.0)。改这些文件时勿删署名。
-- [ ] **文档同步(按 `CONTRIBUTING.md` 文档同步约定)**:有公开 API 变更 → 同步 `docs/SPEC.md` +
+- [x] **文档同步(按 `CONTRIBUTING.md` 文档同步约定)**:有公开 API 变更 → 同步 `docs/SPEC.md` +
       `README.md` API 表;有关键决策/行为变更 → 同步 `CHANGELOG.md` Notes/Deviations;架构/流程变更 →
       同步 `CONTRIBUTING.md`;命令/工具链 → `CLAUDE.md`;增删任一文档 → `docs/README.md` 枢纽表。
-- [ ] **五步 CI 全绿**:本节勾选时,主分支 `main` 的 GitHub Actions 跑过的五步(`moon fmt --check`
+- [x] **五步 CI 全绿**:本节勾选时,主分支 `main` 的 GitHub Actions 跑过的五步(`moon fmt --check`
       → `moon check` → `moon info && git diff --exit-code` → `moon test` → `moon build`)全绿。
-- [ ] **CHANGELOG 记一行**:在本版本段加一行"发布前检查:RELEASE_CHECKLIST 全绿 @ <commit>"。
+- [x] **CHANGELOG 记一行**:在本版本段加一行"发布前检查:RELEASE_CHECKLIST 全绿 @ <commit>"。
 
 ### 手动约定(不进 CI,发版前人工执行)
 
@@ -113,3 +113,6 @@
 - **2026-07-25**:清单初版。整合自 moonbit-dev 父目录的 `RELEASE_TEST_CHECKLIST.md`(通用 Tier 框架,
   另一会话维护)与 `TEST_CHECKLIST.md`(bimap 早期逐项审计,已被本文件取代)。
 - 父目录的 `RELEASE_TEST_CHECKLIST.md` 通用模板保留;其"各库现状速览"表 bimap 列改为指向本文件的指针。
+- **2026-08-18**:0.1.1 发布,门禁逐项全绿(勾选结果见上方复选框,执行记录见 CHANGELOG
+  `[0.1.1]` Process)。注:`moon publish --dry-run` 在 0.10.8 工具链已无该旗标,以直接发布 +
+  `cmd/*` 对已发布包的解析验证替代。

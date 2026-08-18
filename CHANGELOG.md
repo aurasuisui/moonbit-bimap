@@ -100,6 +100,12 @@ Expanded the test suite from 203 to 229 tests, closing the high-value gaps in
   this CHANGELOG. Cross-backend (`wasm-gc`/`native`) is a manual pre-release check by convention,
   not an automated CI matrix. Integrated into the `docs/` hub and the Doc Sync Convention in
   `CONTRIBUTING.md`. Supersedes the ad-hoc `TEST_CHECKLIST.md` in the parent workspace.
+- **发布前检查:RELEASE_CHECKLIST 全绿 @ 03b8798**(2026-08-18,0.1.1 发布)。版本号四处一致
+  (moon.mod / `lib.mbt::VERSION` / README 安装说明 / CHANGELOG 标题,另同步 CLAUDE.md /
+  AGENTS.md / MOONBIT_REF 镜像);零依赖声明成立;接口快照已提交(mbti diff 仅 VERSION 行);
+  跨后端手动矩阵 wasm-gc 与 native 均 229/229;SPDX 头与三处署名留存;五步 CI 于 main 全绿。
+  注:0.10.8 工具链的 `moon publish` 已无 `--dry-run` 旗标,该门禁项以直接发布 +
+  `cmd/*` 对已发布包的解析验证替代。
 
 ## [0.1.0] - 2026-07-24
 
