@@ -14,7 +14,7 @@
 | 架构深挖 / 开发流程 / 测试约定 / **文档同步约定** | [`CONTRIBUTING.md`](../CONTRIBUTING.md) |
 | 每次改动与关键决策 | [`CHANGELOG.md`](../CHANGELOG.md) |
 | API 契约(每个签名、C0–C4、不变量、Eq/Hash 语义) | [`SPEC.md`](SPEC.md) |
-| 会话入口(命令 + 架构速览 + 阅读顺序) | [`CLAUDE.md`](../CLAUDE.md) |
+| 会话入口(命令 + 架构速览 + 阅读顺序) | [`CLAUDE.md`](../CLAUDE.md)([`AGENTS.md`](../AGENTS.md) 是其面向 Codex/其他 agent 的镜像,改动时两处同步) |
 
 ## 文档地图
 
@@ -26,6 +26,7 @@
 | [`../CONTRIBUTING.md`](../CONTRIBUTING.md) | 开发圣经:架构深挖、加功能清单、测试约定、**文档同步约定** | 要改代码 |
 | [`../CHANGELOG.md`](../CHANGELOG.md) | 发布历史 + 每次决策的 Notes/Deviations | 想知道改过什么 |
 | [`../CLAUDE.md`](../CLAUDE.md) | Claude 会话自动加载的入口 | 每个会话开头 |
+| [`../AGENTS.md`](../AGENTS.md) | Codex / 其他 agent 的入口(CLAUDE.md 的镜像,两处同步维护) | 非 Claude agent 会话 |
 | [`SPEC.md`](SPEC.md) | **API 唯一真源**:签名/返回类型/语义,行为拿不准时以此为准 | 动公开 API |
 | [`RELEASE_CHECKLIST.md`](RELEASE_CHECKLIST.md) | **发布门禁**:每次 bump 版本前必须逐项全绿的 Tier 0–4 + 发布前必检门禁 | 准备发版 |
 | [`MOONBIT_REF.md`](MOONBIT_REF.md) | MoonBit 语法/惯用法速查(来自 indexmap,非 bimap 专属) | 写 MoonBit 卡壳 |
