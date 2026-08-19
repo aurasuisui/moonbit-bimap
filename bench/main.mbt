@@ -135,6 +135,14 @@ fn main {
       b.keep(bm.into_array())
     })
 
+    // Full-map hash: one closure iteration hashes the entire N-pair map
+    // (order-independent canonical form since 0.1.2: sort + fold, O(n log n)).
+    // Reported us is per whole-map hash, NOT per pair.
+    println("# [bench] bimap.hash-full.n\{n}")
+    b.bench(name="bimap.hash-full.n\{n}", count=5, fn() {
+      b.keep(Hash::hash(bm))
+    })
+
     // ---------------- built-in Map baseline ----------------
     println("# [bench] map.insert.n\{n}")
     b.bench(name="map.insert.n\{n}", count=5, fn() { b.keep(build_map(n)) })

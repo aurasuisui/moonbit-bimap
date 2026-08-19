@@ -7,7 +7,7 @@
 git clone https://github.com/aurasuisui/moonbit-bimap
 cd moonbit-bimap
 moon check   # type check
-moon test    # run all 232 tests
+moon test    # run all 234 tests
 moon fmt     # format
 ```
 
@@ -130,10 +130,11 @@ head-first bulk drain is O(n²) overall — drain in reverse insertion order or 
 ### Eq/Hash are order-independent (unlike indexmap)
 
 A `BiMap` is a *set of pairs*. `Eq` compares pair sets (ignoring insertion order); `Hash`
-combines per-pair fingerprints with a **commutative** operation (sum) so reordering doesn't
-change the hash. The per-pair fingerprint is `Hash::hash(l) * 0x9E3779B9 + Hash::hash(r)`
-(order-sensitive within a pair, so `(l,r)` differs from `(r,l)`). This is the opposite of
-`indexmap` (order-sensitive) and is documented as a Gotcha.
+builds the pair set's canonical form — the **sorted** per-pair fingerprint sequence — and
+folds it with an order-sensitive FNV-1a-style mix, so reordering doesn't change the hash
+but the combination is no longer linear (the earlier commutative sum made cross-swapped
+maps collide identically; hardened 2026-08). This is the opposite of `indexmap`
+(order-sensitive) and is documented as a Gotcha. Cost: O(n log n) per map hash.
 
 ---
 

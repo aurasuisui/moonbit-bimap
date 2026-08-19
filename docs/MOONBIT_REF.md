@@ -364,26 +364,24 @@ pub impl[K : Hash + Eq, V : Hash] Hash for IndexMap[K, V] with fn hash_combine(s
   }
 }
 ```
-**bimap 正确做法(可交换累加)**——核心思路:
+**bimap 正确做法(排序正则形 + 顺序折叠,2026-08 加固)**——核心思路:
 ```moonbit
 pub impl[L : Hash + Eq, R : Hash] Hash for BiMap[L, R] with fn hash_combine(self, hasher) {
-  // 对每对 (l, r) 计算一个 hash 值,用可交换运算(加法)累加,最后喂给 hasher
-  let mut acc : Int = 0
-  let iter = self.iter()
-  while true {
-    match iter.next() {
-      Some((l, r)) => acc = acc + combine_pair_hash(l, r)  // combine_pair_hash 自实现
-      None => break
-    }
-  }
-  acc.hash_combine(hasher)
+  // 顺序无关 ⟹ 组合不能依赖插入序;但不要用加法/异或累加——
+  // 线性结构让 {(a,b),(c,d)} 与 {(a,d),(c,b)} 恒等碰撞。
+  // 正确做法:排序指纹序列 = 对集合的正则形(双射无重复对),再顺序折叠:
+  let fps : Array[Int] = []
+  // ... 每对 push 一个对内有序的指纹 pair_fingerprint(l, r)
+  fps.sort()
+  let mut acc = fnv_basis             // FNV-1a 64 常数,算术构造(字面量超限)
+  acc = acc.lxor(len) * fnv_prime     // 先混长度
+  for f in fps { acc = acc.lxor(f) * fnv_prime }
+  Hash::hash_combine(acc, hasher)
 }
 ```
-> **如何实现 `combine_pair_hash(l, r)`**:用一个局部 hasher 把 l、r 依次 hash 进去取结果。
-> MoonBit 的 `Hasher` 用法:实现/使用 `Hash::hash_combine(value, hasher)`。最稳妥:
-> 借助标准库提供的 hasher 累积。若 API 拿不准,**退而求其次**:
-> `acc = acc + (l.hash_value_xored_with_r)` 之类——但**必须保证同一对在任意 BiMap 里算出同一个数,
-> 且累加用加法/异或(可交换)**。**用属性测试验证:打乱插入序后 hash 不变。**
+> **为什么排序而非交换累加**:双射不含重复对,排序指纹序列是pair集合的完美正则形;
+> 碰撞归约为指纹多重集相等(需攻击者控制键 hash)。加法/异或累加是线性的,
+> 交叉互换右值即恒等碰撞。代价 O(n log n)。**用属性测试验证:打乱插入序后 hash 不变。**
 
 ### Eq(**顺序无关**,与 indexmap 不同)——`map.mbt:1131` 是顺序相关版,**bimap 改写**:
 ```moonbit

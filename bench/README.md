@@ -20,6 +20,7 @@ For each size N ∈ {10 000, 100 000}, on `Int ↔ Int` maps with distinct pairs
 | `bimap.insert+remove_all-reverse.nN` | build then drain in reverse insertion order (each `order` shift degenerates to O(1)) |
 | `bimap.insert+remove_all-headfirst.nN` | same, but draining in insertion order — the documented O(n²) worst case; run only at n = 10 000 |
 | `bimap.into_array.nN` | full traversal in insertion order |
+| `bimap.hash-full.nN` | hash the ENTIRE N-pair map (one iteration = one full-map hash; reported µs is per hash, not per pair) |
 | `map.insert.nN` / `map.get-hit.nN` / `map.insert+remove_all.nN` | same ops on the built-in `Map` baseline |
 
 Every closure iteration performs N ops and ends in `Bench::keep` so results

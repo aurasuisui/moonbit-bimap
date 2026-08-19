@@ -102,9 +102,13 @@ let r = m.insert("a", 2)     // Both((a,4),(c,2))  {a↔2}  — len 2→1!
    need to know what was displaced.
 2. **`Eq` and `Hash` are order-independent.** A `BiMap` is a *set of pairs*; two maps with
    the same pairs in different insertion order **are** equal and hash the same. This is the
-   **opposite** of the author's `indexmap`, whose `Eq`/`Hash` are order-sensitive. Because
-   `Hash` combines pair hashes commutatively, it is weaker against collision attacks — fine
-   for a collection, but be mindful if using a `BiMap` as a key in another hash container.
+   **opposite** of the author's `indexmap`, whose `Eq`/`Hash` are order-sensitive. The hash
+   is hardened (2026-08): it folds the **sorted** per-pair fingerprint sequence (the pair
+   set's canonical form), so map-level collisions reduce to equal fingerprint *multisets* —
+   engineering one now requires hash-level control over the keys (e.g. shifting `h(l)` up by
+   `t` while shifting `h(r)` down by `K·t`). Remaining boundaries: fingerprint-level
+   collisions are still possible in principle, and hashing a whole map costs O(n log n)
+   (the sort). Fine for collections; if you hash very large BiMaps hot, cache the result.
 3. **`to_inverse()` returns a copy**, not a live view. Mutating the inverse does not affect
    the original (MoonBit's ownership model favors copies over shared live views; this matches
    Rust `bimap`'s method-based access rather than Guava's live `inverse()`).
@@ -197,7 +201,7 @@ single-machine numbers, indicative of constant factors, not absolute speed).
 
 ```bash
 moon check   # type check
-moon test    # run all 232 tests
+moon test    # run all 234 tests
 moon fmt     # format
 moon build   # build
 ```

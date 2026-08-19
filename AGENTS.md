@@ -13,7 +13,7 @@ on the author's `aurasuisui/indexmap`; the Robin Hood engine is adapted, not imp
 
 ```bash
 moon check          # type check
-moon test           # run all tests (232)
+moon test           # run all tests (234)
 moon fmt            # format (CI enforces `moon fmt --check`)
 moon build          # build
 ```

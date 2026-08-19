@@ -25,6 +25,22 @@ adheres to [Semantic Versioning](https://semver.org/).
   and drain, against built-in `Map` as baseline. Headline results quoted in
   README "Performance"; reproduce with `moon run --release bench/main.mbt`.
 
+### Changed
+- **Hardened the order-independent map hash** (structural-weakness removal,
+  not a correctness fix: `Eq`/lookups untouched). The retired commutative
+  per-pair-fingerprint sum was *linear*: cross-swapped maps `{(a,b),(c,d)}`
+  vs `{(a,d),(c,b)}` collided by algebraic identity for ANY key hashes — no
+  hash control needed to exploit it. The new combiner builds the pair set's
+  canonical form — the sorted fingerprint sequence (a bijection has no
+  duplicate pairs) — and folds it with an FNV-1a-style order-sensitive mix
+  (64-bit constants, length mixed in first). Collisions now reduce to equal
+  fingerprint multisets, requiring hash-level control over the keys
+  (README Gotcha #2 states the remaining boundary). Hash values change —
+  the 0.x series is the cheap window for this; nothing persists hashes.
+  Cost: O(n log n) per map hash (the sort). Signatures/mbti unchanged
+  (impl body only). Test suite: 232 → 234 (cross-swapped Int-key pair sets
+  provably split; order independence re-verified with a non-trivial sort).
+
 ### Notes
 - **Confirmed against the crate**: Rust `bimap`'s `remove_by_left/right`
   returns the whole removed `(L, R)` pair; this library's

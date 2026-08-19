@@ -297,29 +297,28 @@ pub impl[L : @quickcheck.Arbitrary + Hash + Eq, R : @quickcheck.Arbitrary + Hash
 双射本质是"**对的集合**",顺序是偶然的。两个 BiMap 相等 ⟺ 它们含相同的 (l, r) 对集合
 (不论插入序)。实现:先比 `len`,再对 `self` 每对 `(l, r)` 检查 `other.get_by_left(l) == Some(r)`。
 
-### §7.2 `Hash` 可交换组合
-因为 Eq 顺序无关,Hash 必须与顺序无关。**对每对的 hash 求和(或异或)**:
+### §7.2 `Hash` 顺序无关正则形(sort-fold,2026-08 加固)
+因为 Eq 顺序无关,Hash 必须与顺序无关——组合方式不能依赖插入序。**实现:把"排序后的
+指纹序列"作为对集合的正则形,再做顺序敏感折叠**:
+
 ```moonbit
-pub impl[...] Hash for BiMap[L, R] with fn hash_combine(self, hasher) {
-  let mut acc = 0
-  let iter = self.iter()
-  while true {
-    match iter.next() {
-      Some((l, r)) => {
-        // 把 (l, r) 的 hash 累加进 acc(顺序无关:加法可交换)
-        acc = acc + pair_hash(l, r)
-      }
-      None => break
-    }
-  }
-  acc.hash_combine(hasher)
+pub impl[L : Hash + Eq, R : Hash] Hash for BiMap[L, R] with fn hash_combine(self, hasher) {
+  // 1. 每对指纹(对内有序): pair_fingerprint(l, r) = Hash::hash(l) * K + Hash::hash(r)
+  // 2. 排序指纹:双射不含重复对 ⟹ 排序序列是这对集合的完美正则形
+  // 3. FNV-1a 风格折叠(先混入 len): acc = lxor(acc, f) * PRIME
+  ...
 }
 ```
-(`pair_hash(l, r)` 用标准方式组合 l、r 的 hash;具体用 MoonBit `Hasher` API,见
-`MOONBIT_REF.md §4`。**关键是累加用可交换运算**,这样打乱插入序 hash 不变,与 Eq 一致。)
+
+**为什么不用可交换的加法/异或累加**:加法是线性结构,其下 `{(a,b),(c,d)}` 与
+`{(a,d),(c,b)}` 对**任意**键 hash 恒等碰撞(攻击者无需任何 hash 控制)。排序+顺序折叠
+破坏线性,把碰撞归约为"指纹多重集相等"——需要攻击者具备键 hash 层面的控制能力
+(见 README Gotcha #2)。代价 O(n log n)(排序;FNV 常数为 64 位系,跨后端 hash 值
+可不一致)。**属性测试兜底:打乱插入序后 hash 不变。**
 
 > **Gotchas 必须写明**:① BiMap 的 `Eq`/`Hash` 顺序**无关**,与 indexmap 相反;
-> ② 可交换 hash 抗碰撞攻击较弱(集合库可接受),若拿 BiMap 当别的哈希容器的键需注意。
+> ② 加固后碰撞归约为指纹多重集相等;指纹级碰撞(h(l)+t、h(r)−K·t)仍需攻击者控制
+> key 的 hash——见 README Gotcha #2。
 
 ### §7.3 `ToJson` 键不要 mangle
 键用 `l.to_string()`(`L : Show`),**不要**用 `@debug.to_string(l.to_json())`
