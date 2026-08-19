@@ -117,7 +117,7 @@ fn main {
 
     // Head-first drain: each removal shifts the whole order array — O(n^2)
     // total. Measured only at the small size (documented worst case of
-    // order-preserving removal; see README "Known Issues").
+    // order-preserving removal; see README "Gotchas" #9 and "Performance").
     if n <= 10_000 {
       println("# [bench] bimap.insert+remove_all-headfirst.n\{n}")
       b.bench(name="bimap.insert+remove_all-headfirst.n\{n}", count=5, fn() {

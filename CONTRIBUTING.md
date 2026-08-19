@@ -123,6 +123,9 @@ The return `(old_right?, old_left?)` from `put_pair` maps to the `Overwritten` e
 `remove_by_left(l)` looks up `r = forward[l]`, removes `l` from `forward` and `r` from
 `backward`, and shrinks `order`/`positions`, bumping `version`. `remove_by_right` is
 symmetric. Missing one side breaks the bijection — the property tests catch this.
+The `order` shrink is an O(n) shift, so a single removal is O(len) worst case and a
+head-first bulk drain is O(n²) overall — drain in reverse insertion order or rebuild
+(README Gotcha #9 / Performance).
 
 ### Eq/Hash are order-independent (unlike indexmap)
 
