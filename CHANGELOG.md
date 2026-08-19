@@ -62,6 +62,16 @@ adheres to [Semantic Versioning](https://semver.org/).
   gate" future-work item remains open (needs stable CI timing
   infrastructure); the local-benchmark half is now done (`bench/`).
 
+### Process
+- **发布前检查:RELEASE_CHECKLIST 全绿 @ b8bc775**(2026-08-20,0.1.2 发布)。
+  版本号四处一致(moon.mod / `lib.mbt::VERSION` / README 安装说明 / CHANGELOG 标题,
+  另同步 CLAUDE.md / AGENTS.md / MOONBIT_REF 镜像);零依赖声明成立;接口快照已提交
+  (mbti diff 仅 VERSION 行);跨后端手动矩阵 wasm-gc 与 native 均 234/234;SPDX 头与
+  三处署名留存;五步 CI 于 main 全绿(含 mbti 门禁)。Rust 构建产物门禁(0.1.2 起新增项)
+  已执行:发布前 `cargo clean` 清空 `tools/diffgen/target/`,发布后 zip 清单抽查确认。
+  注:0.10.8 工具链 `moon publish` 无 `--dry-run`,同 0.1.1 以直接发布 + `cmd/*` 对
+  已发布包的解析验证替代。
+
 ## [0.1.1] - 2026-08-18
 
 ### Added (test suite — no public API or behavior change)
