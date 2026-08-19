@@ -1,0 +1,6 @@
+import {
+  "aurasuisui/bimap",
+  "moonbitlang/core/bench",
+}
+
+pkgtype(kind: "executable")
