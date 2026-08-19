@@ -4,6 +4,33 @@ All notable changes to `moonbit-bimap` are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/), and this project
 adheres to [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Added
+- **Differential tests against the real Rust `bimap` crate v0.6.3** — the
+  porting source itself is now the oracle (RELEASE_CHECKLIST Tier 1; closes
+  the last "真实未达标" entry in its gap registry). `tools/diffgen` (Rust,
+  dev-only, workspace-excluded) runs the reference crate over the two shared
+  streams — the golden C0–C4 sequence and `model_test.mbt`'s 6000-step LCG —
+  and generates `src/differential_fixture_test.mbt`; `src/differential_test.mbt`
+  replays the same streams through the real `BiMap` and compares every step's
+  `Overwritten` / `Option` / `Result` observation and length, plus the final
+  pair set. `moon test` needs no Rust toolchain (the fixture is checked in;
+  regeneration instructions in `tools/diffgen/README.md`). Test suite:
+  229 → 232.
+
+### Notes
+- **Confirmed against the crate**: Rust `bimap`'s `remove_by_left/right`
+  returns the whole removed `(L, R)` pair; this library's
+  `remove_by_left(l) -> R?` / `remove_by_right(r) -> L?` (SPEC §5) is
+  informationally equivalent — the differential fixture encodes the observable
+  side, and all 6000 steps agree.
+- Only the **ported** semantics are diffed; insertion-order preservation and
+  index access are original extensions with no Rust counterpart and stay
+  covered by `model_test.mbt`'s oracle.
+- The golden sequence produced by the real crate matches SPEC §0's recorded
+  Rust behavior exactly (independently re-verified against v0.6.3).
+
 ## [0.1.1] - 2026-08-18
 
 ### Added (test suite — no public API or behavior change)

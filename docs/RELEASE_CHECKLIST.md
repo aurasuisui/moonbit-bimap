@@ -26,7 +26,7 @@
 | 项 | 现状 | 出处 |
 |---|---|---|
 | 模型 / 状态化属性测试 ⭐:同操作流 vs 朴素 `Array` oracle,逐步比对 | ✅ | `model_test.mbt`(差分,精确内容+顺序,5 测试含 6000 LCG + QuickCheck) |
-| 差分测试:对同一操作流与可信参考实现比对 | ⚠️ **本库唯一未真达标项** | vs 朴素 oracle 已做;**对 Rust 原版 `bimap` crate 的真实差分未做**——登记为 v0.1.x 增强(见下"缺口登记") |
+| 差分测试:对同一操作流与可信参考实现比对 | ✅ | `model_test.mbt`(朴素 oracle)+ `differential_test.mbt` **对 Rust 原版 `bimap` crate v0.6.3 的真实差分**(夹具由 `tools/diffgen` 生成并入库:黄金 C0–C4 + 6000 步 LCG,逐步比对 Overwritten/len + 终态对集;2026-08-19 闭环) |
 | 随机不变量:随机操作序列下双射恒成立 | ✅ | `property_test.mbt`(7)、`bench_test.mbt`(C4 洪流) |
 | QuickCheck `Arbitrary`:生成的双射恒满足不变量 / 顺序无关 Eq/Hash / `to_inverse` 对合 | ✅ | `arbitrary_test.mbt`(6) |
 | 模糊测试 fuzzing:字节流/操作流 fuzz 变更路径 | ⚠️ | 受限:MoonBit 暂无标准 fuzz 框架;`model_test.mbt` 的 6000-op LCG + QuickCheck 是"受限 fuzz"替身——见 `bimap_test.mbt` 与 `model_test.mbt` 顶部注释。真实字节流 fuzz 列为未来工作 |
@@ -97,7 +97,7 @@
 
 | 项 | 性质 | 处置 |
 |---|---|---|
-| **对 Rust 原版 `bimap` crate 的真实差分测试** | 真实缺口,非工具所限 | Tier 1 ⭐ 改进:**写一个 Rust 脚本跑同一操作流产出 `(l,r)` 序列与 `Overwritten` 返回值,bimap 逐项比对**。会话内未做(需 Rust 工具链 + 对照源)。建议在 `bench_test.mbt` 旁加 `differential_test.mbt`,序列与 `model_test.mbt` 共用。记入 `CHANGELOG.md` 未来工作 |
+| ~~**对 Rust 原版 `bimap` crate 的真实差分测试**~~ | ✅ **已闭环(2026-08-19)** | `tools/diffgen`(Rust,钉死 `bimap = "=0.6.3"`)生成夹具 `src/differential_fixture_test.mbt`,`src/differential_test.mbt` 逐步比对;`moon test` 无需 Rust 工具链,仅重生成夹具时需要。见 CHANGELOG [Unreleased] |
 | **真实字节流 fuzzing**(非受限替身) | 工具所限 | 等 MoonBit 官方 fuzz 框架;`model_test.mbt` 的 6000-op LCG + QuickCheck 暂代 |
 | **性能计时基准 + 回归门禁** | 工具所限 | 需 CI 外部计时环境(bench 工具、稳定机器);`bench_test.mbt` 目前只验正确性 |
 | **变异测试** | 工具所限 | MoonBit 暂无标准 mutator 工具 |
