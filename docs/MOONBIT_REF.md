@@ -12,7 +12,7 @@
 ```toml
 name = "aurasuisui/bimap"
 
-version = "0.1.1"
+version = "0.1.2"
 
 readme = "README.md"
 
@@ -503,4 +503,4 @@ indexmap 在 `moon check` 下有 14 个 `[0083]` 警告(对多 trait 约束的�
 如 `key.hash()`),**选择不修**,因为 CI 不带 `--deny-warn`。bimap 起初沿用同样策略,
 **2026-08 的 zero-warnings 任务后改为全部清零**:`moon check` / `moon test` 均 0 警告,
 本地按 `--deny-warn` 验收(CI 仍不带,因其跟踪 `version: latest`,见 CHANGELOG
-[Unreleased])。若想干净,把 `x.hash()` 改成 `Hash::hash_combine(x, hasher)` 形式。
+[0.1.1])。若想干净,把 `x.hash()` 改成 `Hash::hash_combine(x, hasher)` 形式。

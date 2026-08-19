@@ -101,9 +101,9 @@
 
 | 项 | 性质 | 处置 |
 |---|---|---|
-| ~~**对 Rust 原版 `bimap` crate 的真实差分测试**~~ | ✅ **已闭环(2026-08-19)** | `tools/diffgen`(Rust,钉死 `bimap = "=0.6.3"`)生成夹具 `src/differential_fixture_test.mbt`,`src/differential_test.mbt` 逐步比对;`moon test` 无需 Rust 工具链,仅重生成夹具时需要。见 CHANGELOG [Unreleased] |
+| ~~**对 Rust 原版 `bimap` crate 的真实差分测试**~~ | ✅ **已闭环(2026-08-19)** | `tools/diffgen`(Rust,钉死 `bimap = "=0.6.3"`)生成夹具 `src/differential_fixture_test.mbt`,`src/differential_test.mbt` 逐步比对;`moon test` 无需 Rust 工具链,仅重生成夹具时需要。见 CHANGELOG [0.1.2] |
 | **真实字节流 fuzzing**(非受限替身) | 工具所限 | 等 MoonBit 官方 fuzz 框架;`model_test.mbt` 的 6000-op LCG + QuickCheck 暂代 |
-| **性能计时基准 + 回归门禁** | 工具所限 | 需 CI 外部计时环境(bench 工具、稳定机器);`bench_test.mbt` 目前只验正确性 |
+| **性能回归门禁**(本地基准已有,CI 门禁未做) | ⚠️ 本地 ✅ / CI ❌ | 本地计时基准已就位:`bench/`(官方 `@bench` 框架,`moon run --release bench/main.mbt`);仍缺 CI 上的回归即 fail 门禁(需稳定计时设施)。见 CHANGELOG [0.1.2] |
 | **变异测试** | 工具所限 | MoonBit 暂无标准 mutator 工具 |
 | **跨后端 CI 自动矩阵** | 主动选择手动 | 见上"手动约定"——不在 CI 自动化,发版前人工跑 |
 

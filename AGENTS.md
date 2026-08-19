@@ -40,7 +40,7 @@ regenerated `pkg.generated.mbti`, or CI fails.
 ### `cmd/` examples are excluded from the workspace
 
 `moon.work` has `members = ["."]` only — the `cmd/*` example packages are intentionally **not**
-workspace members (they import the *published* `aurasuisui/bimap@0.1.1`, matching indexmap's
+workspace members (they import the *published* `aurasuisui/bimap@0.1.2`, matching indexmap's
 layout). Root `moon check`/`moon test` never touches them. To exercise one, it must resolve the
 published package: `moon run cmd/username_email`. Don't add `cmd/*` to `moon.work` members.
 The `bench/` timing-benchmark module follows the same layout (imports the *published* package,

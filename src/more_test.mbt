@@ -260,7 +260,7 @@ test "into_array length equals len after many ops" {
 
 ///|
 test "VERSION constant is exposed" {
-  @test.assert_eq(@aurasuisui/bimap.VERSION, "0.1.1")
+  @test.assert_eq(@aurasuisui/bimap.VERSION, "0.1.2")
 }
 
 ///|

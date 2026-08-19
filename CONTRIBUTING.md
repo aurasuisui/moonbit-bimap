@@ -224,6 +224,11 @@ test "descriptive english name" {
   replaced, trait bounds minimized to the per-side minimum (`moon check/test --deny-warn`
   clean). See CHANGELOG `[0.1.1]` for details.
 
+### v0.1.2 — Verification
+- Differential tests against the real Rust `bimap` crate v0.6.3 (Tier 1 closed),
+  native timing benchmarks (`bench/`, official `@bench`), hardened order-independent
+  hash (sorted-fingerprint canonical form). See CHANGELOG `[0.1.2]` for details.
+
 ### v0.2.0 — Planned (not in scope for the hackathon)
 - `BiBTreeMap` (sorted variant), `retain`, set-view adapters, richer entry-style helpers.
 
