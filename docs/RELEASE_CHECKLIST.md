@@ -75,6 +75,10 @@
 - [x] **`cmd/*` 示例对已发布版本可跑**:`moon run cmd/username_email` 与 `moon run cmd/country_code`
       手动跑通(它们 import 的是**已发布**的 `aurasuisui/bimap@<x.y.z>`,故须先 publish 再验,或本地
       软链核对)。**勿把 `cmd/*` 加进 `moon.work` 的 members**(见 CLAUDE.md "cmd/ examples" 节)。
+- [ ] **Rust 构建产物不进包**(0.1.2 起适用,因 `tools/` 入库):`moon publish` 按目录打包,
+      `tools/diffgen/target/` 虽已 gitignore,但**不保证**被发布打包排除(`moon.mod` 无 files
+      白名单)。发布前在 `tools/diffgen/` 跑 `cargo clean`,或发布后检查 zip 清单确认无
+      `target/`(沿用 0.1.1 的发布后包内容抽查)。
 - [x] **SPDX 头与署名留存**:源文件 Apache-2.0 SPDX 头在;README/CONTRIBUTING/CLAUDE 的"Acknowledgements"
       段保留三处署名——Robin Hood 引擎源自 `aurasuisui/indexmap`(Apache-2.0)、BiMap 语义源自 Rust
       `bimap`(MIT/Apache-2.0)、概念参考 Guava `BiMap`(Apache-2.0)。改这些文件时勿删署名。
