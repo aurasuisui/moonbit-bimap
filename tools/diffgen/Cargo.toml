@@ -1,0 +1,13 @@
+[package]
+name = "diffgen"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+# Differential-test fixture generator for moonbit-bimap.
+# Runs the reference `bimap` crate over the shared op streams and emits the
+# MoonBit fixture consumed by src/differential_test.mbt. See README.md here.
+# Pinned to the exact version documented as the porting source (SPEC.md §0).
+
+[dependencies]
+bimap = "=0.6.3"

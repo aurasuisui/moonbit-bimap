@@ -17,3 +17,5 @@ Desktop.ini
 # Dependencies
 moon-cache/
 .mooncakes/
+# Rust build artifacts (tools/diffgen)
+tools/diffgen/target/
