@@ -80,10 +80,13 @@ Expanded the test suite from 203 to 229 tests, closing the high-value gaps in
 - **Performance benchmark + CI regression gate** — `bench_test.mbt` is a
   correctness stress suite, not a timing benchmark; a real perf gate needs
   external timing tooling in CI.
-- **Cross-backend CI matrix** — CI currently runs one backend; the library is
-  pure MoonBit with no backend-specific code, so `wasm-gc`/`wasm32`/`js`/
-  `native` are expected to pass but are not yet gated. Recommend extending
-  `ci.yml` with a `moon test --target <…>` matrix.
+- **Cross-backend testing** — deliberately kept as a **manual pre-release
+  convention, not a CI matrix** (decision recorded in `docs/RELEASE_CHECKLIST.md`
+  "手动约定", the SSOT for this policy): the library is pure MoonBit with no
+  backend-specific code, and automating every backend would lengthen CI for
+  little gain. For 0.1.1, `wasm-gc` and `native` were run manually (229/229
+  each); future releases follow the same convention. An earlier draft of this
+  entry recommended a CI matrix; the manual convention supersedes it.
 - **Mutation testing** — no standard MoonBit mutation tool yet; deferred.
 - **Differential testing vs Rust `bimap`** — `model_test.mbt` only diffs against a naive
   `Array` oracle, not the Rust origin crate. A real cross-implementation diff (shared op
