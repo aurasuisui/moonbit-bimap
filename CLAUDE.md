@@ -43,6 +43,8 @@ regenerated `pkg.generated.mbti`, or CI fails.
 workspace members (they import the *published* `aurasuisui/bimap@0.1.1`, matching indexmap's
 layout). Root `moon check`/`moon test` never touches them. To exercise one, it must resolve the
 published package: `moon run cmd/username_email`. Don't add `cmd/*` to `moon.work` members.
+The `bench/` timing-benchmark module follows the same layout (imports the *published* package,
+workspace-excluded): `moon run --release bench/main.mbt` — see `bench/README.md`.
 
 ## Architecture
 

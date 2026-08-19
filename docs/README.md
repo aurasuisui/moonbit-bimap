@@ -32,6 +32,7 @@
 | [`MOONBIT_REF.md`](MOONBIT_REF.md) | MoonBit 语法/惯用法速查(来自 indexmap,非 bimap 专属) | 写 MoonBit 卡壳 |
 | [`SESSION_PLAYBOOK.md`](SESSION_PLAYBOOK.md) | **任务会话手册**:讨论方案→执行→卡住决策→看门狗→知识回写 | 开新任务会话 |
 | [`../tools/diffgen/README.md`](../tools/diffgen/README.md) | 差分夹具生成器(参考实现:Rust `bimap` v0.6.3;开发工具,非包内容) | 重新生成差分夹具时 |
+| [`../bench/README.md`](../bench/README.md) | 计时基准(官方 `@bench` 框架,native+release,基准对象为已发布包) | 跑/解读性能基准时 |
 | `README.md`(本文件) | 文档枢纽/全量地图 | 不知道读哪份 |
 
 ### 一次性 / 归档(只读,不再维护)

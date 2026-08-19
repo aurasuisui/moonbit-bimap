@@ -18,6 +18,12 @@ adheres to [Semantic Versioning](https://semver.org/).
   pair set. `moon test` needs no Rust toolchain (the fixture is checked in;
   regeneration instructions in `tools/diffgen/README.md`). Test suite:
   229 → 232.
+- **Timing benchmarks** (`bench/`, official `@bench` framework; native
+  backend, `--release`; imports the published package like `cmd/`, excluded
+  from the workspace): per-op numbers at n = 10 000 / 100 000 for insert,
+  forward/reverse lookup, conflict-checked `insert_no_overwrite`, traversal,
+  and drain, against built-in `Map` as baseline. Headline results quoted in
+  README "Performance"; reproduce with `moon run --release bench/main.mbt`.
 
 ### Notes
 - **Confirmed against the crate**: Rust `bimap`'s `remove_by_left/right`
@@ -30,6 +36,15 @@ adheres to [Semantic Versioning](https://semver.org/).
   covered by `model_test.mbt`'s oracle.
 - The golden sequence produced by the real crate matches SPEC §0's recorded
   Rust behavior exactly (independently re-verified against v0.6.3).
+- **Removal complexity documented (bench-confirmed).** `order_remove` is an
+  O(len) shift, so draining n pairs head-first (in insertion order) is O(n²)
+  overall — measured ≈ 133 µs/op at n = 10 000, ≈ 90× the tail-first drain.
+  Added as README Gotcha #9 + "Performance" section, SPEC §5 note, and a
+  capped headfirst bench; bulk clear-outs should drain in reverse insertion
+  order or rebuild. Not a behavior change — a documented complexity.
+- The CI-regression-gate half of the v0.1.1 "performance benchmark + CI
+  gate" future-work item remains open (needs stable CI timing
+  infrastructure); the local-benchmark half is now done (`bench/`).
 
 ## [0.1.1] - 2026-08-18
 

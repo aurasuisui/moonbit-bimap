@@ -224,6 +224,8 @@ pub fn remove_by_right(self, r : R) -> L?    // 删除并返回左键;同步清 
 
 > **删除双侧清理是 BiMap 第二易错点**:删任一侧,另一侧 + order + positions 必须同步,
 > 并 bump `version`。只走 `remove_pair_by_left`/`remove_pair_by_right`。
+> **复杂度**:查找 O(1) 平均;删除另需 O(len) 最坏(`order` 移位保序)。按插入序从头批量
+> 删除 n 对总计 O(n²)——批量清理请逆序删或重建(README Gotcha #9、Performance 段)。
 
 ---
 

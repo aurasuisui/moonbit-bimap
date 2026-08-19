@@ -119,6 +119,11 @@ let r = m.insert("a", 2)     // Both((a,4),(c,2))  {a↔2}  — len 2→1!
 8. **`BiMap` is not thread-safe.** It is mutable and its iterators are fail-fast; concurrent
    reads/writes from multiple threads are undefined behavior. Use one `BiMap` per thread, or
    guard shared access with external synchronization.
+9. **Removal shifts the insertion order — O(n) worst case.** `remove_by_left` /
+   `remove_by_right` keep the order array dense by shifting later entries, so a single removal
+   costs O(len) in the worst case, and removing n pairs in insertion (head-first) order is
+   O(n²) overall (bench-measured, see Performance). For bulk clear-outs, drain in reverse
+   insertion order (each shift degenerates to O(1)) or rebuild (`from_array` / `copy`).
 
 ## API Overview
 
@@ -155,6 +160,38 @@ Runnable example packages live in [`cmd/`](cmd/):
 > **Note:** the `cmd/*` example packages are standalone modules **excluded from the root
 > workspace** (they import the *published* `aurasuisui/bimap`). To run one, make the package
 > resolvable (e.g. after `moon publish`) and run `moon run cmd/<name>`.
+
+## Performance
+
+Measured with [`bench/`](bench/README.md) (official `@bench` framework,
+native backend, `--release`, benchmarking the published package) on an
+AMD Ryzen 7 7840H, Windows 11, moonc v0.10.8 (2026-08-19). Median of 5
+samples, `Int ↔ Int` maps at n = 100 000, per-operation cost:
+
+| operation | BiMap | built-in `Map` |
+|---|---|---|
+| `insert` (fresh pair) | ≈ 2 980 ns | ≈ 410 ns |
+| `get_by_left` (hit) | ≈ 260 ns | ≈ 130 ns (`get`) |
+| `get_by_right` (hit) | ≈ 330 ns | — |
+| `insert_no_overwrite` (conflict) | ≈ 300 ns | — |
+| `remove_by_left` (tail-first drain)¹ | ≈ 1 510 ns | ≈ 396 ns² |
+| `into_array` (full traversal) | ≈ 495 ns/pair | — |
+
+¹ Derived: `insert+remove_all-reverse` (≈ 4 490 ns/op) minus
+`insert-fresh`; draining in tail order makes each `order` shift O(1).
+² Built-in `Map` figure is insert+remove combined, not directly split.
+
+Read the numbers as the constant-factor price of bidirectionality +
+insertion order + index access: lookups run ≈2× the built-in map, inserts
+≈7× (every write touches two hash tables, the `order` array, and the
+`positions` map). Reverse lookup stays within 25% of forward lookup.
+**Worst case — bulk removal in insertion order:** `order_remove` is an O(n)
+shift, so draining n pairs head-first is O(n²) overall (measured ≈ 133 µs/op
+at n = 10 000, ≈ 90× the tail-first drain). Drain in reverse insertion
+order, or rebuild — see Gotcha #9.
+
+Reproduce with `moon run --release bench/main.mbt` (see `bench/README.md`;
+single-machine numbers, indicative of constant factors, not absolute speed).
 
 ## Development
 

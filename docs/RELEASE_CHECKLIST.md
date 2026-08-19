@@ -44,7 +44,7 @@
 
 | 项 | 现状 | 出处 / 约定 |
 |---|---|---|
-| 性能基准 + 回归门禁(CI 上回归即 fail) | ❌ 工具所限 | `bench_test.mbt` 是正确性压力,非计时基准。真正的性能门禁需外部计时工具,记入 CHANGELOG 未来工作 |
+| 性能基准 + 回归门禁(CI 上回归即 fail) | ⚠️ 本地基准 ✅ / CI 门禁 ❌ | `bench/` 模块:官方 `@bench` 框架、native + release、基准对象为已发布包,含内置 `Map` 基线(见 `bench/README.md`);CI 回归门禁仍未做(记入 CHANGELOG 未来工作) |
 | **跨后端 / 跨配置矩阵**(wasm-gc / wasm / native × debug/release) | ⚠️ **文档约定,不进 CI** | 库为纯 MoonBit 无后端相关代码。**约定:发版前手动至少在 native + wasm-gc 两个后端跑一遍 `moon test --target <t>` 确认通过**;不自动化进 `ci.yml`(见下"手动约定")。当前 CI 单后端(ubuntu + `latest`) |
 | 并发语义:断言/声明线程安全性 | ✅ 声明 | README Gotcha #8:**非线程安全**。`BiMap` 可变 + 迭代器 fail-fast;并发读写未定义;一线程一个 `BiMap` 或外部同步 |
 | 内存:验证容量/缩容策略 | ✅ | `generics_test.mbt`(fill→drain→refill 容量不膨胀)、`bimap_wbtest.mbt`(扩容到 3/4 负载穿越、25% 墓碑再散列) |
