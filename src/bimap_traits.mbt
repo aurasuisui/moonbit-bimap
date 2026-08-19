@@ -42,24 +42,51 @@ pub impl[L : Hash + Eq, R : Eq] Eq for BiMap[L, R] with fn equal(self, other) {
 }
 
 ///|
-/// Order-independent hash: the per-pair fingerprints are combined with addition
-/// (a commutative operation), so shuffling the insertion order does not change
-/// the hash — consistent with the order-independent `Eq`.
+/// Order-independent hash. Because `Eq` is order-independent (a BiMap is a
+/// SET of pairs), `Hash` must be too: the combination must not depend on
+/// insertion order. This implementation builds the canonical form of the pair
+/// set — the SORTED sequence of per-pair fingerprints — and folds it with an
+/// order-sensitive FNV-1a-style mix:
 ///
-/// Note: a commutative combination is weaker against deliberate hash-collision
-/// attacks than an order-sensitive one. That is acceptable for a set-like
-/// container; take care if you use a BiMap as a key in another hash container.
+/// 1. `pair_fingerprint(l, r)` (order-sensitive WITHIN a pair, so `(l, r)`
+///    differs from `(r, l)`);
+/// 2. sort the fingerprints — a bijection never contains duplicate pairs, so
+///    the sorted sequence is a perfect canonical form of the pair set;
+/// 3. fold `acc = lxor(acc, f) * FNV_PRIME` (FNV-1a style), mixing the length
+///    in first.
+///
+/// The sort destroys the linear structure of the commutative sum this
+/// replaces, under which cross-swapped maps like `{(a,b),(c,d)}` and
+/// `{(a,d),(c,b)}` collided by algebraic identity for ANY key hashes. Now a
+/// collision requires the fingerprint MULTISETS to match, which in turn
+/// needs hash-level control over the keys (see README Gotcha #2).
+///
+/// Cost: O(n log n) per hash (the sort). The 64-bit FNV constants assume the
+/// 64-bit `Int` of the current backends; overflow wraps (defined behavior),
+/// and hash values are not required to agree across backends.
 pub impl[L : Hash + Eq, R : Hash] Hash for BiMap[L, R] with fn hash_combine(
   self,
   hasher,
 ) {
   let arr = self.into_array()
-  let mut acc : Int = 0
+  let fps : Array[Int] = []
   let mut i = 0
   while i < arr.length() {
     let (l, r) = arr[i]
-    acc = acc + pair_fingerprint(l, r)
+    fps.push(pair_fingerprint(l, r))
     i = i + 1
+  }
+  fps.sort()
+  // FNV-1a 64 constants, assembled arithmetically (MoonBit integer literals
+  // are range-limited): basis 0xcbf29ce484222325, prime 0x100000001b3.
+  let fnv_basis = (0xcbf2_9ce4 << 32) + 0x8422_2325
+  let fnv_prime = (1 << 40) + (1 << 8) + 0xb3
+  let mut acc = fnv_basis
+  acc = acc.lxor(self.len()) * fnv_prime // mix the length in first
+  let mut j = 0
+  while j < fps.length() {
+    acc = acc.lxor(fps[j]) * fnv_prime
+    j = j + 1
   }
   Hash::hash_combine(acc, hasher)
 }

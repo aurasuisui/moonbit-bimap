@@ -76,6 +76,38 @@ test "Hash: empty maps hash equally" {
   @test.assert_eq(Hash::hash(m1), Hash::hash(m2))
 }
 
+///|
+test "Hash: cross-swapped pair sets do not collide (hardened combiner)" {
+  // Under the retired commutative-sum combiner, {(a,b),(c,d)} and {(a,d),(c,b)}
+  // collided by ALGEBRAIC IDENTITY for any key hashes — no hash control needed.
+  // With Int keys (Hash injective on these values) the hardened sort-and-fold
+  // provably splits them: the sorted fingerprint multisets
+  //   { K*h(1)+h(2), K*h(3)+h(4) }  vs  { K*h(1)+h(4), K*h(3)+h(2) }
+  // cannot be equal (either matching forces h(1)==h(3) or h(2)==h(4)).
+  let m1 = @aurasuisui/bimap.BiMap::from_array([(1, 2), (3, 4)])
+  let m2 = @aurasuisui/bimap.BiMap::from_array([(1, 4), (3, 2)])
+  // sanity: genuinely different maps
+  @test.assert_eq(m1.get_by_left(1), Some(2))
+  @test.assert_eq(m2.get_by_left(1), Some(4))
+  if Hash::hash(m1) == Hash::hash(m2) {
+    @test.fail(
+      "cross-swapped pair sets must not collide under the hardened hash",
+    )
+  }
+}
+
+///|
+test "Hash: hardened combiner stays order-independent" {
+  // The sort canonicalizes: shuffling insertion order still hashes equally,
+  // now exercised with enough pairs to make the sort non-trivial.
+  let pairs = [(1, 10), (2, 20), (3, 30), (4, 40), (5, 50)]
+  let shuffled = [(4, 40), (1, 10), (5, 50), (2, 20), (3, 30)]
+  let m1 = @aurasuisui/bimap.BiMap::from_array(pairs)
+  let m2 = @aurasuisui/bimap.BiMap::from_array(shuffled)
+  @test.assert_eq(m1, m2)
+  @test.assert_eq(Hash::hash(m1), Hash::hash(m2))
+}
+
 // ---------------------------------------------------------------------------
 // Show
 // ---------------------------------------------------------------------------
