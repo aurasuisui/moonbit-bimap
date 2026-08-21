@@ -17,9 +17,21 @@ const MIN_CAPACITY : Int = 16
 const NO_DISTANCE : Int = -1
 
 ///|
-/// Sentinel hash value marking a tombstone (deleted) entry. Chosen so it
-/// cannot collide with a real hash that we keep non-negative in practice.
+/// Sentinel hash value marking a tombstone (deleted) entry.
 const TOMBSTONE_HASH : Int = -1
+
+///|
+/// Normalize a key hash so it can never equal the tombstone sentinel: a live
+/// entry whose hash equals TOMBSTONE_HASH would be invisible to probes
+/// (indistinguishable from a deleted slot). Hash::hash can return any Int —
+/// -1 included — so every stored/compared hash goes through this.
+fn normalize_hash(hash : Int) -> Int {
+  if hash == TOMBSTONE_HASH {
+    0
+  } else {
+    hash
+  }
+}
 
 ///|
 /// Load factor numerator (3/4 = 0.75).
@@ -102,6 +114,14 @@ fn[K : Eq, V] HashTab::probe_find(
 ///|
 /// Find a bucket using Robin Hood hashing, reusing the first tombstone seen.
 /// Returns (insert_or_found_index, found).
+///
+/// NOTE: this scan deliberately has NO Robin Hood early cutoff. With
+/// tombstones present, an entry whose home lies inside an older cluster can
+/// carry a recorded distance smaller than the searcher's probe distance; an
+/// `entry.distance < dist` cutoff would then stop before reaching an existing
+/// key further on, and the subsequent insert would create a DUPLICATE entry —
+/// silently breaking lookups (and BiMap's bijection). Scanning to the first
+/// empty slot keeps insertion correct at a small probe-cost.
 fn[K : Eq, V] HashTab::robin_hood_find(
   self : HashTab[K, V],
   key : K,
@@ -109,7 +129,6 @@ fn[K : Eq, V] HashTab::robin_hood_find(
 ) -> (Int, Bool) {
   let start = hash & self.mask
   let mut i = start
-  let mut dist = 0
   let mut first_tombstone : Int = -1
 
   while true {
@@ -118,7 +137,7 @@ fn[K : Eq, V] HashTab::robin_hood_find(
         let insert_at = if first_tombstone >= 0 { first_tombstone } else { i }
         return (insert_at, false)
       }
-      Some(entry) => {
+      Some(entry) =>
         if entry.hash == TOMBSTONE_HASH {
           if first_tombstone < 0 {
             first_tombstone = i
@@ -126,14 +145,8 @@ fn[K : Eq, V] HashTab::robin_hood_find(
         } else if entry.hash == hash && entry.key == key {
           return (i, true)
         }
-        if entry.distance >= 0 && entry.distance < dist {
-          let insert_at = if first_tombstone >= 0 { first_tombstone } else { i }
-          return (insert_at, false)
-        }
-      }
     }
     i = (i + 1) & self.mask
-    dist = dist + 1
     if i == start {
       return (i, false)
     }
@@ -299,7 +312,7 @@ fn[K : Hash + Eq, V] HashTab::insert(
   key : K,
   value : V,
 ) -> V? {
-  let hash = Hash::hash(key)
+  let hash = normalize_hash(Hash::hash(key))
   if should_resize_impl(self.len + self.tombstone_count, self.buckets.length()) {
     self.rehash(self.buckets.length() * 2)
   }
@@ -330,7 +343,7 @@ fn[K : Hash + Eq, V] HashTab::insert(
 ///|
 /// Get the value associated with `key`.
 fn[K : Hash + Eq, V] HashTab::get(self : HashTab[K, V], key : K) -> V? {
-  let hash = Hash::hash(key)
+  let hash = normalize_hash(Hash::hash(key))
   let (idx, found) = self.probe_find(key, hash)
   if found {
     match self.buckets[idx] {
@@ -346,7 +359,7 @@ fn[K : Hash + Eq, V] HashTab::get(self : HashTab[K, V], key : K) -> V? {
 /// Remove `key`, returning its value if present. Leaves a tombstone; triggers
 /// an in-place rehash once tombstones exceed 25% of the buckets.
 fn[K : Hash + Eq, V] HashTab::remove(self : HashTab[K, V], key : K) -> V? {
-  let hash = Hash::hash(key)
+  let hash = normalize_hash(Hash::hash(key))
   let (idx, found) = self.probe_find(key, hash)
   if !found {
     return None
@@ -375,7 +388,7 @@ fn[K : Hash + Eq, V] HashTab::remove(self : HashTab[K, V], key : K) -> V? {
 ///|
 /// Return `true` if `key` is present.
 fn[K : Hash + Eq, V] HashTab::contains(self : HashTab[K, V], key : K) -> Bool {
-  let (_, found) = self.probe_find(key, Hash::hash(key))
+  let (_, found) = self.probe_find(key, normalize_hash(Hash::hash(key)))
   found
 }
 

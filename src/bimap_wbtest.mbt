@@ -92,6 +92,58 @@ fn[L : Hash + Eq + Debug, R : Hash + Eq + Debug] check_whitebox(
   @test.assert_eq(b_tomb, m.backward.tombstone_count)
 }
 
+///|
+/// Assert no key appears in more than one LIVE bucket of either table.
+/// Duplicate live entries mean the insert search missed an existing key —
+/// the tombstone-cluster probe bug this guards against made lookups return
+/// stale values and silently broke the bijection. O(cap²) scan, test-only.
+fn[L : Eq, R : Eq] check_no_duplicate_keys(m : BiMap[L, R]) -> Unit raise {
+  let fcap = m.forward.buckets.length()
+  let mut x = 0
+  while x < fcap {
+    match m.forward.buckets[x] {
+      Some(e1) =>
+        if e1.hash != TOMBSTONE_HASH {
+          let mut y = x + 1
+          while y < fcap {
+            match m.forward.buckets[y] {
+              Some(e2) =>
+                if e2.hash != TOMBSTONE_HASH && e2.key == e1.key {
+                  @test.fail("duplicate live key in forward buckets")
+                }
+              None => ()
+            }
+            y = y + 1
+          }
+        }
+      None => ()
+    }
+    x = x + 1
+  }
+  let bcap = m.backward.buckets.length()
+  let mut u = 0
+  while u < bcap {
+    match m.backward.buckets[u] {
+      Some(e1) =>
+        if e1.hash != TOMBSTONE_HASH {
+          let mut v = u + 1
+          while v < bcap {
+            match m.backward.buckets[v] {
+              Some(e2) =>
+                if e2.hash != TOMBSTONE_HASH && e2.key == e1.key {
+                  @test.fail("duplicate live key in backward buckets")
+                }
+              None => ()
+            }
+            v = v + 1
+          }
+        }
+      None => ()
+    }
+    u = u + 1
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Tests
 // ---------------------------------------------------------------------------
@@ -237,6 +289,27 @@ test "wb: invariants hold for a String-keyed map after mixed ops" {
 struct CollidingKey {
   id : Int
 } derive(Eq, Debug)
+
+///|
+test "wb: retain keeps strong invariants (bulk chokepoint)" {
+  let m : BiMap[Int, Int] = BiMap::new()
+  let mut i = 0
+  while i < 300 {
+    m.insert(i, i * 3 + 1) |> ignore
+    i = i + 1
+  }
+  // remove roughly two thirds via the bulk path
+  m.retain(fn(l, r) { (l + r) % 3 != 0 })
+  check_whitebox(m)
+  // retain again on the already-retained state (compaction on a compacted order)
+  m.retain(fn(l, _) { l % 2 == 0 })
+  check_whitebox(m)
+  // retain-all no-op leaves everything exactly as it was
+  let before = m.into_array()
+  m.retain(fn(_, _) { true })
+  check_whitebox(m)
+  @test.assert_eq(m.into_array(), before)
+}
 
 ///|
 impl Hash for CollidingKey with fn hash_combine(self, hasher) {
