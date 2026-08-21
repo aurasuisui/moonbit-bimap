@@ -5,10 +5,12 @@
 // insertion-order array and position map for the left keys.
 //
 // Invariant chokepoints: EVERY mutation funnels through `put_pair` (insert
-// path) or `remove_by_left` / `remove_by_right` (removal path). These are the
-// only places that touch forward + backward + order + positions together, so
-// the bijection invariant ("two tables are mutual inverses, five counts agree")
-// is maintained in exactly one place per operation kind.
+// path), `remove_by_left` / `remove_by_right` (single-pair removal path), or
+// `retain` (bulk removal path: per-pair table removal + in-place order
+// compaction). These are the only places that touch forward + backward +
+// order + positions together, so the bijection invariant ("two tables are
+// mutual inverses, five counts agree") is maintained in exactly one place
+// per operation kind.
 
 ///|
 /// A bidirectional map maintaining a one-to-one correspondence (a bijection)
@@ -275,6 +277,73 @@ pub fn[L : Hash + Eq, R : Hash + Eq] BiMap::remove_by_right(
       Some(l)
     }
   }
+}
+
+// ---------------------------------------------------------------------------
+// Bulk removal (the third mutation chokepoint)
+// ---------------------------------------------------------------------------
+
+///|
+/// Keep only the pairs satisfying `f`, removing the rest (a port of Rust
+/// `bimap`'s `retain`, which exists on both of its map types). The predicate
+/// is evaluated exactly once per pair, in insertion order, on a snapshot; the
+/// kept pairs preserve their relative insertion order. If nothing is removed
+/// this is a no-op and the version is NOT bumped (active iterators stay
+/// valid). The predicate must not mutate the map.
+///
+/// Mutation chokepoint #3 (bulk removal): per-pair removal from
+/// forward/backward/positions followed by an in-place compaction of `order`
+/// (which fixes the `positions` indices as it goes) — O(n) overall, avoiding
+/// the O(n²) cost of head-first per-element removal (README Gotcha #9).
+pub fn[L : Hash + Eq, R : Hash + Eq] BiMap::retain(
+  self : BiMap[L, R],
+  f : (L, R) -> Bool,
+) -> Unit {
+  // Pass 1: snapshot + collect removed left keys; predicate runs once per pair.
+  let arr = self.into_array()
+  let removed : Array[L] = []
+  let mut i = 0
+  while i < arr.length() {
+    let (l, r) = arr[i]
+    if !f(l, r) {
+      removed.push(l)
+    }
+    i = i + 1
+  }
+  if removed.is_empty() {
+    return
+  }
+  // Pass 2: remove each pair from both tables and the position map.
+  let mut k = 0
+  while k < removed.length() {
+    let l = removed[k]
+    match self.forward.remove(l) {
+      Some(r) => {
+        self.backward.remove(r) |> ignore
+        self.positions.remove(l) |> ignore
+      }
+      None => ()
+    }
+    k = k + 1
+  }
+  // Pass 3: compact `order` in place; `positions` now holds exactly the kept
+  // keys, so membership decides survival and indices are fixed on the fly.
+  let mut w = 0
+  let mut j = 0
+  while j < self.order.length() {
+    let l = self.order[j]
+    if self.positions.get(l) is Some(_) {
+      self.order[w] = l
+      self.positions[l] = w
+      w = w + 1
+    }
+    j = j + 1
+  }
+  while self.order.length() > w {
+    self.order.pop() |> ignore
+  }
+  self.len = self.len - removed.length()
+  self.version = self.version + 1
 }
 
 // ---------------------------------------------------------------------------

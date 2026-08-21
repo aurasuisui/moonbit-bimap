@@ -40,6 +40,7 @@ pub fn[L, R] BiMap::len(Self[L, R]) -> Int
 pub fn[L : Hash + Eq, R] BiMap::new() -> Self[L, R]
 pub fn[L : Hash + Eq, R : Hash + Eq] BiMap::remove_by_left(Self[L, R], L) -> R?
 pub fn[L : Hash + Eq, R : Hash + Eq] BiMap::remove_by_right(Self[L, R], R) -> L?
+pub fn[L : Hash + Eq, R : Hash + Eq] BiMap::retain(Self[L, R], (L, R) -> Bool) -> Unit
 pub fn[L : Hash + Eq, R] BiMap::rights(Self[L, R]) -> Iter[R]
 pub fn[L : Hash + Eq, R : Hash + Eq] BiMap::to_inverse(Self[L, R]) -> Self[R, L]
 pub fn[L : Hash + Eq, R] BiMap::with_capacity(Int) -> Self[L, R]

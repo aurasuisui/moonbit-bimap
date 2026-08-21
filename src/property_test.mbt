@@ -130,6 +130,35 @@ test "qc: invariants hold on small-key maps (forces many C2/C3/C4)" {
   }
 }
 
+///|
+test "qc: retain keeps exactly the satisfying pairs; invariants hold" {
+  // QuickCheck-generated maps, then retain with the shared deterministic
+  // predicate; the result must equal the filtered oracle and stay a valid
+  // bijection.
+  let cases : Array[Array[(Int, Int)]] = @quickcheck.samples(60)
+  let mut c = 0
+  while c < cases.length() {
+    let pairs = cases[c]
+    let m : @aurasuisui/bimap.BiMap[Int, Int] = @aurasuisui/bimap.new()
+    let oracle : Array[(Int, Int)] = []
+    let mut i = 0
+    while i < pairs.length() {
+      let (l0, r0) = pairs[i]
+      let l = l0 % 12
+      let r = r0 % 12
+      m.insert(l, r) |> ignore
+      oracle_insert(oracle, l, r)
+      i = i + 1
+    }
+    let pred = fn(l : Int, r : Int) -> Bool { (l + r) % 3 != 0 }
+    m.retain(pred)
+    oracle_retain(oracle, pred)
+    assert_matches_oracle(m, oracle)
+    check_bijection(m)
+    c = c + 1
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Deterministic invariant checks around the tricky cases
 // ---------------------------------------------------------------------------

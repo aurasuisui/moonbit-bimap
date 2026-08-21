@@ -268,6 +268,88 @@ test "drain to empty then is_empty" {
 }
 
 // ---------------------------------------------------------------------------
+// Bulk removal: retain
+// ---------------------------------------------------------------------------
+
+///|
+test "retain keeps only pairs matching the predicate" {
+  let m = @aurasuisui/bimap.BiMap::from_array([
+    ("a", 1),
+    ("b", 2),
+    ("c", 3),
+    ("d", 4),
+  ])
+  m.retain(fn(_, r) { r % 2 == 0 })
+  @test.assert_eq(m.len(), 2)
+  @test.assert_eq(m.into_array(), [("b", 2), ("d", 4)])
+}
+
+///|
+test "retain preserves the relative insertion order of kept pairs" {
+  let m = @aurasuisui/bimap.BiMap::from_array([
+    ("a", 1),
+    ("b", 2),
+    ("c", 3),
+    ("d", 4),
+    ("e", 5),
+  ])
+  m.retain(fn(l, _) { l == "a" || l == "c" || l == "e" })
+  @test.assert_eq(m.into_array(), [("a", 1), ("c", 3), ("e", 5)])
+  @test.assert_eq(m.get_index_of_left("e"), Some(2))
+}
+
+///|
+test "retain-all is a no-op and does not invalidate iterators" {
+  let m = @aurasuisui/bimap.BiMap::from_array([("a", 1), ("b", 2)])
+  let it = m.iter()
+  m.retain(fn(_, _) { true })
+  // no version bump happened -> the pre-retain iterator still works
+  // (a wrongful bump would abort here and fail the test)
+  @test.assert_eq(it.next(), Some(("a", 1)))
+  @test.assert_eq(it.next(), Some(("b", 2)))
+  @test.assert_eq(m.len(), 2)
+}
+
+///|
+test "retain-none empties the map" {
+  let m = @aurasuisui/bimap.BiMap::from_array([("a", 1), ("b", 2)])
+  m.retain(fn(_, _) { false })
+  @test.assert_eq(m.is_empty(), true)
+  @test.assert_eq(m.first(), None)
+  @test.assert_eq(m.into_array().length(), 0)
+}
+
+///|
+test "retain on an empty map is a no-op" {
+  let m : @aurasuisui/bimap.BiMap[String, Int] = @aurasuisui/bimap.new()
+  m.retain(fn(_, _) { false })
+  @test.assert_eq(m.is_empty(), true)
+}
+
+///|
+test "retain evaluates the predicate exactly once per pair" {
+  let m = @aurasuisui/bimap.BiMap::from_array([("a", 1), ("b", 2), ("c", 3)])
+  let calls = [0]
+  m.retain(fn(_, _) {
+    calls[0] = calls[0] + 1
+    true
+  })
+  @test.assert_eq(calls[0], 3)
+}
+
+///|
+test "retain works on a C4-collapsed state" {
+  let m : @aurasuisui/bimap.BiMap[Int, Int] = @aurasuisui/bimap.new()
+  m.insert(1, 10) |> ignore
+  m.insert(2, 20) |> ignore
+  m.insert(1, 20) |> ignore // C4: collapses to {1 <-> 20}
+  m.retain(fn(l, _) { l == 1 })
+  @test.assert_eq(m.len(), 1)
+  @test.assert_eq(m.get_by_left(1), Some(20))
+  @test.assert_eq(m.get_by_right(20), Some(1))
+}
+
+// ---------------------------------------------------------------------------
 // Size queries / construction
 // ---------------------------------------------------------------------------
 

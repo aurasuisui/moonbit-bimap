@@ -48,15 +48,16 @@ fn diff_encode_insert(
 }
 
 ///|
-/// Replay the full 6000-step LCG stream (same derivation as model_test.mbt)
-/// and return the resulting map.
+/// Replay the full 6000-step LCG stream (same derivation as model_test.mbt,
+/// five ops including retain with the shared deterministic predicate) and
+/// return the resulting map.
 fn diff_run_full_stream() -> @aurasuisui/bimap.BiMap[Int, Int] {
   let m : @aurasuisui/bimap.BiMap[Int, Int] = @aurasuisui/bimap.new()
   let mut state = 0x1234_5678
   let mut i = 0
   while i < 6000 {
     state = (state * 1103515245 + 12345) & 0x7FFF_FFFF
-    let op = state % 4
+    let op = state % 5
     let l = (state >> 6) % 15
     let r = (state >> 14) % 15
     if op == 0 {
@@ -65,8 +66,10 @@ fn diff_run_full_stream() -> @aurasuisui/bimap.BiMap[Int, Int] {
       m.remove_by_left(l) |> ignore
     } else if op == 2 {
       m.remove_by_right(r) |> ignore
-    } else {
+    } else if op == 3 {
       m.insert_no_overwrite(l, r) |> ignore
+    } else {
+      m.retain(fn(l : Int, r : Int) -> Bool { (l + r) % 3 != 0 })
     }
     i = i + 1
   }
@@ -101,7 +104,7 @@ test "diff vs Rust bimap: 6000 deterministic mixed ops agree step by step" {
   let mut i = 0
   while i < 6000 {
     state = (state * 1103515245 + 12345) & 0x7FFF_FFFF
-    let op = state % 4
+    let op = state % 5
     let l = (state >> 6) % 15
     let r = (state >> 14) % 15
     let actual = if op == 0 {
@@ -116,11 +119,14 @@ test "diff vs Rust bimap: 6000 deterministic mixed ops agree step by step" {
         Some(v) => "Some(\{v})|\{m.len()}"
         None => "None|\{m.len()}"
       }
-    } else {
+    } else if op == 3 {
       match m.insert_no_overwrite(l, r) {
         Ok(_) => "Ok|\{m.len()}"
         Err(_) => "Err|\{m.len()}"
       }
+    } else {
+      m.retain(fn(l : Int, r : Int) -> Bool { (l + r) % 3 != 0 })
+      "Retain|\{m.len()}"
     }
     if actual != diff_observations[i] {
       @test.fail(

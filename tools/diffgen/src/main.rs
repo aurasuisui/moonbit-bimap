@@ -78,15 +78,16 @@ fn main() {
     writeln!(out).unwrap();
 
     // 2. 6000-step LCG stream (same derivation as model_test.mbt:
-    //    op = state % 4; l = (state >> 6) % 15; r = (state >> 14) % 15;
+    //    op = state % 5; l = (state >> 6) % 15; r = (state >> 14) % 15;
     //    op 0 = insert, 1 = remove_by_left, 2 = remove_by_right,
-    //    3 = insert_no_overwrite).
+    //    3 = insert_no_overwrite, 4 = retain with the deterministic predicate
+    //    (l + r) % 3 != 0 — shared VERBATIM with src/model_test.mbt).
     let mut map: BiMap<i32, i32> = BiMap::new();
     let mut state: u64 = 0x1234_5678;
     writeln!(out, "let diff_observations : Array[String] = [").unwrap();
     for _ in 0..STEPS {
         state = next_state(state);
-        let op = state % 4;
+        let op = state % 5;
         let l = ((state >> 6) % 15) as i32;
         let r = ((state >> 14) % 15) as i32;
         let obs = match op {
@@ -109,10 +110,16 @@ fn main() {
                 }
                 None => "None".to_string(),
             },
-            _ => match map.insert_no_overwrite(l, r) {
+            3 => match map.insert_no_overwrite(l, r) {
                 Ok(()) => "Ok".to_string(),
                 Err(_) => "Err".to_string(),
             },
+            // retain returns (); the observable is the post-retain length
+            // (appended by the common "|len" suffix below).
+            _ => {
+                map.retain(|l, r| (l + r) % 3 != 0);
+                "Retain".to_string()
+            }
         };
         writeln!(out, "  \"{}|{}\",", obs, map.len()).unwrap();
     }

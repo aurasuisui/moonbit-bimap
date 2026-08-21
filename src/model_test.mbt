@@ -125,6 +125,25 @@ fn oracle_insert_no_overwrite(
 }
 
 ///|
+/// Model `retain`: keep only the pairs satisfying `pred`, preserving the
+/// relative order of the kept pairs.
+fn oracle_retain(arr : Array[(Int, Int)], pred : (Int, Int) -> Bool) -> Unit {
+  let mut w = 0
+  let mut i = 0
+  while i < arr.length() {
+    let (l, r) = arr[i]
+    if pred(l, r) {
+      arr[w] = (l, r)
+      w = w + 1
+    }
+    i = i + 1
+  }
+  while arr.length() > w {
+    arr.pop() |> ignore
+  }
+}
+
+///|
 /// Assert the real map agrees with the oracle on exact content, order, and len.
 fn assert_matches_oracle(
   m : @aurasuisui/bimap.BiMap[Int, Int],
@@ -200,9 +219,11 @@ test "model: 6000 deterministic mixed ops agree with the oracle after every step
   let mut state = 0x1234_5678
   let mut i = 0
   while i < 6000 {
-    // LCG for reproducibility; tiny keyspace (mod 15) forces constant C2/C3/C4
+    // LCG for reproducibility; tiny keyspace (mod 15) forces constant C2/C3/C4.
+    // Five ops; the retain predicate is deterministic and shared VERBATIM with
+    // tools/diffgen (the Rust-side differential fixture generator).
     state = (state * 1103515245 + 12345) & 0x7FFF_FFFF
-    let op = state % 4
+    let op = state % 5
     let l = (state >> 6) % 15
     let r = (state >> 14) % 15
     if op == 0 {
@@ -214,9 +235,13 @@ test "model: 6000 deterministic mixed ops agree with the oracle after every step
     } else if op == 2 {
       m.remove_by_right(r) |> ignore
       oracle_remove_right(oracle, r)
-    } else {
+    } else if op == 3 {
       m.insert_no_overwrite(l, r) |> ignore
       oracle_insert_no_overwrite(oracle, l, r)
+    } else {
+      let pred = fn(l : Int, r : Int) -> Bool { (l + r) % 3 != 0 }
+      m.retain(pred)
+      oracle_retain(oracle, pred)
     }
     assert_matches_oracle(m, oracle)
     i = i + 1
