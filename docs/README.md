@@ -31,6 +31,7 @@
 | [`RELEASE_CHECKLIST.md`](RELEASE_CHECKLIST.md) | **发布门禁**:每次 bump 版本前必须逐项全绿的 Tier 0–4 + 发布前必检门禁 | 准备发版 |
 | [`MOONBIT_REF.md`](MOONBIT_REF.md) | MoonBit 语法/惯用法速查(来自 indexmap,非 bimap 专属) | 写 MoonBit 卡壳 |
 | [`SESSION_PLAYBOOK.md`](SESSION_PLAYBOOK.md) | **任务会话手册**:讨论方案→执行→卡住决策→看门狗→知识回写 | 开新任务会话 |
+| [`plans/v0.2.0.md`](plans/v0.2.0.md) | v0.2.0 详细设计方案(已批准,含真源核验修正;执行中) | 执行 v0.2.0 里程碑时 |
 | [`../tools/diffgen/README.md`](../tools/diffgen/README.md) | 差分夹具生成器(参考实现:Rust `bimap` v0.6.3;开发工具,非包内容) | 重新生成差分夹具时 |
 | [`../bench/README.md`](../bench/README.md) | 计时基准(官方 `@bench` 框架,native+release,基准对象为已发布包) | 跑/解读性能基准时 |
 | `README.md`(本文件) | 文档枢纽/全量地图 | 不知道读哪份 |
