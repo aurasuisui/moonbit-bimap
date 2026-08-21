@@ -161,12 +161,15 @@ forward.buckets.length() 是 2 的幂
 order 中无重复左键(双射 ⟹ 左键唯一)
 ```
 
-**架构纪律**:用两个私有 helper 收口——
-- `put_pair(l, r) -> (R?, L?)`:全库**唯一**同时改 forward+backward+order+positions 的地方;
+**架构纪律**:用三个收口点收口——
+- `put_pair(l, r) -> (R?, L?)`:插入路径**唯一**同时改 forward+backward+order+positions 的地方;
   返回被挤掉的 `(old_right?, old_left?)`,供 `insert` 映射成 `Overwritten`。
-- `remove_pair_by_left(l) -> R?` / `remove_pair_by_right(r) -> L?`:双侧清理 + 维护 order/positions + bump version。
+- `remove_pair_by_left(l) -> R?` / `remove_pair_by_right(r) -> L?`:单对删除路径——双侧清理 +
+  维护 order/positions + bump version。
+- `retain(f)`:**批量删除路径**(第三个收口点):快照 + 逐对三结构删除 + `order` 原地压实
+  (O(n),避开逐元素头删的 O(n²));全保留时 no-op 且不 bump version。
 
-所有公开增删方法**只调用这两个 helper**,绝不自己同步两表。
+所有公开增删方法**只走这三个收口点**,绝不自己同步两表。
 
 ### `put_pair` 的参考实现骨架(C0–C4 的正确算法)
 
@@ -220,7 +223,15 @@ pub fn remove_by_left(self, l : L) -> R?     // 删除并返回右值;同步清 
 pub fn get_by_right(self, r : R) -> L?
 pub fn contains_right(self, r : R) -> Bool
 pub fn remove_by_right(self, r : R) -> L?    // 删除并返回左键;同步清 forward+order+positions
+
+// 批量
+pub fn retain(self, f : (L, R) -> Bool) -> Unit
+    // 保留满足 f 的对;O(n);保留对的相对插入序不变;
+    // 全保留时 no-op 且不 bump version(迭代器不失效)
 ```
+
+> **`retain` 是移植项**(Rust bimap 两类映射均有,`retain_calls_f_once` 与"谓词恰好求值一次"
+> 吻合),同时是第三个 mutation 收口点(§4)。谓词内不得改 map。
 
 > **删除双侧清理是 BiMap 第二易错点**:删任一侧,另一侧 + order + positions 必须同步,
 > 并 bump `version`。只走 `remove_pair_by_left`/`remove_pair_by_right`。

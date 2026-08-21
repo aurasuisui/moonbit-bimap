@@ -51,6 +51,8 @@ fork or rename of `indexmap`.
 - **Index-based access** — `get_index(i)`, `get_index_of_left`, `get_index_of_right`,
   `first()`, `last()`
 - **Inverse copy** — `to_inverse() -> BiMap[R, L]` (a copy, not a live view)
+- **Predicate filtering** — `retain(pred)` keeps only the matching pairs in O(n),
+  preserving their relative insertion order (a port of Rust bimap's `retain`)
 - **Standard traits** — `Debug`, `Default`, `Show`, `Eq`/`Hash` (**order-independent**),
   `ToJson`, plus QuickCheck `Arbitrary`
 
@@ -140,6 +142,7 @@ let r = m.insert("a", 2)     // Both((a,4),(c,2))  {a↔2}  — len 2→1!
 | Reverse | `get_by_right(r)`, `contains_right(r)`, `remove_by_right(r) -> L?` |
 | Index | `get_index(i)`, `get_index_of_left(l)`, `get_index_of_right(r)`, `first()`, `last()` |
 | Iterate | `iter()`, `lefts()`, `rights()`, `into_array()` |
+| Bulk | `retain(pred)` |
 | Convert | `to_inverse() -> BiMap[R, L]` |
 | Traits | `Debug`, `Default`, `Show`, `Hash`, `Eq`, `ToJson`, `Arbitrary` |
 
@@ -201,7 +204,7 @@ single-machine numbers, indicative of constant factors, not absolute speed).
 
 ```bash
 moon check   # type check
-moon test    # run all 234 tests
+moon test    # run all 247 tests
 moon fmt     # format
 moon build   # build
 ```

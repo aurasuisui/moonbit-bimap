@@ -4,6 +4,25 @@ All notable changes to `moonbit-bimap` are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/), and this project
 adheres to [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Added
+- **`retain(pred)` on `BiMap`** — a PORT of Rust bimap's `retain` (present on
+  both of its map types; the crate's `retain_calls_f_once` matches our
+  exactly-once predicate semantics). Keeps the pairs satisfying the predicate
+  in O(n) (snapshot + per-pair three-structure removal + in-place `order`
+  compaction — deliberately avoiding the O(n²) head-drain cost), preserving
+  the relative insertion order of kept pairs. A retain that removes nothing
+  is a no-op and does NOT bump the version (active iterators stay valid).
+  Registered as the third mutation chokepoint (bimap.mbt header, CLAUDE/AGENTS
+  /CONTRIBUTING discipline sections, SPEC §4).
+- **Differential stream extended to five ops**: the shared LCG stream
+  (model_test ↔ diffgen ↔ differential_test, kept verbatim-consistent) now
+  includes retain with the deterministic predicate `(l + r) % 3 != 0`; the
+  regenerated fixture diffs retain against the real crate step by step (1241
+  retain observations) — ahead of the v0.2.0 plan's M3 schedule.
+  Test suite: 238 → 247.
+
 ## [0.1.3] - 2026-08-23
 
 ### Fixed

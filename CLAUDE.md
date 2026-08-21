@@ -13,7 +13,7 @@ on the author's `aurasuisui/indexmap`; the Robin Hood engine is adapted, not imp
 
 ```bash
 moon check          # type check
-moon test           # run all tests (234)
+moon test           # run all tests (247)
 moon fmt            # format (CI enforces `moon fmt --check`)
 moon build          # build
 ```
@@ -75,11 +75,13 @@ forward.len == backward.len == order.length() == positions.length() == self.len
 positions[order[i]] == i
 ```
 
-**Discipline (the #1 source of bugs):** every mutation funnels through the private helpers
-`put_pair` (insert path) and `remove_by_left` / `remove_by_right` (removal path). **Public
-methods must never sync the two tables themselves.** The `check_bijection` helper in
-`property_test.mbt` asserts the black-box form of these invariants — when in doubt, it's the
-guard.
+**Discipline (the #1 source of bugs):** every mutation funnels through three chokepoints:
+the private helper `put_pair` (insert path), `remove_by_left` / `remove_by_right`
+(single-pair removal path), and `retain` (bulk removal path: per-pair removal from the
+three structures + in-place `order` compaction). **No other code may touch forward +
+backward + order + positions together.** The `check_bijection` helper in
+`property_test.mbt` asserts the black-box form of these invariants — when in doubt, it's
+the guard.
 
 ### Insertion: five cases (C0–C4)
 
