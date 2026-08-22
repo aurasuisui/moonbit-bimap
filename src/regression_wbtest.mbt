@@ -89,24 +89,10 @@ test "regression: random inserts never duplicate a live bucket entry" {
 }
 
 ///|
-struct SentinelKey {
-  id : Int
-} derive(Eq, Debug)
-
-///|
-impl Hash for SentinelKey with fn hash_combine(self, hasher) {
-  // Adversarial: every key contributes the same value (a constant hash,
-  // like CollidingKey, but seeded from the tombstone sentinel value).
-  Hash::hash_combine(self.id * 0 - 1, hasher)
-}
-
-///|
 test "regression: normalize_hash can never return the tombstone sentinel" {
-  // A live entry whose stored hash equals TOMBSTONE_HASH would be invisible
-  // to probes; normalize_hash deflects exactly that value. The triggering
-  // key hash (-1) is a 1-in-2^N event and cannot be constructed end-to-end
-  // (the hasher mixes contributions), so the normalization is unit-tested
-  // directly here.
+  // normalize_hash deflects the tombstone sentinel; the end-to-end path
+  // (a key whose Hash::hash is exactly -1) is exercised by the
+  // SentinelKeyExact test below — this is the direct unit check.
   @test.assert_eq(normalize_hash(-1), 0)
   @test.assert_eq(normalize_hash(0), 0)
   @test.assert_eq(normalize_hash(5), 5)
@@ -114,17 +100,45 @@ test "regression: normalize_hash can never return the tombstone sentinel" {
 }
 
 ///|
-test "regression: constant-hash keys stay visible across tombstone churn" {
-  let k1 : SentinelKey = { id: 1 }
-  let k2 : SentinelKey = { id: 2 }
-  let m : BiMap[SentinelKey, Int] = BiMap::new()
+struct SentinelKeyExact {
+  id : Int
+} derive(Eq, Debug)
+
+///|
+impl Hash for SentinelKeyExact with fn hash_combine(
+  _self : SentinelKeyExact,
+  _hasher : Hasher,
+) -> Unit {
+
+}
+
+///|
+impl Hash for SentinelKeyExact with fn hash(_self : SentinelKeyExact) -> Int {
+  // Override `hash` directly so the returned value is EXACTLY the tombstone
+  // sentinel, bypassing the hasher's mix. Without normalize_hash, such a key
+  // would be stored with hash -1 and become invisible to every probe.
+  -1
+}
+
+///|
+test "regression: a key hashing EXACTLY to the tombstone sentinel stays visible" {
+  let k1 : SentinelKeyExact = { id: 1 }
+  let k2 : SentinelKeyExact = { id: 2 }
+  @test.assert_eq(Hash::hash(k1), -1) // precondition: hash really is -1
+  let m : BiMap[SentinelKeyExact, Int] = BiMap::new()
   m.insert(k1, 10) |> ignore
   m.insert(k2, 20) |> ignore
-  m.remove_by_left(k1) |> ignore // create a real tombstone in the cluster
-  m.insert(k1, 30) |> ignore // reinsert over the tombstone-laden table
+  // pre-fix this returned None: the -1 hash made the entry look like a
+  // tombstone. Post-fix it must be readable in both directions.
+  @test.assert_eq(m.get_by_left(k1), Some(10))
+  @test.assert_eq(m.get_by_right(10), Some(k1))
+  @test.assert_eq(m.get_by_left(k2), Some(20))
+  m.remove_by_left(k1) |> ignore // create a real tombstone
+  m.insert(k1, 30) |> ignore // reinsert the -1-hash key over tombstones
+  @test.assert_eq(m.len(), 2)
   @test.assert_eq(m.get_by_left(k1), Some(30))
   @test.assert_eq(m.get_by_right(30), Some(k1))
   @test.assert_eq(m.get_by_left(k2), Some(20))
-  @test.assert_eq(m.len(), 2)
+  check_whitebox(m)
   check_no_duplicate_keys(m)
 }
