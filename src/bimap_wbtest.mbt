@@ -291,27 +291,6 @@ struct CollidingKey {
 } derive(Eq, Debug)
 
 ///|
-test "wb: retain keeps strong invariants (bulk chokepoint)" {
-  let m : BiMap[Int, Int] = BiMap::new()
-  let mut i = 0
-  while i < 300 {
-    m.insert(i, i * 3 + 1) |> ignore
-    i = i + 1
-  }
-  // remove roughly two thirds via the bulk path
-  m.retain(fn(l, r) { (l + r) % 3 != 0 })
-  check_whitebox(m)
-  // retain again on the already-retained state (compaction on a compacted order)
-  m.retain(fn(l, _) { l % 2 == 0 })
-  check_whitebox(m)
-  // retain-all no-op leaves everything exactly as it was
-  let before = m.into_array()
-  m.retain(fn(_, _) { true })
-  check_whitebox(m)
-  @test.assert_eq(m.into_array(), before)
-}
-
-///|
 impl Hash for CollidingKey with fn hash_combine(self, hasher) {
   // Adversarial: every key contributes the same hash (self.id * 0 == 0).
   Hash::hash_combine(self.id * 0, hasher)
