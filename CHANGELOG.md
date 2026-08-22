@@ -4,6 +4,34 @@ All notable changes to `moonbit-bimap` are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/), and this project
 adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.1.3] - 2026-08-23
+
+### Fixed
+- **HashTab probe-corruption bug (engine-level, present since v0.1.0).** With
+  tombstones present, the Robin Hood early cutoff in the insert search
+  (`robin_hood_find`) could stop at an entry whose recorded distance looked
+  "too poor" relative to the probe distance — unsound once deletions leave
+  tombstones and later insertions place entries with small recorded distances
+  inside older clusters. The search then missed the existing key and inserted
+  a DUPLICATE live entry, making lookups return stale values and silently
+  breaking the bijection. Found by a QuickCheck property (sample 40: C3/C4
+  tombstone churn + negative keys); root-caused by dumping the corrupted
+  buckets (two live entries for one key). Fix: the insert search now scans to
+  the first empty slot (no cutoff; the `probe_find` used by get/remove was
+  already cutoff-free), and `normalize_hash` ensures a stored hash can never
+  equal the tombstone sentinel -1 (a key hashing to -1 would otherwise become
+  invisible to probes). Regression coverage: `src/regression_wbtest.mbt`
+  (exact sample-40 sequence with per-step whitebox invariants,
+  duplicate-live-key bucket scans, sentinel normalization, and an
+  end-to-end `fn hash -> -1` sentinel-key test) plus a duplicate-key scan
+  helper in `bimap_wbtest.mbt`. No public API change; mbti unaffected
+  (engine internals).
+- **Note for `aurasuisui/indexmap`**: the engine was adapted from its v0.3.3,
+  which shares the tombstone + cutoff pattern; the same bug exists there for
+  releases <=0.3.3. Its v0.4.0 has switched to tombstone-free backshift
+  deletion, so only users pinned to an older version are affected — no patch
+  needed upstream, just upgrade guidance.
+
 ## [0.1.2] - 2026-08-20
 
 ### Added

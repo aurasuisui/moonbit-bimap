@@ -8,7 +8,7 @@ import {
 }
 
 // Values
-pub const VERSION : String = "0.1.2"
+pub const VERSION : String = "0.1.3"
 
 pub fn[L : Hash + Eq, R] new() -> BiMap[L, R]
 

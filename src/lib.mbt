@@ -29,7 +29,7 @@
 
 ///|
 /// Library version string.
-pub const VERSION : String = "0.1.2"
+pub const VERSION : String = "0.1.3"
 
 ///|
 /// The result of `insert`, describing which existing pair(s) were displaced.
