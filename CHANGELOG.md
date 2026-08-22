@@ -32,6 +32,11 @@ adheres to [Semantic Versioning](https://semver.org/).
   deletion, so only users pinned to an older version are affected — no patch
   needed upstream, just upgrade guidance.
 
+### Process
+- **发布前检查:RELEASE_CHECKLIST 全绿 @ d0e3acc**(2026-08-23,0.1.3 hotfix)。
+  版本号四处一致;跨后端矩阵 wasm-gc 与 native 均 238/238;五步 CI 于 main 全绿;
+  Rust 产物门禁(cargo clean + 发布后 zip 抽查)通过;`cmd/*` 对已发布包解析验证通过。
+
 ## [0.1.2] - 2026-08-20
 
 ### Added
