@@ -284,6 +284,27 @@ test "wb: invariants hold for a String-keyed map after mixed ops" {
 // is the documented weakness (README Gotcha #2) — graceful but undefended.
 
 ///|
+test "wb: retain keeps strong invariants (bulk chokepoint)" {
+  let m : BiMap[Int, Int] = BiMap::new()
+  let mut i = 0
+  while i < 300 {
+    m.insert(i, i * 3 + 1) |> ignore
+    i = i + 1
+  }
+  // remove roughly two thirds via the bulk path
+  m.retain(fn(l, r) { (l + r) % 3 != 0 })
+  check_whitebox(m)
+  // retain again on the already-retained state (compaction on a compacted order)
+  m.retain(fn(l, _) { l % 2 == 0 })
+  check_whitebox(m)
+  // retain-all no-op leaves everything exactly as it was
+  let before = m.into_array()
+  m.retain(fn(_, _) { true })
+  check_whitebox(m)
+  @test.assert_eq(m.into_array(), before)
+}
+
+///|
 /// A key whose `Hash` deliberately collapses every value onto the same bucket.
 /// `Eq` still distinguishes by `id`, so all keys are kept (a genuine flood).
 struct CollidingKey {
