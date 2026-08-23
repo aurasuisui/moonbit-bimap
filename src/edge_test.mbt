@@ -550,3 +550,179 @@ test "Default then insert behaves like new" {
   @test.assert_eq(m.get_by_left("a"), Some(1))
   @test.assert_eq(m.len(), 1)
 }
+
+// ---------------------------------------------------------------------------
+// Views + entry helpers (v0.2.0 M2, ORIGINAL extension — no Rust counterpart)
+// ---------------------------------------------------------------------------
+
+// Compile-time pins for minimal trait bounds (0053-style guard): each helper
+// carries EXACTLY the bounds its method requires, so an over-constrained
+// signature would fail to compile here. In particular left_keys must work with
+// NO bounds at all.
+
+///|
+fn[L, R] left_keys_zero_bound(m : @aurasuisui/bimap.BiMap[L, R]) -> Array[L] {
+  m.left_keys()
+}
+
+///|
+fn[L : Hash + Eq, R] right_values_one_bound(
+  m : @aurasuisui/bimap.BiMap[L, R],
+) -> Array[R] {
+  m.right_values()
+}
+
+///|
+fn[L : Hash + Eq, R : Eq] contains_pair_two_bound(
+  m : @aurasuisui/bimap.BiMap[L, R],
+  l : L,
+  r : R,
+) -> Bool {
+  m.contains_pair(l, r)
+}
+
+///|
+test "contains_pair: the exact pair (C1 state) is true" {
+  let m = @aurasuisui/bimap.BiMap::from_array([("a", 1), ("b", 2)])
+  @test.assert_eq(m.contains_pair("a", 1), true)
+  @test.assert_eq(m.contains_pair("b", 2), true)
+}
+
+///|
+test "contains_pair: half-present sides and absent pairs are false" {
+  let m = @aurasuisui/bimap.BiMap::from_array([("a", 1)])
+  @test.assert_eq(m.contains_pair("a", 2), false) // l present, r wrong
+  @test.assert_eq(m.contains_pair("b", 1), false) // r present, l wrong
+  @test.assert_eq(m.contains_pair("b", 2), false) // both absent
+}
+
+///|
+test "contains_pair on an empty map is false" {
+  let m : @aurasuisui/bimap.BiMap[String, Int] = @aurasuisui/bimap.new()
+  @test.assert_eq(m.contains_pair("a", 1), false)
+}
+
+///|
+test "left_keys returns the insertion-ordered snapshot" {
+  let m = @aurasuisui/bimap.BiMap::from_array([("d", 4), ("b", 2), ("a", 1)])
+  @test.assert_eq(m.left_keys(), ["d", "b", "a"])
+}
+
+///|
+test "left_keys snapshot is independent in both directions" {
+  let m = @aurasuisui/bimap.BiMap::from_array([("a", 1), ("b", 2)])
+  let keys = m.left_keys()
+  keys.push("zzz") // mutating the snapshot must not touch the map
+  @test.assert_eq(m.len(), 2)
+  @test.assert_eq(m.contains_left("zzz"), false)
+  @test.assert_eq(m.left_keys(), ["a", "b"])
+  m.remove_by_left("a") |> ignore // mutating the map must not touch the snapshot
+  @test.assert_eq(keys, ["a", "b", "zzz"])
+}
+
+///|
+test "right_values returns the insertion-ordered snapshot" {
+  let m = @aurasuisui/bimap.BiMap::from_array([("d", 4), ("b", 2), ("a", 1)])
+  @test.assert_eq(m.right_values(), [4, 2, 1])
+}
+
+///|
+test "right_values snapshot is independent" {
+  let m = @aurasuisui/bimap.BiMap::from_array([("a", 1), ("b", 2)])
+  let vals = m.right_values()
+  vals.push(99)
+  @test.assert_eq(m.contains_right(99), false)
+  @test.assert_eq(m.right_values(), [1, 2])
+}
+
+///|
+test "left_keys and right_values on an empty map are empty" {
+  let m : @aurasuisui/bimap.BiMap[String, Int] = @aurasuisui/bimap.new()
+  @test.assert_eq(m.left_keys(), [])
+  @test.assert_eq(m.right_values(), [])
+}
+
+///|
+test "left_keys/right_values agree with each other pair by pair" {
+  let m = @aurasuisui/bimap.BiMap::from_array([("d", 4), ("b", 2), ("a", 1)])
+  let ks = m.left_keys()
+  let vs = m.right_values()
+  @test.assert_eq(ks.length(), m.len())
+  let mut i = 0
+  while i < ks.length() {
+    @test.assert_eq(m.get_by_left(ks[i]), Some(vs[i]))
+    i = i + 1
+  }
+}
+
+///|
+test "minimal bounds: the views/membership pins compile and run" {
+  let m = @aurasuisui/bimap.BiMap::from_array([("a", 1), ("b", 2)])
+  @test.assert_eq(left_keys_zero_bound(m), ["a", "b"])
+  @test.assert_eq(right_values_one_bound(m), [1, 2])
+  @test.assert_eq(contains_pair_two_bound(m, "a", 1), true)
+  @test.assert_eq(contains_pair_two_bound(m, "a", 2), false)
+}
+
+///|
+test "get_or_insert_left: present key returns its right, no mutation" {
+  let m = @aurasuisui/bimap.BiMap::from_array([("a", 1), ("b", 2)])
+  let it = m.iter() // an active iterator: the get path must not bump version
+  @test.assert_eq(m.get_or_insert_left("a", 99), 1)
+  @test.assert_eq(m.len(), 2)
+  @test.assert_eq(m.into_array(), [("a", 1), ("b", 2)])
+  @test.assert_eq(m.get_by_right(99), None)
+  @test.assert_eq(it.next(), Some(("a", 1)))
+  @test.assert_eq(it.next(), Some(("b", 2)))
+}
+
+///|
+test "get_or_insert_left: absent key + free right inserts and returns r" {
+  let m = @aurasuisui/bimap.BiMap::from_array([("a", 1)])
+  @test.assert_eq(m.get_or_insert_left("b", 2), 2)
+  @test.assert_eq(m.len(), 2)
+  @test.assert_eq(m.get_by_left("b"), Some(2))
+  @test.assert_eq(m.get_by_right(2), Some("b"))
+}
+
+///|
+test "get_or_insert_left: C3 takeover evicts the old owner of r" {
+  let m = @aurasuisui/bimap.BiMap::from_array([("a", 1), ("b", 2)])
+  // "c" is absent but 2 is bound to "b": full insert semantics, NOT
+  // "insert only when both sides are free" — b is evicted entirely.
+  @test.assert_eq(m.get_or_insert_left("c", 2), 2)
+  @test.assert_eq(m.len(), 2) // takeover: net length unchanged
+  @test.assert_eq(m.get_by_left("c"), Some(2))
+  @test.assert_eq(m.get_by_right(2), Some("c"))
+  @test.assert_eq(m.contains_left("b"), false)
+  @test.assert_eq(m.contains_pair("c", 2), true) // l <-> r holds after the call
+}
+
+///|
+test "get_or_insert_right: present value returns its left, no mutation" {
+  let m = @aurasuisui/bimap.BiMap::from_array([("a", 1), ("b", 2)])
+  @test.assert_eq(m.get_or_insert_right(1, "zzz"), "a")
+  @test.assert_eq(m.len(), 2)
+  @test.assert_eq(m.into_array(), [("a", 1), ("b", 2)])
+}
+
+///|
+test "get_or_insert_right: absent value + free left inserts and returns l" {
+  let m = @aurasuisui/bimap.BiMap::from_array([("a", 1)])
+  @test.assert_eq(m.get_or_insert_right(2, "b"), "b")
+  @test.assert_eq(m.len(), 2)
+  @test.assert_eq(m.get_by_right(2), Some("b"))
+  @test.assert_eq(m.get_by_left("b"), Some(2))
+}
+
+///|
+test "get_or_insert_right: C2 rebind evicts the old right of l" {
+  let m = @aurasuisui/bimap.BiMap::from_array([("a", 1), ("b", 2)])
+  // 3 is absent but "b" is bound to 2: full insert semantics — the pair
+  // (b, 2) is evicted by a C2 rebind of b onto 3.
+  @test.assert_eq(m.get_or_insert_right(3, "b"), "b")
+  @test.assert_eq(m.len(), 2)
+  @test.assert_eq(m.get_by_left("b"), Some(3))
+  @test.assert_eq(m.get_by_right(2), None)
+  @test.assert_eq(m.contains_pair("b", 3), true) // l <-> r holds after the call
+}

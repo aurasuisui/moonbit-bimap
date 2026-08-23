@@ -2,8 +2,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
 // Additional public API: non-overwriting insert, positional (index) access,
-// and construction / conversion helpers. All mutations still funnel through
-// the invariant chokepoints in bimap.mbt (put_pair / remove_by_*).
+// construction / conversion helpers, snapshot collection views, and the
+// original entry-style helpers. All mutations still funnel through the
+// invariant chokepoints in bimap.mbt (put_pair / remove_by_* / retain) —
+// in particular get_or_insert_left/right go through the public `insert`.
 
 // ---------------------------------------------------------------------------
 // Non-overwriting insert
@@ -149,4 +151,104 @@ pub fn[L : Hash + Eq, R : Hash + Eq] BiMap::to_inverse(
     i = i + 1
   }
   result
+}
+
+// ---------------------------------------------------------------------------
+// Collection snapshot views (original extension)
+// ---------------------------------------------------------------------------
+
+///|
+/// Return a snapshot of the left keys as an array, in insertion order. This
+/// is an independent COPY: mutating the returned array does not affect the
+/// map.
+///
+/// **Zero trait bounds** — this is the whole point vs `lefts()`: usable from
+/// generic code that holds a `BiMap[L, R]` without any `Hash`/`Eq` on either
+/// side (see SPEC §6).
+pub fn[L, R] BiMap::left_keys(self : BiMap[L, R]) -> Array[L] {
+  self.order.copy()
+}
+
+///|
+/// Return a snapshot of the right values as an array, in the insertion order
+/// of their left keys. This is an independent COPY: mutating the returned
+/// array does not affect the map.
+///
+/// Reading a right value requires resolving its left key in the forward
+/// table, hence `L : Hash + Eq`; `R` itself is unconstrained.
+///
+/// (Rust bimap's same-named `right_values()` is a lazy iterator in hash-table
+/// order; this is an insertion-ordered eager snapshot — see SPEC §6.6.)
+pub fn[L : Hash + Eq, R] BiMap::right_values(self : BiMap[L, R]) -> Array[R] {
+  let result : Array[R] = []
+  let mut i = 0
+  while i < self.order.length() {
+    let l = self.order[i]
+    match self.forward.get(l) {
+      Some(r) => result.push(r)
+      None => ()
+    }
+    i = i + 1
+  }
+  result
+}
+
+// ---------------------------------------------------------------------------
+// Entry-style helpers (original extension — NOT in Rust bimap v0.6.3)
+// ---------------------------------------------------------------------------
+
+///|
+/// Return the right value currently bound to left key `l`; if `l` is absent,
+/// insert the pair `(l, r)` and return `r`.
+///
+/// **Original extension**: verified absent from bimap-rs 0.6.3 — unlike
+/// `retain` this is NOT a port, so there is no differential oracle and the
+/// semantics are pinned by tests (SPEC §6).
+///
+/// Surprise surface: when the insert path runs (`l` absent), full `insert`
+/// semantics apply — after the call `l ↔ r` is guaranteed to hold, but if `r`
+/// was already bound to another left key, that pair is evicted by a C3
+/// takeover (this is NOT "insert only when both sides are free"). When `l` is
+/// present the map is NOT mutated (no version bump; active iterators stay
+/// valid) and its current right value is returned.
+pub fn[L : Hash + Eq, R : Hash + Eq] BiMap::get_or_insert_left(
+  self : BiMap[L, R],
+  l : L,
+  r : R,
+) -> R {
+  match self.forward.get(l) {
+    Some(r0) => r0
+    None => {
+      self.insert(l, r) |> ignore
+      r
+    }
+  }
+}
+
+///|
+/// Return the left key currently bound to right value `r`; if `r` is absent,
+/// insert the pair `(l, r)` and return `l`.
+///
+/// **Original extension**: verified absent from bimap-rs 0.6.3 — unlike
+/// `retain` this is NOT a port, so there is no differential oracle and the
+/// semantics are pinned by tests (SPEC §6).
+///
+/// Surprise surface: when the insert path runs (`r` absent), full `insert`
+/// semantics apply — after the call `l ↔ r` is guaranteed to hold, but if `l`
+/// was already bound to another right value, that pair is evicted by a C2
+/// rebind (this is NOT "insert only when both sides are free"). When `r` is
+/// present the map is NOT mutated (no version bump; active iterators stay
+/// valid) and its current left key is returned.
+pub fn[L : Hash + Eq, R : Hash + Eq] BiMap::get_or_insert_right(
+  self : BiMap[L, R],
+  r : R,
+  l : L,
+) -> L {
+  match self.backward.get(r) {
+    Some(l0) => l0
+    None => {
+      self.insert(l, r) |> ignore
+      l
+    }
+  }
 }

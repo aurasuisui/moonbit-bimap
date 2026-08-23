@@ -235,6 +235,20 @@ pub fn[L, R : Hash + Eq] BiMap::contains_right(
   self.backward.contains(r)
 }
 
+///|
+/// Return `true` if the exact pair `(l, r)` is present — i.e. the C1
+/// condition `get_by_left(l) == Some(r)`. O(1): only the forward table is
+/// consulted, so `R` needs `Eq` (for the comparison) but no `Hash`.
+/// (An original extension: Rust bimap v0.6.3 has no exact-pair membership
+/// query.)
+pub fn[L : Hash + Eq, R : Eq] BiMap::contains_pair(
+  self : BiMap[L, R],
+  l : L,
+  r : R,
+) -> Bool {
+  self.forward.get(l) == Some(r)
+}
+
 // ---------------------------------------------------------------------------
 // Removal (the removal chokepoints)
 // ---------------------------------------------------------------------------
