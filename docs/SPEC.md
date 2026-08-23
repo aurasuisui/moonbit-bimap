@@ -164,7 +164,7 @@ order 中无重复左键(双射 ⟹ 左键唯一)
 **架构纪律**:用三个收口点收口——
 - `put_pair(l, r) -> (R?, L?)`:插入路径**唯一**同时改 forward+backward+order+positions 的地方;
   返回被挤掉的 `(old_right?, old_left?)`,供 `insert` 映射成 `Overwritten`。
-- `remove_pair_by_left(l) -> R?` / `remove_pair_by_right(r) -> L?`:单对删除路径——双侧清理 +
+- `remove_by_left(l) -> R?` / `remove_by_right(r) -> L?`:单对删除路径——双侧清理 +
   维护 order/positions + bump version。
 - `retain(f)`:**批量删除路径**(第三个收口点):快照 + 逐对三结构删除 + `order` 原地压实
   (O(n),避开逐元素头删的 O(n²));全保留时 no-op 且不 bump version。
@@ -234,7 +234,7 @@ pub fn retain(self, f : (L, R) -> Bool) -> Unit
 > 吻合),同时是第三个 mutation 收口点(§4)。谓词内不得改 map。
 
 > **删除双侧清理是 BiMap 第二易错点**:删任一侧,另一侧 + order + positions 必须同步,
-> 并 bump `version`。只走 `remove_pair_by_left`/`remove_pair_by_right`。
+> 并 bump `version`。只走 `remove_by_left`/`remove_by_right`。
 > **复杂度**:查找 O(1) 平均;删除另需 O(len) 最坏(`order` 移位保序)。按插入序从头批量
 > 删除 n 对总计 O(n²)——批量清理请逆序删或重建(README Gotcha #9、Performance 段)。
 
