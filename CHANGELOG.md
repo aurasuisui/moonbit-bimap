@@ -22,6 +22,30 @@ adheres to [Semantic Versioning](https://semver.org/).
   regenerated fixture diffs retain against the real crate step by step (1241
   retain observations) — ahead of the v0.2.0 plan's M3 schedule.
   Test suite: 238 → 247.
+- **Set views + entry-style helpers on `BiMap` (ORIGINAL extension, not a
+  port).** `contains_pair(l, r)` — O(1) exact-pair membership (the C1 check;
+  forward table only, so the bounds are `[L : Hash + Eq, R : Eq]`); snapshot
+  views `left_keys() -> Array[L]` (**zero trait bounds** — usable from generic
+  code that has no `Hash`/`Eq` at all; the positioning difference vs the
+  `lefts()` iterator is in SPEC §6) and `right_values() -> Array[R]`
+  (insertion order, independent copies); and the stateless query-insert
+  helpers `get_or_insert_left(l, r) -> R` / `get_or_insert_right(r, l) -> L`.
+  Proximity to the reference crate (verified against bimap-rs 0.6.3 source):
+  `contains_pair`, `left_keys` and `get_or_insert_left/right` do NOT exist
+  upstream — original extensions with no differential oracle, semantics
+  pinned by tests (present-key no-mutation with a live iterator, fresh
+  insert, and the C3-takeover / C2-rebind eviction paths on both sides);
+  `right_values` shares its name with Rust's lazy iterator but deliberately
+  differs (insertion-ordered eager snapshot — see Notes). All mutations
+  route through the existing `insert` chokepoint; SPEC §10 records the
+  adjudication that these are NOT the excluded Entry API (no entry view
+  objects, no update callbacks). Test suite: 247 → 263.
+
+### Notes
+- **`right_values` 同名不同语义(真源核验修正).** bimap-rs 0.6.3 的
+  `BiHashMap::right_values()` 返回惰性迭代器 `RightValues`(哈希序、无排序承诺);
+  本库同名方法返回**插入序 `Array[R]` 急求值快照**——与 `to_inverse` 同一"不做
+  活视图"决策(MoonBit 无共享活视图的所有权基础)。同名不同契约,SPEC §6.6 两相对照。
 
 ## [0.1.3] - 2026-08-23
 

@@ -289,6 +289,42 @@ pub fn into_array(self) -> Array[(L, R)]
 ### §6.5 `iter()` 的遍历顺序
 按**左键插入序**产出 `(L, R)`。这是"保序"卖点的落点,**写进 README**。
 
+### §6.6 集合视图快照 + entry 助手(v0.2.0 M2,**原创扩展**)
+
+> 真源核验(bimap-rs 0.6.3 源码):`contains_pair`、`left_keys`、
+> `get_or_insert_left/right` **不存在**——原创扩展,无真源差分,语义由测试钉死。
+> `right_values` 是唯一同名项:Rust 的 `right_values()` 返回惰性迭代器
+> `RightValues`(哈希序、无排序承诺);本库同名方法返回**插入序 `Array[R]` 快照**
+> (不做活视图,与 `to_inverse` 同一决策)——同名不同契约,CHANGELOG Notes 已记录。
+> 集合视图统一决策:**不做活视图**(MoonBit 无 Set trait、无所有权基础),做快照
+> 访问器 + 成员判定。
+
+```moonbit
+// 成员判定(O(1),即 C1 判定;只查 forward,故 R 只需 Eq 不需 Hash)
+pub fn[L : Hash + Eq, R : Eq] BiMap::contains_pair(self, l : L, r : R) -> Bool
+
+// 快照(插入序,拷贝;改返回数组不影响 map)
+pub fn[L, R] BiMap::left_keys(self) -> Array[L]              // 零约束
+pub fn[L : Hash + Eq, R] BiMap::right_values(self) -> Array[R]
+
+// entry 风格助手(原创;无状态一次性查询-插入,走既有 insert 收口点)
+pub fn[L : Hash + Eq, R : Hash + Eq] BiMap::get_or_insert_left(self, l : L, r : R) -> R
+pub fn[L : Hash + Eq, R : Hash + Eq] BiMap::get_or_insert_right(self, r : R, l : L) -> L
+```
+
+### §6.7 `left_keys` 与既有 `lefts()` 的定位差异(不是重复建设)
+`lefts()` 是惰性 fail-fast 迭代器,要求 `L : Hash + Eq`;`left_keys()` 的增量价值是
+**零约束 + 直出 `Array[L]` 快照**——在"持有 `BiMap[L, R]` 但两侧没有任何 trait 约束"
+的泛型上下文里可用。这是它存在的理由,不是重复建设。
+
+### §6.8 `get_or_insert_*` 语义(原创,测试钉死,无真源)
+- `get_or_insert_left(l, r) -> R`:若 `l` 已存在,返回其当前右值,**不改动 map**(不
+  bump version,迭代器不失效);若 `l` 不存在,走完整 `insert(l, r)` 并返回 `r`。
+  **惊奇面**:插入路径上若 `r` 已绑别的左键 `l'`,`(l', r)` 被 C3 驱逐——完整 insert
+  语义,非"仅当空闲才插入";调用返回后 `l ↔ r` 成立。
+- `get_or_insert_right(r, l) -> L`:镜像。插入路径(r 不存在)上若 `l` 已绑别的右值
+  `r'`,`(l, r')` 被 C2 改绑挤掉;调用返回后 `l ↔ r` 成立。
+
 ---
 
 ## §7 Trait 实现(关键:`Eq`/`Hash` 顺序无关)
@@ -364,12 +400,14 @@ struct BiMap[L, R] {
 
 常量:`MIN_CAPACITY=16`、负载因子 `3/4`、`TOMBSTONE_HASH=-1`、`NO_DISTANCE=-1`。
 类型约束:**按方法最小化**(struct 本身无约束)。写路径方法(`insert`、`insert_no_overwrite`、
-`remove_by_left/right`、`from_array`、`copy`、`to_inverse`、`get_index_of_right`)需双侧
-`Hash + Eq`;单侧只读方法只约束被查询的一侧——`new`、`with_capacity`、`get_by_left`、
-`contains_left`、`get_index`、`get_index_of_left`、`first`、`last`、`iter`、`lefts`、
-`rights`、`into_array` 为 `[L : Hash + Eq, R]`,`get_by_right`、`contains_right` 为
-`[L, R : Hash + Eq]`。trait impl 同理收紧:`Eq` 需 `R : Eq`(比值)、`Hash` 需 `R : Hash`、
-`Default` 仅需 `L : Hash + Eq`(见 §7)。
+`remove_by_left/right`、`from_array`、`copy`、`to_inverse`、`get_index_of_right`、
+`get_or_insert_left/right`)需双侧 `Hash + Eq`;单侧只读方法只约束被查询的一侧——
+`new`、`with_capacity`、`get_by_left`、`contains_left`、`get_index`、
+`get_index_of_left`、`first`、`last`、`iter`、`lefts`、`rights`、`into_array`、
+`right_values` 为 `[L : Hash + Eq, R]`,`get_by_right`、`contains_right` 为
+`[L, R : Hash + Eq]`,`contains_pair` 为 `[L : Hash + Eq, R : Eq]`,`left_keys` 为
+**零约束** `[L, R]`(全库唯一零约束读方法)。trait impl 同理收紧:`Eq` 需 `R : Eq`(比值)、
+`Hash` 需 `R : Hash`、`Default` 仅需 `L : Hash + Eq`(见 §7)。
 
 ---
 
@@ -384,6 +422,7 @@ struct BiMap[L, R] {
 | 反向 | `get_by_right(r)`, `contains_right(r)`, `remove_by_right(r) -> L?` |
 | 索引 | `get_index(i)`, `get_index_of_left(l)`, `get_index_of_right(r)`, `first()`, `last()` |
 | 迭代 | `iter()`, `lefts()`, `rights()`, `into_array()` |
+| 视图/entry | `contains_pair(l, r)`, `left_keys()`, `right_values()`, `get_or_insert_left(l, r) -> R`, `get_or_insert_right(r, l) -> L` |
 | 转换 | `to_inverse() -> BiMap[R, L]` |
 | Traits | `Debug`, `Default`, `Show`, `Hash`(顺序无关), `Eq`(顺序无关), `ToJson`, `Arbitrary` |
 
@@ -397,3 +436,9 @@ struct BiMap[L, R] {
 - ❌ 实时 `inverse()` 活视图——用 `to_inverse()` 拷贝替代。
 - ❌ 严格 `fail!` 插入——用 `insert` + 检查 `Overwritten` 表达。
 - ❌ 多线程/并发(如 DashMap)——单线程库,indexmap 同款定位。
+
+> **裁决(v0.2.0 M2)**:`get_or_insert_left/right` **不属于**上列"Entry API"排除范围。
+> 这里排除的是 entry 视图对象(`OccupiedEntry`/`VacantEntry`)、`get_mut` 与 update
+> 类回调修改(indexmap 的历史 bug 聚集地:entry 缓存的索引在结构变更后失效)。
+> `get_or_insert_*` 是无状态的一次性"查询-插入"组合,内部走既有 `insert` 收口点,
+> 不引入任何 entry 对象或 update 回调,不产生该失效风险面。见 §6.6–§6.8。

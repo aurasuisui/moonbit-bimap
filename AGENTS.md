@@ -13,7 +13,7 @@ on the author's `aurasuisui/indexmap`; the Robin Hood engine is adapted, not imp
 
 ```bash
 moon check          # type check
-moon test           # run all tests (247)
+moon test           # run all tests (263)
 moon fmt            # format (CI enforces `moon fmt --check`)
 moon build          # build
 ```
@@ -142,7 +142,7 @@ mutation**, so a C4-shaped conflict returns `Err` without collapsing.
 - `src/lib.mbt` — public re-exports (`new`/`with_capacity`), `VERSION`, `Overwritten` enum.
 - `src/hashtable.mbt` — private Robin Hood engine (adapted from indexmap; no ordering).
 - `src/bimap.mbt` — BiMap core: two inverse tables + `order` + `positions` + `put_pair`.
-- `src/bimap_api.mbt` — `insert_no_overwrite`, index access, `from_array`/`copy`/`to_inverse`.
+- `src/bimap_api.mbt` — `insert_no_overwrite`, index access, `from_array`/`copy`/`to_inverse`, views/entry helpers.
 - `src/bimap_iter.mbt` — fail-fast `iter`/`lefts`/`rights`.
 - `src/bimap_traits.mbt` — `Debug`/`Default`/`Show`/`Eq`/`Hash`/`ToJson`/`Arbitrary`.
 - `src/bimap_wbtest.mbt` — white-box invariant + HashDoS tests (`_wbtest.mbt`; reads private fields).

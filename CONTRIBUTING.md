@@ -7,7 +7,7 @@
 git clone https://github.com/aurasuisui/moonbit-bimap
 cd moonbit-bimap
 moon check   # type check
-moon test    # run all 247 tests
+moon test    # run all 263 tests
 moon fmt     # format
 ```
 
@@ -19,7 +19,8 @@ moon fmt     # format
 │   ├── lib.mbt            # Public re-exports (new/with_capacity), VERSION, Overwritten enum
 │   ├── hashtable.mbt      # Private pure Robin Hood engine (adapted from indexmap, no ordering)
 │   ├── bimap.mbt          # BiMap core: two inverse tables + order + positions + put_pair
-│   ├── bimap_api.mbt      # insert_no_overwrite, index access, from_array/copy/to_inverse
+│   ├── bimap_api.mbt      # insert_no_overwrite, index access, from_array/copy/to_inverse,
+│   │                      #   views/entry helpers (left_keys/right_values/get_or_insert_*)
 │   ├── bimap_iter.mbt     # Fail-fast iter/lefts/rights
 │   ├── bimap_traits.mbt   # Debug/Default/Show/Eq/Hash/ToJson/Arbitrary
 │   ├── bimap_test.mbt     # Black-box unit tests (C0-C4 matrix, lookup, removal)
@@ -196,7 +197,7 @@ maps collide identically; hardened 2026-08). This is the opposite of `indexmap`
 | `regression_wbtest.mbt` | White-box | Tombstone-cluster probe-bug regression: sample-40 sequence with per-step invariants, duplicate-live-key bucket scans, sentinel-hash normalization |
 | `iter_test.mbt` | Unit | Simultaneous-iterator independence; `collect()` / `size_hint` effect |
 | `generics_test.mbt` | Unit | User-defined struct keys (both sides), portable Int boundary keys, capacity stability |
-| `edge_test.mbt` / `types_test.mbt` / `coverage_test.mbt` / `more_test.mbt` | Unit | Edge cases, boundary key/value types, extra coverage |
+| `edge_test.mbt` / `types_test.mbt` / `coverage_test.mbt` / `more_test.mbt` | Unit | Edge cases, boundary key/value types, views/entry helpers (v0.2.0 M2), extra coverage |
 
 Conventions:
 ```moonbit
