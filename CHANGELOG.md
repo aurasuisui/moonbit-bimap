@@ -86,6 +86,14 @@ adheres to [Semantic Versioning](https://semver.org/).
   4. `first()` / `last()` 语义 = 最小/最大左键(非 BiMap 的最早/最晚插入),
      SPEC §11.4 差异表明示;`clear()` 不提供(范围纪律,retain-none 可达空表)。
 
+### Process
+- **发布前检查:RELEASE_CHECKLIST 全绿 @ 58c87d0**(2026-08-24,0.2.0)。
+  版本戳全量一致;跨后端矩阵 wasm-gc 与 native 均 334/334;五步 CI 于 main 全绿;
+  `moon publish --dry-run` 打包 + 解包校验通过;`cargo clean tools/diffgen` + 发布后
+  zip 抽查(无 `target/`/`drafts/`/`reference/`);`cmd/*` 与 `bench/` 升至 @0.2.0 并
+  对已发布包实跑验证通过(bench 新增 BiBTreeMap 基准:insert-fresh /
+  get_by_left-hit / range-quarter)。
+
 ## [0.1.3] - 2026-08-23
 
 ### Fixed

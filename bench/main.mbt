@@ -41,6 +41,16 @@ fn build_map(n : Int) -> Map[Int, Int] {
 }
 
 ///|
+/// Build a BiBTreeMap with `n` distinct pairs (all C0 inserts): i <-> 2i+1.
+fn build_bbtreemap(n : Int) -> @aurasuisui/bimap.BiBTreeMap[Int, Int] {
+  let m : @aurasuisui/bimap.BiBTreeMap[Int, Int] = @aurasuisui/bimap.BiBTreeMap::new()
+  for i in 0..<n {
+    m.insert(i, i * 2 + 1) |> ignore
+  }
+  m
+}
+
+///|
 fn main {
   let sizes = [10_000, 100_000]
   let b = @bench.Bench()
@@ -141,6 +151,39 @@ fn main {
     println("# [bench] bimap.hash-full.n\{n}")
     b.bench(name="bimap.hash-full.n\{n}", count=5, fn() {
       b.keep(Hash::hash(bm))
+    })
+
+    // ---------------- BiBTreeMap (sorted variant) ----------------
+    println("# [bench] bbtree.insert-fresh.n\{n}")
+    b.bench(name="bbtree.insert-fresh.n\{n}", count=5, fn() {
+      b.keep(build_bbtreemap(n))
+    })
+
+    let bt = build_bbtreemap(n)
+    println("# [bench] bbtree.get_by_left-hit.n\{n}")
+    b.bench(name="bbtree.get_by_left-hit.n\{n}", count=5, fn() {
+      let mut state = 0x1234_5678
+      let mut acc = 0
+      for _ in 0..<n {
+        state = next_state(state)
+        match bt.get_by_left(state % n) {
+          Some(v) => acc = acc + v
+          None => ()
+        }
+      }
+      b.keep(acc)
+    })
+
+    // Range slice over the middle quarter of the key space.
+    println("# [bench] bbtree.range-quarter.n\{n}")
+    b.bench(name="bbtree.range-quarter.n\{n}", count=5, fn() {
+      let lo = n / 4
+      let hi = n / 2
+      let mut acc = 0
+      for pair in bt.range(lo, hi) {
+        acc = acc + pair.0 + pair.1
+      }
+      b.keep(acc)
     })
 
     // ---------------- built-in Map baseline ----------------

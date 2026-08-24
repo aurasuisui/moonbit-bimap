@@ -124,3 +124,5 @@
   新增的"Rust 构建产物不进包"项首次执行:cargo clean + 发布后 zip 清单抽查。
 - **2026-08-23**:0.1.3 hotfix(仅引擎修复,retain 归 0.2.0),门禁逐项全绿(见 CHANGELOG
   `[0.1.3]` Process)。
+- **2026-08-24**:0.2.0 发布(retain 移植 + 集合视图/entry 原创扩展 + BiBTreeMap 排序
+  变体 + BiBTreeMap 差分升级),门禁逐项全绿(见 CHANGELOG `[0.2.0]` Process)。

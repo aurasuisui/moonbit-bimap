@@ -241,8 +241,14 @@ test "descriptive english name" {
   native timing benchmarks (`bench/`, official `@bench`), hardened order-independent
   hash (sorted-fingerprint canonical form). See CHANGELOG `[0.1.2]` for details.
 
-### v0.2.0 — Planned (not in scope for the hackathon)
-- `BiBTreeMap` (sorted variant), `retain`, set-view adapters, richer entry-style helpers.
+### v0.2.0 — Sorted variant + views/entry
+- `retain(pred)` (port of Rust bimap's bulk filter, third mutation chokepoint),
+  set views + entry helpers (`contains_pair` / `left_keys` / `right_values` /
+  `get_or_insert_left/right`, original extensions), and `BiBTreeMap` — the sorted
+  bijection on two core SortedMaps with `range` (inclusive `[lo, hi]`), min/max
+  `first`/`last`, zero-bound snapshots, and differential tests against the real
+  Rust `BiBTreeMap` (golden + 6000-op stream + exact sorted terminal state).
+  Reverse-side range (`right_range`) deferred to v0.2.x. See CHANGELOG `[0.2.0]`.
 
 ---
 
