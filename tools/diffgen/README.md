@@ -17,12 +17,20 @@ operation streams shared with the MoonBit tests:
    insert_no_overwrite / retain with the deterministic predicate
    `(l + r) % 3 != 0`).
 
-It emits [`src/differential_fixture_test.mbt`](../../src/differential_fixture_test.mbt):
-for every step the observed `Overwritten` classification (or `Option`/`Result`/
-`Retain` observation) plus the resulting length, and the final pair set. The
-MoonBit side (`src/differential_test.mbt`) replays the same streams through the
-real `BiMap` and must reproduce every observation. `moon test` runs the
-comparison **without needing Rust** — the fixture is checked in.
+It emits TWO fixtures:
+
+1. [`src/differential_fixture_test.mbt`](../../src/differential_fixture_test.mbt)
+   (BiHashMap): every step's `Overwritten` classification (or `Option`/`Result`/
+   `Retain` observation) + length, then the final pair SET. Replayed by
+   `src/differential_test.mbt`.
+2. [`src/bbtreemap_diff_fixture_test.mbt`](../../src/bbtreemap_diff_fixture_test.mbt)
+   (BiBTreeMap): the SAME golden + LCG streams, then the final pair list IN
+   ITERATION ORDER (ascending by left key) — the sorted-terminal-state check,
+   stronger than the BiMap side's membership-only comparison. Replayed by
+   `src/bbtreemap_diff_test.mbt`.
+
+`moon test` runs both comparisons **without needing Rust** — the fixtures are
+checked in.
 
 ## Regenerating the fixture
 
@@ -30,10 +38,10 @@ Requires a Rust toolchain (`rustup`/`cargo`) and crates.io access.
 
 ```bash
 cd tools/diffgen
-cargo run --release -- ../../src/differential_fixture_test.mbt
+cargo run --release -- ../../src/differential_fixture_test.mbt ../../src/bbtreemap_diff_fixture_test.mbt
 cd ../..
 moon fmt          # normalize the generated formatting (CI enforces fmt)
-moon test         # the differential tests must pass against the new fixture
+moon test         # the differential tests must pass against the new fixtures
 ```
 
 Regenerate only when the shared op streams change or when re-pinning the
@@ -42,9 +50,11 @@ reference crate; commit `Cargo.lock` together with the fixture.
 ## Scope note
 
 Only the **ported semantics** are diffed (insert / insert_no_overwrite /
-remove / lookups / retain as observable `Overwritten` / `Option` / `Result` /
-`Retain` values and lengths). Insertion-order preservation and index access
-are this library's original extensions — Rust `bimap` has neither — so they
-stay covered by `model_test.mbt`'s oracle instead.
+remove / retain as observable `Overwritten` / `Option` / `Result` / `Retain`
+values and lengths, plus the BiBTreeMap iteration order). Insertion-order
+preservation and index access are `BiMap`-only original extensions, and
+`BiBTreeMap`'s `range`/`left_keys`/`right_values`/`first`/`last`/
+`get_or_insert_*` surface is this library's own (boundary semantics pinned by
+`bbtreemap_test.mbt`) — none of these are diffed.
 
 [`bimap`]: https://github.com/billyrieger/bimap-rs
