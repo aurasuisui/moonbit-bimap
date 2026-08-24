@@ -17,6 +17,40 @@ pub fn[L : Hash + Eq, R] with_capacity(Int) -> BiMap[L, R]
 // Errors
 
 // Types and methods
+type BiBTreeMap[L, R]
+pub fn[L : Compare, R] BiBTreeMap::contains_left(Self[L, R], L) -> Bool
+pub fn[L : Compare, R : Compare] BiBTreeMap::contains_pair(Self[L, R], L, R) -> Bool
+pub fn[L, R : Compare] BiBTreeMap::contains_right(Self[L, R], R) -> Bool
+pub fn[L, R] BiBTreeMap::copy(Self[L, R]) -> Self[L, R]
+pub fn[L, R] BiBTreeMap::first(Self[L, R]) -> (L, R)?
+pub fn[L : Compare, R : Compare] BiBTreeMap::from_array(Array[(L, R)]) -> Self[L, R]
+pub fn[L : Compare, R] BiBTreeMap::get_by_left(Self[L, R], L) -> R?
+pub fn[L, R : Compare] BiBTreeMap::get_by_right(Self[L, R], R) -> L?
+pub fn[L : Compare, R : Compare] BiBTreeMap::get_or_insert_left(Self[L, R], L, R) -> R
+pub fn[L : Compare, R : Compare] BiBTreeMap::get_or_insert_right(Self[L, R], R, L) -> L
+pub fn[L : Compare, R : Compare] BiBTreeMap::insert(Self[L, R], L, R) -> Overwritten[L, R]
+pub fn[L : Compare, R : Compare] BiBTreeMap::insert_no_overwrite(Self[L, R], L, R) -> Result[Unit, (L, R)]
+pub fn[L, R] BiBTreeMap::into_array(Self[L, R]) -> Array[(L, R)]
+pub fn[L, R] BiBTreeMap::is_empty(Self[L, R]) -> Bool
+pub fn[L, R] BiBTreeMap::iter(Self[L, R]) -> Iter[(L, R)]
+pub fn[L, R] BiBTreeMap::last(Self[L, R]) -> (L, R)?
+pub fn[L, R] BiBTreeMap::left_keys(Self[L, R]) -> Array[L]
+pub fn[L, R] BiBTreeMap::len(Self[L, R]) -> Int
+pub fn[L : Compare, R : Compare] BiBTreeMap::new() -> Self[L, R]
+pub fn[L : Compare, R] BiBTreeMap::range(Self[L, R], L, L) -> Iter[(L, R)]
+pub fn[L : Compare, R : Compare] BiBTreeMap::remove_by_left(Self[L, R], L) -> R?
+pub fn[L : Compare, R : Compare] BiBTreeMap::remove_by_right(Self[L, R], R) -> L?
+pub fn[L : Compare, R : Compare] BiBTreeMap::retain(Self[L, R], (L, R) -> Bool) -> Unit
+pub fn[L, R] BiBTreeMap::right_values(Self[L, R]) -> Array[R]
+pub fn[L, R] BiBTreeMap::to_inverse(Self[L, R]) -> Self[R, L]
+pub impl[L : Compare, R : Compare] Default for BiBTreeMap[L, R]
+pub impl[L : Compare, R : Eq] Eq for BiBTreeMap[L, R]
+pub impl[L : Hash, R : Hash] Hash for BiBTreeMap[L, R]
+pub impl[L : Show, R : Show] Show for BiBTreeMap[L, R]
+pub impl[L : Show, R : ToJson] ToJson for BiBTreeMap[L, R]
+pub impl[L : @debug.Debug, R : @debug.Debug] @debug.Debug for BiBTreeMap[L, R]
+pub impl[L : @quickcheck.Arbitrary + Compare, R : @quickcheck.Arbitrary + Compare] @quickcheck.Arbitrary for BiBTreeMap[L, R]
+
 type BiMap[L, R]
 pub fn[L, R] BiMap::capacity(Self[L, R]) -> Int
 pub fn[L : Hash + Eq, R] BiMap::contains_left(Self[L, R], L) -> Bool
