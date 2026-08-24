@@ -40,6 +40,33 @@ adheres to [Semantic Versioning](https://semver.org/).
   route through the existing `insert` chokepoint; SPEC §10 records the
   adjudication that these are NOT the excluded Entry API (no entry view
   objects, no update callbacks). Test suite: 247 → 263.
+- **`BiBTreeMap` — the sorted bijection (a PORT of Rust bimap's `BiBTreeMap`,
+  with the same original-extension surface as `BiMap`).** Two core `SortedMap`
+  tables (ordered by left / by right) replace the hash tables; sorted order
+  replaces insertion order, so there is NO index access (SPEC §11.4 difference
+  table). Full parity surface: C0–C4 `insert` (same `Overwritten`),
+  `insert_no_overwrite`, both-direction lookup/removal, `retain` (predicate
+  once per pair in ascending order, keep-all = no version bump), `copy` /
+  `to_inverse` (table-copy swap, both zero-bound), `contains_pair` /
+  `left_keys` / `right_values` / `get_or_insert_left/right`, fail-fast
+  `iter` / `into_array`, and the full trait set (`Eq` set semantics, `Hash`
+  with the shared sorted-fingerprint canonical form). Sorted dividends:
+  `first()` / `last()` = smallest / largest LEFT KEY, and
+  `range(lo, hi) -> Iter` — inclusive `[lo, hi]` on both ends (the core
+  `SortedMap::range` boundary semantics, pinned by tests; see Notes for the
+  Rust `left_range` comparison). Keys need only `Compare` (no `Hash`), and
+  the snapshot/iteration/copy methods are all ZERO-bound (a dividend of the
+  tree engine: Hash/Debug/Show/ToJson impls need no `Compare` either — all
+  bounds minimized under the 0053 gate).
+- **Differential tests extended to `BiBTreeMap`**: `tools/diffgen` now emits
+  a second fixture running the REAL Rust `bimap` v0.6.3 `BiBTreeMap` over the
+  same golden C0–C4 sequence and the same 6000-step 5-op LCG stream (retain
+  predicate verbatim), plus the final pair list in iteration order.
+  `src/bbtreemap_diff_test.mbt` replays both streams step by step and then
+  compares the FULL sorted terminal state (order included) — stronger than
+  the BiMap side's membership-only final check. Regenerating the BiMap
+  fixture stays byte-identical except for the regenerate-command header.
+  Test suite: 263 → 334 (68 unit/property + 3 differential).
 
 ### Notes
 - **`right_values` 同名不同语义(真源核验修正).** bimap-rs 0.6.3 的
@@ -48,6 +75,16 @@ adheres to [Semantic Versioning](https://semver.org/).
   活视图"决策(MoonBit 无共享活视图的所有权基础)。同名不同契约,SPEC §6.6 两相对照。
   左侧参照:bimap-rs 的 `left_values()` 是同款哈希序惰性迭代器,与本库 `left_keys`
   是近亲(名称与契约均不同)——真源对照时注意,勿误判左侧完全没有上游参照。
+- **BiBTreeMap 与真源的四处显式决策(v0.2.0 M3):**
+  1. `range(lo, hi)` **两端闭**——边界语义以 core `SortedMap::range` 实测为准
+     (源码 `low <= key <= high` 才产出);Rust `left_range` 是 RangeBounds 参数
+     (`a..b` 右开),本库等价于 `a..=b`。测试钉死(含 lo==hi、lo>hi、边界不在表内)。
+  2. **反向区间 defer**:Rust `right_range`(btree.rs:558)显式留 v0.2.x——反向查找
+     已有 `get_by_right` 覆盖主需求,无紧迫场景。已批准决策,不是遗漏(SPEC §11.3)。
+  3. `right_values()` **同名不同序**:Rust 的按右值升序(遍历 right2left),本库返回
+     按左键升序的急求值快照(与 §6.6 的"同名不同契约"同族,SPEC §11.5 对照)。
+  4. `first()` / `last()` 语义 = 最小/最大左键(非 BiMap 的最早/最晚插入),
+     SPEC §11.4 差异表明示;`clear()` 不提供(范围纪律,retain-none 可达空表)。
 
 ## [0.1.3] - 2026-08-23
 

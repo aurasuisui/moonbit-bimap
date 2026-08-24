@@ -430,6 +430,9 @@ struct BiMap[L, R] {
 | 转换 | `to_inverse() -> BiMap[R, L]` |
 | Traits | `Debug`, `Default`, `Show`, `Hash`(顺序无关), `Eq`(顺序无关), `ToJson`, `Arbitrary` |
 
+> 排序变体 `BiBTreeMap` 的完整 API 与差异表见 **§11**(插入序→左键升序,无索引,
+> `first`/`last` 语义不同,`range(lo, hi)` 两端闭)。
+
 ---
 
 ## §10 不实现 / 明确排除(避免范围蔓延)
@@ -446,3 +449,141 @@ struct BiMap[L, R] {
 > 类回调修改(indexmap 的历史 bug 聚集地:entry 缓存的索引在结构变更后失效)。
 > `get_or_insert_*` 是无状态的一次性"查询-插入"组合,内部走既有 `insert` 收口点,
 > 不引入任何 entry 对象或 update 回调,不产生该失效风险面。见 §6.6–§6.8。
+
+---
+
+## §11 BiBTreeMap — 排序双射(v0.2.0 M3)
+
+> 定位:`BiMap` 的排序变体。数据层用两个 core `SortedMap` 互逆表(与 BiMap 的双
+> HashTab 同构),**排序取代插入序**:迭代与快照按左键升序,**无插入序、无索引访问**。
+> 插入 C0–C4 / `Overwritten` / 删除 / Eq / Hash / fail-fast 与 BiMap 逐项对齐,
+> 差异只在与"顺序"有关之处——全部列在 §11.4 差异表。约束写 `Compare`
+> (`builtin/traits.mbt` 实测 `Compare: Eq` 超类,C1 判定的 `==` 免费可用)。
+
+### §11.1 数据布局与不变量
+
+```
+BiBTreeMap[L, R]
+├── forward  : SortedMap[L, R]   // 按 L 有序
+├── backward : SortedMap[R, L]   // 按 R 有序(反查)
+├── len      : Int   (mut)
+└── version  : Int   (mut)       // fail-fast 迭代
+```
+
+不变量:`∀ (l, r) ∈ forward ⟺ backward[r] == l`;`forward.length() == backward.length() == len`。
+**纪律照搬 BiMap**:三个 mutation 收口点——`put_pair`(插入)、`remove_by_left/right`
+(单对删除)、`retain`(批量删除)。core `SortedMap::set` 返回 Unit(不还旧值),插入
+语义必须"**get 预判 + set**"(两侧旧值先读,再做 set/remove)——这是实现上的唯一正路。
+`copy`/`to_inverse` 构造新表、不改源表:`to_inverse` 直接交换两侧 SortedMap 的
+拷贝(新 forward = 旧 backward 拷贝,已按新左键有序),零重插、零约束。
+
+### §11.2 API(约束按方法最小化)
+
+```moonbit
+// 构造/转换
+pub fn[L : Compare, R : Compare] BiBTreeMap::new() -> BiBTreeMap[L, R]
+pub fn[L : Compare, R : Compare] BiBTreeMap::from_array(pairs : Array[(L, R)])  // 后赢
+pub fn[L, R] BiBTreeMap::copy(self) -> BiBTreeMap[L, R]          // 零约束
+pub fn[L, R] BiBTreeMap::to_inverse(self) -> BiBTreeMap[R, L]    // 零约束
+
+// 插入(复用 lib.mbt 的 Overwritten 枚举)
+pub fn[L : Compare, R : Compare] BiBTreeMap::insert(self, l, r) -> Overwritten[L, R]
+pub fn[L : Compare, R : Compare] BiBTreeMap::insert_no_overwrite(...) -> Result[Unit, (L, R)]
+
+// 查找/删除
+pub fn[L : Compare, R] BiBTreeMap::get_by_left(self, l) -> R?
+pub fn[L, R : Compare] BiBTreeMap::get_by_right(self, r) -> L?
+pub fn[L : Compare, R] BiBTreeMap::contains_left(self, l) -> Bool
+pub fn[L, R : Compare] BiBTreeMap::contains_right(self, r) -> Bool
+pub fn[L : Compare, R : Compare] BiBTreeMap::remove_by_left(self, l) -> R?
+pub fn[L : Compare, R : Compare] BiBTreeMap::remove_by_right(self, r) -> L?
+
+// 查询 / 排序红利
+pub fn[L, R] BiBTreeMap::len(self) -> Int
+pub fn[L, R] BiBTreeMap::is_empty(self) -> Bool
+pub fn[L, R] BiBTreeMap::first(self) -> (L, R)?   // 最小左键(O(log n) 走向最左)
+pub fn[L, R] BiBTreeMap::last(self) -> (L, R)?    // 最大左键(O(n) 走到迭代器尾)
+pub fn[L : Compare, R] BiBTreeMap::range(self, lo, hi) -> Iter[(L, R)]  // [lo, hi] 两端闭
+
+// v0.2.0 并行 API
+pub fn[L : Compare, R : Compare] BiBTreeMap::retain(self, f) -> Unit   // 真源 btree.rs:378 同款
+pub fn[L : Compare, R : Compare] BiBTreeMap::contains_pair(self, l, r) -> Bool
+pub fn[L, R] BiBTreeMap::left_keys(self) -> Array[L]          // 升序,零约束
+pub fn[L, R] BiBTreeMap::right_values(self) -> Array[R]       // 按左键升序,零约束
+pub fn[L : Compare, R : Compare] BiBTreeMap::get_or_insert_left(self, l, r) -> R
+pub fn[L : Compare, R : Compare] BiBTreeMap::get_or_insert_right(self, r, l) -> L
+
+// 迭代
+pub fn[L, R] BiBTreeMap::iter(self) -> Iter[(L, R)]            // 按 L 升序,fail-fast
+pub fn[L, R] BiBTreeMap::into_array(self) -> Array[(L, R)]     // 按 L 升序
+
+// traits(约束逐个最小化,0053 门禁过)
+Eq [L : Compare, R : Eq]    Hash [L : Hash, R : Hash]
+Debug [L : Debug, R : Debug]  Show [L : Show, R : Show]
+ToJson [L : Show, R : ToJson]  Default [L : Compare, R : Compare]
+Arbitrary [L : @quickcheck.Arbitrary + Compare, R : @quickcheck.Arbitrary + Compare]
+```
+
+**零约束快照红利**:`into_array/iter/first/last/copy/to_inverse/left_keys/right_values/len/is_empty`
+全部零约束(不像 BiMap 的对应物需要 `L : Hash + Eq`),所以 Hash/Debug/Show/ToJson 的
+impl 也无需 Compare——比 BiMap 更宽松,已由 mbti 与 0053 门禁逐条验证。
+
+### §11.3 排序红利与显式决策
+
+- `first()`/`last()` = **最小/最大左键**(与 BiMap 的最早/最晚插入不同,§11.4 差异表)。
+  `last` 为 O(n)(无 O(1) 最大值游标;走到迭代器尾)。
+- **`range(lo, hi)` 两端闭区间 `[lo, hi]`**——边界语义以 core `SortedMap::range`
+  实测为准(源码: `low <= key <= high` 才产出),测试钉死。注意与 Rust
+  `left_range(a..b)`(右开)的习惯不同:本库等价于 `a..=b`;lo > hi 得空迭代器。
+- **defer:反向区间(右 range)不做**。Rust `right_range`(btree.rs:558)显式留 v0.2.x:
+  反向查找已有 `get_by_right` 覆盖主需求;无真源差分以外的紧迫场景。此 defer 是
+  已批准的显式决策,不是遗漏。
+- **`clear()` 不提供**(真源 btree.rs:101 有):计划范围外,retain-none 可达空表;
+  需要时 v0.2.x 按反馈增补。
+
+### §11.4 BiMap vs BiBTreeMap 差异表(防迁移误用)
+
+| 方面 | BiMap | BiBTreeMap |
+|---|---|---|
+| 顺序 | 插入序(左键) | **左键升序** |
+| 引擎 | 双 Robin Hood HashTab | 双 core SortedMap |
+| 索引访问 | `get_index` / `get_index_of_*` | ❌ 不提供(排序取代插入序) |
+| `first()`/`last()` | 最早 / 最晚插入 | **最小 / 最大左键** |
+| 容量 | `capacity()` / `with_capacity` | 无容量概念 |
+| `left_keys()` | 插入序 | 升序 |
+| `right_values()` | 插入序(左键序) | 按左键升序(与 Rust 同名方法相反,见 §11.5) |
+| range | ❌ | `range(lo, hi)` 两端闭 |
+| 键约束 | `Hash + Eq` | `Compare`(可用无 Hash 类型) |
+| 快照/迭代约束 | 多需 `L : Hash + Eq` | **零约束** |
+| 删除复杂度 | O(len) 保序移位 | O(log n),无位移 |
+
+### §11.5 真源对照(bimap-rs 0.6.3 btree.rs,已逐项核对)
+
+- `insert`(btree.rs:442)与 `insert_no_overwrite`(479):与 BiHashMap 同款语义,
+  返回同一个 `Overwritten` 枚举(已复用 §2)。
+- `retain`(378):`BTreeMap::retain` 按左键升序逐对求值谓词、恰好一次——本库实现
+  吻合(快照 + 逐对双表删除,全保留 no-op 不 bump version)。
+- 迭代升序(125);`remove_by_left/right` 返回整对(303/341),本库拆成单侧返回值,
+  与 BiMap 同一"信息等价"决策。
+- `left_range`(521):RangeBounds 参数(`a..b` 右开);本库 `range` 固定两端闭(§11.3)。
+- `right_values()`(175):按**右值**升序(遍历 right2left);本库同名方法返回**按左键
+  升序**的急求值快照——**同名不同序**(且迭代器 vs 快照),测试钉死。
+- `left_values()`(150):按左键升序迭代器,是本库 `left_keys()` 的近亲参照(名称、
+  返回类型不同)。
+
+### §11.6 差分覆盖(比 BiMap 更强)
+
+`tools/diffgen` 第二份夹具:同一 5-op LCG 流(6000 步,retain 谓词 `(l + r) % 3 != 0`
+与 model_test 逐字一致)+ 黄金 C0–C4 序列 + **排序终态全量比对**(最终对列按迭代序与
+Rust 端逐元素相等——BiMap 侧只做成员判定,这里是序+内容双重)。MoonBit 侧:
+`src/bbtreemap_diff_test.mbt`。range/left_keys/right_values/first/last/get_or_insert_*
+是本库自身表面(边界语义由 `bbtreemap_test.mbt` 钉死),不进差分。
+
+### §11.7 Eq / Hash / fail-fast
+
+- Eq:集合相等(与 BiMap 同语义;排序表下与排序序列相等重合)。Hash:复用
+  `pair_fingerprint` + sort-fold 组合器(同算法同常数;与 BiMap 相同对集哈希同值
+  不作跨类型承诺)。Gotcha #2 的加固说明照搬。
+- fail-fast:迭代器快照 `version`,中途 mutation 即 abort——与 BiMap 同构;
+  **进程内不可测**,文档化(README Known Issues 同款)。
+- trait 约束最小化清单见 §11.2 尾部;Default/Arbitrary 需双侧 Compare(构造空双表)。

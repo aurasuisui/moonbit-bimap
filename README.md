@@ -53,6 +53,9 @@ fork or rename of `indexmap`.
 - **Inverse copy** — `to_inverse() -> BiMap[R, L]` (a copy, not a live view)
 - **Predicate filtering** — `retain(pred)` keeps only the matching pairs in O(n),
   preserving their relative insertion order (a port of Rust bimap's `retain`)
+- **Sorted bijection** — `BiBTreeMap`: the same contract on a sorted engine
+  (ascending by left key, `range` queries, `first`/`last` = min/max key), keys need
+  only `Compare`; differential-tested against Rust bimap's `BiBTreeMap`
 - **Set views + entry helpers** — `contains_pair(l, r)`, snapshot arrays `left_keys()` /
   `right_values()` (insertion order), and the stateless `get_or_insert_left` /
   `get_or_insert_right` — original extensions (Rust bimap v0.6.3 has none of them;
@@ -152,6 +155,39 @@ let r = m.insert("a", 2)     // Both((a,4),(c,2))  {a↔2}  — len 2→1!
 | Convert | `to_inverse() -> BiMap[R, L]` |
 | Traits | `Debug`, `Default`, `Show`, `Hash`, `Eq`, `ToJson`, `Arbitrary` |
 
+## BiBTreeMap — the sorted variant
+
+`BiBTreeMap[L, R]` is the same bijection on a **sorted** engine: two core `SortedMap`
+tables (ordered by left / by right). Sorted order replaces insertion order — no index
+access, `first()`/`last()` return the **smallest/largest left key**, and `range(lo, hi)`
+slices by left key (**inclusive on both ends**; the reverse-side range is deferred — see
+CHANGELOG). The whole C0–C4 insertion contract, `retain`, the M2 views/entry helpers,
+`Eq`/`Hash` set semantics, and fail-fast iterators carry over unchanged; keys only need
+`Compare` (no `Hash` required), and the snapshot/iteration/copy methods are all
+zero-bound. Differential-tested against the real Rust `bimap` `BiBTreeMap` v0.6.3
+(golden + 6000-op stream + exact sorted terminal state).
+
+```moonbit
+let m = @aurasuisui/bimap.BiBTreeMap::from_array([("b", 2), ("a", 1), ("c", 3)])
+println(m.into_array())       // [("a", 1), ("b", 2), ("c", 3)] — ascending by left
+println(m.first())            // Some(("a", 1))   — smallest left key
+println(m.range("a", "b").to_array())  // [("a", 1), ("b", 2)] — [lo, hi] inclusive
+```
+
+| Category | Methods |
+|---|---|
+| Construct | `new()`, `from_array(pairs)`, `default()`, `copy()` |
+| Query | `len()`, `is_empty()`, `first()`, `last()`, `range(lo, hi) -> Iter` |
+| Insert | `insert(l, r) -> Overwritten`, `insert_no_overwrite(l, r) -> Result[Unit,(L,R)]` |
+| Forward | `get_by_left(l)`, `contains_left(l)`, `remove_by_left(l) -> R?` |
+| Reverse | `get_by_right(r)`, `contains_right(r)`, `remove_by_right(r) -> L?` |
+| Views | `contains_pair(l, r)`, `left_keys()`, `right_values()` |
+| Entry | `get_or_insert_left(l, r) -> R`, `get_or_insert_right(r, l) -> L` |
+| Bulk | `retain(pred)` |
+| Iterate | `iter()`, `into_array()` |
+| Convert | `to_inverse() -> BiBTreeMap[R, L]` |
+| Traits | `Debug`, `Default`, `Show`, `Hash`, `Eq`, `ToJson`, `Arbitrary` |
+
 ## Design
 
 - **Two inverse Robin Hood hash tables** (`forward: L→R`, `backward: R→L`) keep the bijection.
@@ -210,7 +246,7 @@ single-machine numbers, indicative of constant factors, not absolute speed).
 
 ```bash
 moon check   # type check
-moon test    # run all 263 tests
+moon test    # run all 334 tests
 moon fmt     # format
 moon build   # build
 ```

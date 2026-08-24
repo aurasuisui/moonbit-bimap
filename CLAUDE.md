@@ -13,7 +13,7 @@ on the author's `aurasuisui/indexmap`; the Robin Hood engine is adapted, not imp
 
 ```bash
 moon check          # type check
-moon test           # run all tests (263)
+moon test           # run all tests (334)
 moon fmt            # format (CI enforces `moon fmt --check`)
 moon build          # build
 ```
@@ -145,6 +145,9 @@ mutation**, so a C4-shaped conflict returns `Err` without collapsing.
 - `src/bimap_api.mbt` — `insert_no_overwrite`, index access, `from_array`/`copy`/`to_inverse`, `left_keys`/`right_values`/`get_or_insert_*`.
 - `src/bimap_iter.mbt` — fail-fast `iter`/`lefts`/`rights`.
 - `src/bimap_traits.mbt` — `Debug`/`Default`/`Show`/`Eq`/`Hash`/`ToJson`/`Arbitrary`.
+- `src/bbtreemap.mbt` — BiBTreeMap core: two inverse SortedMaps + mutation chokepoints.
+- `src/bbtreemap_traits.mbt` — BiBTreeMap `Debug`/`Default`/`Show`/`Eq`/`Hash`/`ToJson`/`Arbitrary`.
+- `src/bbtreemap_diff_test.mbt` — differential vs the real Rust `BiBTreeMap` v0.6.3 (sorted terminal state).
 - `src/bimap_wbtest.mbt` — white-box invariant + HashDoS tests (`_wbtest.mbt`; reads private fields).
 - `*_test.mbt` — see CONTRIBUTING.md "Testing Guide" for which file covers what.
 
