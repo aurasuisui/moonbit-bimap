@@ -790,8 +790,26 @@ fn[L, R : Compare] one_bound_get_right(
 }
 
 ///|
+fn[L : Compare, R : Eq] bbtree_contains_pair_two_bound(
+  m : @aurasuisui/bimap.BiBTreeMap[L, R],
+  l : L,
+  r : R,
+) -> Bool {
+  m.contains_pair(l, r)
+}
+
+///|
+fn[L : Eq, R : Eq] bbtree_eq_two_bound(
+  a : @aurasuisui/bimap.BiBTreeMap[L, R],
+  b : @aurasuisui/bimap.BiBTreeMap[L, R],
+) -> Bool {
+  a == b
+}
+
+///|
 test "minimal bounds: zero-bound and one-side pins compile and run" {
   let m = @aurasuisui/bimap.BiBTreeMap::from_array([("b", 2), ("a", 1)])
+  let n = @aurasuisui/bimap.BiBTreeMap::from_array([("a", 1), ("b", 2)])
   @test.assert_eq(zero_bound_first(m), Some(("a", 1)))
   @test.assert_eq(zero_bound_last(m), Some(("b", 2)))
   @test.assert_eq(zero_bound_into_array(m), [("a", 1), ("b", 2)])
@@ -802,6 +820,9 @@ test "minimal bounds: zero-bound and one-side pins compile and run" {
   @test.assert_eq(zero_bound_right_values(m), [1, 2])
   @test.assert_eq(one_bound_range(m, "a", "b"), [("a", 1), ("b", 2)])
   @test.assert_eq(one_bound_get_right(m, 2), Some("b"))
+  @test.assert_eq(bbtree_contains_pair_two_bound(m, "a", 1), true)
+  @test.assert_eq(bbtree_contains_pair_two_bound(m, "a", 2), false)
+  @test.assert_eq(bbtree_eq_two_bound(m, n), true)
 }
 
 // ---------------------------------------------------------------------------

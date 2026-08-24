@@ -217,8 +217,9 @@ pub fn[L, R : Compare] BiBTreeMap::contains_right(
 ///|
 /// Return `true` if the exact pair `(l, r)` is present — the C1 condition
 /// `get_by_left(l) == Some(r)`. O(log n): only the forward table is
-/// consulted. (`Compare` implies `Eq`, so the comparison is free.)
-pub fn[L : Compare, R : Compare] BiBTreeMap::contains_pair(
+/// consulted. `R` needs only `Eq` (for the `==`), not `Compare` —
+/// `Compare` implies `Eq` but the forward lookup never compares right values.
+pub fn[L : Compare, R : Eq] BiBTreeMap::contains_pair(
   self : BiBTreeMap[L, R],
   l : L,
   r : R,

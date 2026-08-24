@@ -19,7 +19,7 @@ pub fn[L : Hash + Eq, R] with_capacity(Int) -> BiMap[L, R]
 // Types and methods
 type BiBTreeMap[L, R]
 pub fn[L : Compare, R] BiBTreeMap::contains_left(Self[L, R], L) -> Bool
-pub fn[L : Compare, R : Compare] BiBTreeMap::contains_pair(Self[L, R], L, R) -> Bool
+pub fn[L : Compare, R : Eq] BiBTreeMap::contains_pair(Self[L, R], L, R) -> Bool
 pub fn[L, R : Compare] BiBTreeMap::contains_right(Self[L, R], R) -> Bool
 pub fn[L, R] BiBTreeMap::copy(Self[L, R]) -> Self[L, R]
 pub fn[L, R] BiBTreeMap::first(Self[L, R]) -> (L, R)?
@@ -44,7 +44,7 @@ pub fn[L : Compare, R : Compare] BiBTreeMap::retain(Self[L, R], (L, R) -> Bool) 
 pub fn[L, R] BiBTreeMap::right_values(Self[L, R]) -> Array[R]
 pub fn[L, R] BiBTreeMap::to_inverse(Self[L, R]) -> Self[R, L]
 pub impl[L : Compare, R : Compare] Default for BiBTreeMap[L, R]
-pub impl[L : Compare, R : Eq] Eq for BiBTreeMap[L, R]
+pub impl[L : Eq, R : Eq] Eq for BiBTreeMap[L, R]
 pub impl[L : Hash, R : Hash] Hash for BiBTreeMap[L, R]
 pub impl[L : Show, R : Show] Show for BiBTreeMap[L, R]
 pub impl[L : Show, R : ToJson] ToJson for BiBTreeMap[L, R]

@@ -507,7 +507,7 @@ pub fn[L : Compare, R] BiBTreeMap::range(self, lo, hi) -> Iter[(L, R)]  // [lo, 
 
 // v0.2.0 并行 API
 pub fn[L : Compare, R : Compare] BiBTreeMap::retain(self, f) -> Unit   // 真源 btree.rs:378 同款
-pub fn[L : Compare, R : Compare] BiBTreeMap::contains_pair(self, l, r) -> Bool
+pub fn[L : Compare, R : Eq] BiBTreeMap::contains_pair(self, l, r) -> Bool
 pub fn[L, R] BiBTreeMap::left_keys(self) -> Array[L]          // 升序,零约束
 pub fn[L, R] BiBTreeMap::right_values(self) -> Array[R]       // 按左键升序,零约束
 pub fn[L : Compare, R : Compare] BiBTreeMap::get_or_insert_left(self, l, r) -> R
@@ -518,7 +518,7 @@ pub fn[L, R] BiBTreeMap::iter(self) -> Iter[(L, R)]            // 按 L 升序,f
 pub fn[L, R] BiBTreeMap::into_array(self) -> Array[(L, R)]     // 按 L 升序
 
 // traits(约束逐个最小化,0053 门禁过)
-Eq [L : Compare, R : Eq]    Hash [L : Hash, R : Hash]
+Eq [L : Eq, R : Eq]    Hash [L : Hash, R : Hash]
 Debug [L : Debug, R : Debug]  Show [L : Show, R : Show]
 ToJson [L : Show, R : ToJson]  Default [L : Compare, R : Compare]
 Arbitrary [L : @quickcheck.Arbitrary + Compare, R : @quickcheck.Arbitrary + Compare]
@@ -581,7 +581,8 @@ Rust 端逐元素相等——BiMap 侧只做成员判定,这里是序+内容双�
 
 ### §11.7 Eq / Hash / fail-fast
 
-- Eq:集合相等(与 BiMap 同语义;排序表下与排序序列相等重合)。Hash:复用
+- Eq:集合相等(与 BiMap 同语义;排序表下与排序序列相等重合——实现直接比较
+  `into_array()`,故约束只需 `[L : Eq, R : Eq]`,无需 Compare)。Hash:复用
   `pair_fingerprint` + sort-fold 组合器(同算法同常数;与 BiMap 相同对集哈希同值
   不作跨类型承诺)。Gotcha #2 的加固说明照搬。
 - fail-fast:迭代器快照 `version`,中途 mutation 即 abort——与 BiMap 同构;

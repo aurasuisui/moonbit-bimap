@@ -18,24 +18,12 @@
 
 ///|
 /// Set equality: two BiBTreeMaps are equal iff they contain the same
-/// (left, right) pairs. (For sorted maps this coincides with sequence
-/// equality of the sorted pair lists; the membership-check implementation
-/// keeps the semantics identical to BiMap's.)
-pub impl[L : Compare, R : Eq] Eq for BiBTreeMap[L, R] with fn equal(self, other) {
-  if self.len != other.len {
-    return false
-  }
-  let arr = self.into_array()
-  let mut i = 0
-  while i < arr.length() {
-    let (l, r) = arr[i]
-    match other.get_by_left(l) {
-      Some(r2) => if r != r2 { return false }
-      None => return false
-    }
-    i = i + 1
-  }
-  true
+/// (left, right) pairs. For sorted maps this coincides with sequence equality
+/// of the ascending pair lists (both sides are canonical), so the
+/// implementation compares `into_array()` directly — which also keeps the
+/// bounds minimal at `[L : Eq, R : Eq]` (no `Compare` needed here).
+pub impl[L : Eq, R : Eq] Eq for BiBTreeMap[L, R] with fn equal(self, other) {
+  self.into_array() == other.into_array()
 }
 
 ///|
