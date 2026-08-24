@@ -1,6 +1,6 @@
 name = "aurasuisui/bimap"
 
-version = "0.1.3"
+version = "0.2.0"
 
 readme = "README.md"
 
@@ -16,6 +16,6 @@ keywords = [
   "ordered",
 ]
 
-description = "A bidirectional map (bijection) with reverse lookup, insertion order, and index access - MoonBit port of Rust's bimap"
+description = "A bidirectional map (bijection) with reverse lookup, insertion order, index access, and a sorted BiBTreeMap variant - MoonBit port of Rust's bimap"
 
 source = "src"
