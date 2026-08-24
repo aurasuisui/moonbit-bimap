@@ -46,6 +46,8 @@ adheres to [Semantic Versioning](https://semver.org/).
   `BiHashMap::right_values()` 返回惰性迭代器 `RightValues`(哈希序、无排序承诺);
   本库同名方法返回**插入序 `Array[R]` 急求值快照**——与 `to_inverse` 同一"不做
   活视图"决策(MoonBit 无共享活视图的所有权基础)。同名不同契约,SPEC §6.6 两相对照。
+  左侧参照:bimap-rs 的 `left_values()` 是同款哈希序惰性迭代器,与本库 `left_keys`
+  是近亲(名称与契约均不同)——真源对照时注意,勿误判左侧完全没有上游参照。
 
 ## [0.1.3] - 2026-08-23
 

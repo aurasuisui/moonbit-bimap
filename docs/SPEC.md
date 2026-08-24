@@ -296,6 +296,9 @@ pub fn into_array(self) -> Array[(L, R)]
 > `right_values` 是唯一同名项:Rust 的 `right_values()` 返回惰性迭代器
 > `RightValues`(哈希序、无排序承诺);本库同名方法返回**插入序 `Array[R]` 快照**
 > (不做活视图,与 `to_inverse` 同一决策)——同名不同契约,CHANGELOG Notes 已记录。
+> 左侧参照:Rust 还有 `left_values()`(同款哈希序惰性迭代器),语义对应本库
+> `left_keys` 一侧——`left_keys` 按名字在上游确实不存在,但与 `left_values` 是
+> 近亲(名称、返回类型、顺序语义均不同),对照真源时勿误判为左侧完全没有上游参照。
 > 集合视图统一决策:**不做活视图**(MoonBit 无 Set trait、无所有权基础),做快照
 > 访问器 + 成员判定。
 
@@ -406,7 +409,8 @@ struct BiMap[L, R] {
 `get_index_of_left`、`first`、`last`、`iter`、`lefts`、`rights`、`into_array`、
 `right_values` 为 `[L : Hash + Eq, R]`,`get_by_right`、`contains_right` 为
 `[L, R : Hash + Eq]`,`contains_pair` 为 `[L : Hash + Eq, R : Eq]`,`left_keys` 为
-**零约束** `[L, R]`(全库唯一零约束读方法)。trait impl 同理收紧:`Eq` 需 `R : Eq`(比值)、
+**零约束** `[L, R]`(零约束的**键数据快照**读取方法;`len`/`is_empty`/`capacity`
+虽同为 `[L, R]` 零约束,但不读取键值内容,不构成冲突)。trait impl 同理收紧:`Eq` 需 `R : Eq`(比值)、
 `Hash` 需 `R : Hash`、`Default` 仅需 `L : Hash + Eq`(见 §7)。
 
 ---

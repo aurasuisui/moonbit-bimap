@@ -18,9 +18,9 @@ moon fmt     # format
 ├── src/
 │   ├── lib.mbt            # Public re-exports (new/with_capacity), VERSION, Overwritten enum
 │   ├── hashtable.mbt      # Private pure Robin Hood engine (adapted from indexmap, no ordering)
-│   ├── bimap.mbt          # BiMap core: two inverse tables + order + positions + put_pair
+│   ├── bimap.mbt          # BiMap core: two inverse tables + order + positions + put_pair, contains_pair
 │   ├── bimap_api.mbt      # insert_no_overwrite, index access, from_array/copy/to_inverse,
-│   │                      #   views/entry helpers (left_keys/right_values/get_or_insert_*)
+│   │                      #   left_keys/right_values/get_or_insert_* (views/entry helpers)
 │   ├── bimap_iter.mbt     # Fail-fast iter/lefts/rights
 │   ├── bimap_traits.mbt   # Debug/Default/Show/Eq/Hash/ToJson/Arbitrary
 │   ├── bimap_test.mbt     # Black-box unit tests (C0-C4 matrix, lookup, removal)
