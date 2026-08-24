@@ -206,9 +206,10 @@ Runnable example packages live in [`cmd/`](cmd/):
 - `cmd/country_code` — country name ↔ ISO code (`"China" ↔ "CN"`), reverse lookup, index
   access, and non-overwriting insert
 
-> **Note:** the `cmd/*` example packages are standalone modules **excluded from the root
-> workspace** (they import the *published* `aurasuisui/bimap`). To run one, make the package
-> resolvable (e.g. after `moon publish`) and run `moon run cmd/<name>`.
+> **Note:** the `cmd/*` example packages are standalone modules (they import the *published*
+> `aurasuisui/bimap` and are **not** part of the root package — the repo ships no workspace
+> manifest). To run one, make the package resolvable (e.g. after `moon publish`) and run
+> `moon run cmd/<name>`.
 
 ## Performance
 

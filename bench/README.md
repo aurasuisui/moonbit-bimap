@@ -3,8 +3,8 @@
 Native-backend timing benchmarks built on the official
 [`@bench`](https://docs.moonbitlang.com/) framework
 (`moonbitlang/core/bench`: adaptive batching, winsorized statistics,
-monotonic clock). Dev tooling; **excluded from the root workspace** and not
-part of the library package surface.
+monotonic clock). Dev tooling; **standalone (not part of the root package)** and
+not part of the library package surface.
 
 ## What it measures
 

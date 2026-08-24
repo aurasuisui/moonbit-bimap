@@ -57,7 +57,7 @@
 | 变异测试:注入故障看测试能否抓住 | ❌ 工具所限 | MoonBit 暂无标准变异测试工具,记入 CHANGELOG 未来工作 |
 | CI 流水线门禁:`moon fmt --check` → `moon check` → `moon info && git diff --exit-code` → `moon test` → `moon build` | ✅ | `.github/workflows/ci.yml`(五步全绿) |
 | API / ABI 稳定:公开签名快照(`pkg.generated.mbti` diff 门禁)+ semver | ✅ | `moon info && git diff --exit-code` 步骤;`moon.mod` 坚持 semver(见下"发布前必检门禁") |
-| 文档 / 示例可运行:README 代码、`cmd/` 示例编译并跑通 | ✅ 约定 | README 代码块为片段;`cmd/username_email`、`cmd/country_code` 为独立模块且**已排除出 workspace**,发版前手动 `moon run cmd/<name>` 验证可跑(需已 `moon publish`) |
+| 文档 / 示例可运行:README 代码、`cmd/` 示例编译并跑通 | ✅ 约定 | README 代码块为片段;`cmd/username_email`、`cmd/country_code` 为独立模块、**不属于根包**(仓库无 `moon.work`),发版前手动 `moon run cmd/<name>` 验证可跑(需已 `moon publish`) |
 
 ---
 

@@ -1,6 +1,6 @@
 // Timing benchmarks for aurasuisui/bimap (published artifact).
 //
-// Standalone module, deliberately NOT a workspace member — same layout as
+// Standalone module, deliberately NOT part of the root package — same layout as
 // cmd/: it imports the PUBLISHED aurasuisui/bimap, so the numbers measure
 // exactly what users install. (Consequence: to benchmark local library
 // changes, publish first; see bench/README.md.)

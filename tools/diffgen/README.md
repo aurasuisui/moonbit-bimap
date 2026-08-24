@@ -1,8 +1,8 @@
 # tools/diffgen — differential-test fixture generator
 
 Dev tooling for moonbit-bimap's **Tier 1 differential tests** (see
-`docs/RELEASE_CHECKLIST.md`). Not part of the MoonBit package itself; excluded
-from the workspace and never imported by `src/`.
+`docs/RELEASE_CHECKLIST.md`). Not part of the MoonBit package itself; standalone
+(not part of the root package) and never imported by `src/`.
 
 ## What it does
 
