@@ -16,6 +16,13 @@ adheres to [Semantic Versioning](https://semver.org/).
   reached via `moon run` (CLAUDE/AGENTS/RELEASE_CHECKLIST updated). No public API or
   behavior change — 0.2.1 is a build/metadata patch over 0.2.0.
 
+### Process
+- **发布前检查:RELEASE_CHECKLIST 全绿 @ 630e056**(2026-08-24,0.2.1)。
+  版本戳全量一致;跨后端矩阵 wasm-gc 与 native 均 334/334;五步 CI 于 main 全绿;
+  `moon publish --dry-run` 通过且发布 zip 无 `moon.work`(60 文件,无 target/drafts/
+  reference);`cargo clean tools/diffgen`;`cmd/*` 与 `bench/` 升至 @0.2.1 并对已发布
+  包实跑验证通过。
+
 ## [0.2.0] - 2026-08-24
 
 ### Added

@@ -126,3 +126,5 @@
   `[0.1.3]` Process)。
 - **2026-08-24**:0.2.0 发布(retain 移植 + 集合视图/entry 原创扩展 + BiBTreeMap 排序
   变体 + BiBTreeMap 差分升级),门禁逐项全绿(见 CHANGELOG `[0.2.0]` Process)。
+- **2026-08-24**:0.2.1 发布(修复 mooncakes.io 文档构建失败:移除发布包中的
+  `moon.work`),门禁逐项全绿(见 CHANGELOG `[0.2.1]` Process)。
