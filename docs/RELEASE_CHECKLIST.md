@@ -74,7 +74,7 @@
 - [x] **`moon publish --dry-run` 通过**:确认 mooncakes 能打包、README 描述能解析、无缺失字段。
 - [x] **`cmd/*` 示例对已发布版本可跑**:`moon run cmd/username_email` 与 `moon run cmd/country_code`
       手动跑通(它们 import 的是**已发布**的 `aurasuisui/bimap@<x.y.z>`,故须先 publish 再验,或本地
-      软链核对)。**勿把 `cmd/*` 加进 `moon.work` 的 members**(见 CLAUDE.md "cmd/ examples" 节)。
+      软链核对)。**`cmd/*` 与 `bench/` 是根包之外的独立模块**(仓库无 `moon.work`,根是单包;见 CLAUDE.md "cmd/ examples and bench/ are standalone" 节)。
 - [x] **Rust 构建产物不进包**(0.1.2 起适用,因 `tools/` 入库):`moon publish` 按目录打包,
       `tools/diffgen/target/` 虽已 gitignore,但**不保证**被发布打包排除(`moon.mod` 无 files
       白名单)。发布前在 `tools/diffgen/` 跑 `cargo clean`,或发布后检查 zip 清单确认无

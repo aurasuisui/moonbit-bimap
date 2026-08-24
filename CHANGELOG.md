@@ -4,6 +4,18 @@ All notable changes to `moonbit-bimap` are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/), and this project
 adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.2.1] - 2026-08-24
+
+### Fixed
+- **mooncakes.io documentation build.** The published 0.2.0 package shipped the repo's
+  `moon.work` workspace manifest (`members = ["."]`), which the mooncakes.io doc
+  builder (moon 0.1.20260824 + `moondoc . -packages-json ./_build/packages.json`) read
+  as a workspace — so the root package could not be found and doc generation failed on
+  all four targets (`root package not found`). Removed `moon.work`: the repo root is a
+  standalone package, and `cmd/*` / `bench/` remain separate non-workspace modules
+  reached via `moon run` (CLAUDE/AGENTS/RELEASE_CHECKLIST updated). No public API or
+  behavior change — 0.2.1 is a build/metadata patch over 0.2.0.
+
 ## [0.2.0] - 2026-08-24
 
 ### Added

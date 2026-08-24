@@ -37,14 +37,15 @@ moon fmt --check → moon check → moon info && git diff --exit-code → moon t
 checked-in interface snapshot. If you change any public signature, run `moon info` and commit the
 regenerated `pkg.generated.mbti`, or CI fails.
 
-### `cmd/` examples are excluded from the workspace
+### `cmd/` examples and `bench/` are standalone (not root-module members)
 
-`moon.work` has `members = ["."]` only — the `cmd/*` example packages are intentionally **not**
-workspace members (they import the *published* `aurasuisui/bimap@0.2.0`, matching indexmap's
-layout). Root `moon check`/`moon test` never touches them. To exercise one, it must resolve the
-published package: `moon run cmd/username_email`. Don't add `cmd/*` to `moon.work` members.
-The `bench/` timing-benchmark module follows the same layout (imports the *published* package,
-workspace-excluded): `moon run --release bench/main.mbt` — see `bench/README.md`.
+The repo is a SINGLE package at the root (no `moon.work` workspace manifest — the published
+module must not ship one). The `cmd/*` example packages are intentionally **not** part of the
+root package (they import the *published* `aurasuisui/bimap@0.2.1`, matching indexmap's layout),
+so root `moon check`/`moon test` never touches them. To exercise one, it must resolve the
+published package: `moon run cmd/username_email`. The `bench/` timing-benchmark module follows
+the same layout (imports the *published* package): `moon run --release bench/main.mbt` — see
+`bench/README.md`.
 
 ## Architecture
 
