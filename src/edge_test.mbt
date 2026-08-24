@@ -701,9 +701,12 @@ test "get_or_insert_left: C3 takeover evicts the old owner of r" {
 ///|
 test "get_or_insert_right: present value returns its left, no mutation" {
   let m = @aurasuisui/bimap.BiMap::from_array([("a", 1), ("b", 2)])
+  let it = m.iter() // an active iterator: the get path must not bump version
   @test.assert_eq(m.get_or_insert_right(1, "zzz"), "a")
   @test.assert_eq(m.len(), 2)
   @test.assert_eq(m.into_array(), [("a", 1), ("b", 2)])
+  @test.assert_eq(it.next(), Some(("a", 1)))
+  @test.assert_eq(it.next(), Some(("b", 2)))
 }
 
 ///|
