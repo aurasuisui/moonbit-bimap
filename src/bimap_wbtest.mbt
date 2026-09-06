@@ -323,7 +323,7 @@ test "wb/hashdos: total-collision keys stay correct and removal still works" {
   let n = 200
   let mut i = 0
   while i < n {
-    m.insert({ id: i }, i) |> ignore
+    m.insert({ id: i, }, i) |> ignore
     i = i + 1
   }
   @test.assert_eq(m.len, n)
@@ -331,13 +331,13 @@ test "wb/hashdos: total-collision keys stay correct and removal still works" {
   // every key resolves on BOTH sides despite all hashing to one chain
   let mut j = 0
   while j < n {
-    @test.assert_eq(m.get_by_left({ id: j }), Some(j))
-    @test.assert_eq(m.get_by_right(j), Some({ id: j }))
+    @test.assert_eq(m.get_by_left({ id: j, }), Some(j))
+    @test.assert_eq(m.get_by_right(j), Some({ id: j, }))
     j = j + 1
   }
   // removal under total collision is still correct
-  @test.assert_eq(m.remove_by_left({ id: 100 }), Some(100))
-  @test.assert_eq(m.get_by_left({ id: 100 }), None)
+  @test.assert_eq(m.remove_by_left({ id: 100, }), Some(100))
+  @test.assert_eq(m.get_by_left({ id: 100, }), None)
   @test.assert_eq(m.get_by_right(100), None)
   check_whitebox(m)
   @test.assert_eq(m.len, n - 1)
@@ -349,7 +349,7 @@ test "wb/hashdos: probe distance degrades linearly under total collision" {
   let n = 200
   let mut i = 0
   while i < n {
-    m.insert({ id: i }, i) |> ignore
+    m.insert({ id: i, }, i) |> ignore
     i = i + 1
   }
   // All forward-table keys share one home bucket, so they form a single probe

@@ -333,7 +333,7 @@ fn[K : Hash + Eq, V] HashTab::insert(
       None => return None
     }
   } else {
-    let new_entry = { key, value, hash, distance: NO_DISTANCE }
+    let new_entry = { key, value, hash, distance: NO_DISTANCE, }
     self.robin_hood_insert_at(new_entry, bucket_idx, hash)
     self.len = self.len + 1
     return None

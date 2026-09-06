@@ -122,8 +122,8 @@ impl Hash for SentinelKeyExact with fn hash(_self : SentinelKeyExact) -> Int {
 
 ///|
 test "regression: a key hashing EXACTLY to the tombstone sentinel stays visible" {
-  let k1 : SentinelKeyExact = { id: 1 }
-  let k2 : SentinelKeyExact = { id: 2 }
+  let k1 : SentinelKeyExact = { id: 1, }
+  let k2 : SentinelKeyExact = { id: 2, }
   @test.assert_eq(Hash::hash(k1), -1) // precondition: hash really is -1
   let m : BiMap[SentinelKeyExact, Int] = BiMap::new()
   m.insert(k1, 10) |> ignore

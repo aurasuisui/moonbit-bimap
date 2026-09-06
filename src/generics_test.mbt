@@ -20,45 +20,45 @@ struct Point {
 ///|
 test "custom struct as the LEFT key: CRUD + C2/C3 + removal" {
   let m : @aurasuisui/bimap.BiMap[Point, Int] = @aurasuisui/bimap.new()
-  let a = { x: 1, y: 2 }
-  let b = { x: 3, y: 4 }
+  let a = { x: 1, y: 2, }
+  let b = { x: 3, y: 4, }
   m.insert(a, 100) |> ignore
   m.insert(b, 200) |> ignore
   @test.assert_eq(m.len(), 2)
   // a structurally-equal key (a fresh value, not the same reference) resolves
-  @test.assert_eq(m.get_by_left({ x: 1, y: 2 }), Some(100))
-  @test.assert_eq(m.get_by_right(200), Some({ x: 3, y: 4 }))
+  @test.assert_eq(m.get_by_left({ x: 1, y: 2, }), Some(100))
+  @test.assert_eq(m.get_by_right(200), Some({ x: 3, y: 4, }))
   // C2: rebind a structurally-equal left key
-  match m.insert({ x: 1, y: 2 }, 999) {
+  match m.insert({ x: 1, y: 2, }, 999) {
     @aurasuisui/bimap.Left(_, 100) => ()
     _ => @test.fail("expected Left(_, 100) on struct-key rebind")
   }
   @test.assert_eq(m.get_by_right(100), None)
   // C3: a new left key takes over right value 200
-  match m.insert({ x: 5, y: 6 }, 200) {
+  match m.insert({ x: 5, y: 6, }, 200) {
     @aurasuisui/bimap.Right(_, 200) => ()
     _ => @test.fail("expected Right(_, 200) on struct-key takeover")
   }
-  @test.assert_eq(m.get_by_left({ x: 3, y: 4 }), None)
+  @test.assert_eq(m.get_by_left({ x: 3, y: 4, }), None)
   // removal by a structurally-equal key
-  @test.assert_eq(m.remove_by_left({ x: 5, y: 6 }), Some(200))
+  @test.assert_eq(m.remove_by_left({ x: 5, y: 6, }), Some(200))
   @test.assert_eq(m.len(), 1)
 }
 
 ///|
 test "custom struct on BOTH sides: BiMap[Point, Point] is a valid bijection" {
   let m : @aurasuisui/bimap.BiMap[Point, Point] = @aurasuisui/bimap.new()
-  let k1 = { x: 0, y: 0 }
-  let k2 = { x: 1, y: 1 }
-  let v1 = { x: 10, y: 20 }
-  let v2 = { x: 30, y: 40 }
+  let k1 = { x: 0, y: 0, }
+  let k2 = { x: 1, y: 1, }
+  let v1 = { x: 10, y: 20, }
+  let v2 = { x: 30, y: 40, }
   m.insert(k1, v1) |> ignore
   m.insert(k2, v2) |> ignore
-  @test.assert_eq(m.get_by_left({ x: 0, y: 0 }), Some({ x: 10, y: 20 }))
-  @test.assert_eq(m.get_by_right({ x: 30, y: 40 }), Some({ x: 1, y: 1 }))
+  @test.assert_eq(m.get_by_left({ x: 0, y: 0, }), Some({ x: 10, y: 20, }))
+  @test.assert_eq(m.get_by_right({ x: 30, y: 40, }), Some({ x: 1, y: 1, }))
   // reverse copy swaps the two struct-typed sides
   let inv : @aurasuisui/bimap.BiMap[Point, Point] = m.to_inverse()
-  @test.assert_eq(inv.get_by_left({ x: 10, y: 20 }), Some({ x: 0, y: 0 }))
+  @test.assert_eq(inv.get_by_left({ x: 10, y: 20, }), Some({ x: 0, y: 0, }))
   @test.assert_eq(inv.len(), 2)
   // order-independent Eq/Hash work for struct-keyed maps too
   let m2 : @aurasuisui/bimap.BiMap[Point, Point] = @aurasuisui/bimap.new()
