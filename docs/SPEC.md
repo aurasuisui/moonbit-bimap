@@ -588,3 +588,55 @@ Rust 端逐元素相等——BiMap 侧只做成员判定,这里是序+内容双�
 - fail-fast:迭代器快照 `version`,中途 mutation 即 abort——与 BiMap 同构;
   **进程内不可测**,文档化(README Known Issues 同款)。
 - trait 约束最小化清单见 §11.2 尾部;Default/Arbitrary 需双侧 Compare(构造空双表)。
+
+---
+
+## §12 from_json 反序列化(v0.3.0,增量建设中)
+
+> **本节按 v0.3.0 里程碑增量补齐**:M1 落"真源核验记录"(本节 §12.x);
+> 签名/语义 3.1–3.5、P1-1/P1-2 裁定、与 indexmap 的两处差异(bounds、冲突语义)
+> 随实现里程碑(M2–M5)补入并锁定。设计权威文档:`docs/plans/v0.3.0.md`。
+
+### §12.x 真源核验记录(里程碑 1 定案)
+
+> 证据来源:本机 cargo registry 内 `bimap-0.6.3/src/serde.rs`(tools/diffgen 钉死的
+> `bimap = "=0.6.3"` 依赖拉取的本版源码,逐行核对)。
+
+**1. bimap-rs 0.6.3 `serde` 特性:存在,已逐行核对其序列化与冲突行为。**
+
+- 模块:自 0.4.0 起有 `bimap::serde`(0.6.3 仍在),实现 `Serialize`/`Deserialize`;
+  需 `serde` + `std` feature(no_std 不可用)。对 `BiHashMap` 与 `BiBTreeMap` 两者生效。
+- **序列化格式**:`impl Serialize` 均走 `ser.collect_map(self.iter())`——即序列化为 serde
+  的 **map(L → R)**,JSON 形态为 `{"<left>": <right>, ...}`,键取左值的序列化。
+  - `BiHashMap::iter()` 遍历内部 left→right `HashMap`,故 JSON 键序为**哈希序
+    (非确定性)**,无插入序承诺;
+  - `BiBTreeMap::iter()` 遍历内部 BTreeMap,故 JSON 键序为**左键升序**。
+- **反序列化冲突行为(重点)**:`visit_map` 循环 `while let Some((l, r)) = next_entry()? {
+  map.insert(l, r); }`——即照搬公开 `insert`(C0–C4 顶替语义),**不**用
+  `insert_no_overwrite`,**不**对冲突报错:
+  - 文本重复左键 → `insert` 的 C2 改绑,**last wins**;
+  - **两个不同左键映射同一右值 → C3/C4 塌缩,旧对静默蒸发**,无报错;谁幸存取决于
+    输入 map 的迭代序(`HashMap` 迭代序非确定)。
+  - crate 文档原文明示该风险:"deserializing a bimap silently overwrites any
+    conflicting pairs, leading to non-deterministic results"(并给 `len()==2`、
+    `'B'↔2 或 'C'↔2 二选一` 的例子)。
+- **裁定(仅作对照,不改本库实现)**:本库 `from_json` **严格报错**右值冲突、
+  **不对齐** Rust serde 的无序哈希格式与静默蒸发行为——与本库 §3.1 裁定一致,与
+  既有 `ToJson` 的插入序 `{"<left>": <right-json>, ...}` 自洽。本差异写入 SPEC
+  与 README Gotcha。
+
+**2. `@json` 解析保序:定案(last wins + 文本键序保持是核心源码事实)。**
+
+core `Map` 即 LinkedHashMap(`builtin/LinkedHashMap.mbt`:"maintains the order of
+insertion");`json/parse.mbt` 的 `parse_object` 以 `map[name] = ctx.parse_value(...)`
+构造,重复键赋值覆盖。故 BiMap 往返后插入序与文本键序一致,文档可声明"顺序保持"。
+本里程碑以冒烟测试(`src/json_test.mbt`)实证锁定。(BiBTreeMap 排序自规范,键序无关。)
+
+**3. `Json` 的 trait:定案为"类型级不可行"。**
+
+核验修正:计划的 §1-3 前提"Json 仅有 Show/ToJson/FromJson"不精确——逐文件盘点
+(`builtin/json.mbt` + `json` 包)确认 Json 实有 `Eq`(builtin,语义相等)、`Default`、
+`Show`(已 #deprecated,渲染为 `Number(...)` 调试形态)、`ToJson`、`FromJson`,但
+**无 `Hash`、无 `Compare`**。故 **R=Json 被 BiMap 的 `R : Hash + Eq` 与
+BiBTreeMap 的 `R : Compare` 在类型层直接排除**(光有 Eq 不够),结论不变;文档措辞
+用"类型级不可行",不写"未实现";往返测试用 R=String/Int。
