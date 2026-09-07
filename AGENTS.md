@@ -146,6 +146,7 @@ mutation**, so a C4-shaped conflict returns `Err` without collapsing.
 - `src/bimap_api.mbt` — `insert_no_overwrite`, index access, `from_array`/`copy`/`to_inverse`, `left_keys`/`right_values`/`get_or_insert_*`.
 - `src/bimap_iter.mbt` — fail-fast `iter`/`lefts`/`rights`.
 - `src/bimap_traits.mbt` — `Debug`/`Default`/`Show`/`Eq`/`Hash`/`ToJson`/`Arbitrary`.
+- `src/json.mbt` — `from_json`/`from_json_with` (BiMap + BiBTreeMap) + `BiMapDecodeError` + hand-written `Show`.
 - `src/bbtreemap.mbt` — BiBTreeMap core: two inverse SortedMaps + mutation chokepoints.
 - `src/bbtreemap_traits.mbt` — BiBTreeMap `Debug`/`Default`/`Show`/`Eq`/`Hash`/`ToJson`/`Arbitrary`.
 - `src/bbtreemap_diff_test.mbt` — differential vs the real Rust `BiBTreeMap` v0.6.3 (sorted terminal state).

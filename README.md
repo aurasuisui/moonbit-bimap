@@ -187,10 +187,11 @@ let m : @aurasuisui/bimap.BiMap[String, Int] = @aurasuisui/bimap.from_json(json)
 let s : @aurasuisui/bimap.BiBTreeMap[String, Int] =
   @aurasuisui/bimap.BiBTreeMap::from_json(json)
 
-// Non-String keys: from_json_with + a TOTAL parse_key (P1-2: no raise channel —
+// Int-keyed text: from_json_with + a TOTAL parse_key (P1-2: no raise channel —
 // absorb parse failures inside, e.g. fall back to a default):
+let ints = @json.parse("{\"10\":10,\"20\":20}")
 let n : @aurasuisui/bimap.BiMap[Int, Int] = @aurasuisui/bimap.from_json_with(
-  json,
+  ints,
   fn(k) { @string.parse_int(k) catch { _ => 0 } },
 )
 ```

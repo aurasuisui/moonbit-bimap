@@ -23,6 +23,8 @@ moon fmt     # format
 │   │                      #   left_keys/right_values/get_or_insert_* (views/entry helpers)
 │   ├── bimap_iter.mbt     # Fail-fast iter/lefts/rights
 │   ├── bimap_traits.mbt   # Debug/Default/Show/Eq/Hash/ToJson/Arbitrary
+│   ├── json.mbt           # from_json/from_json_with (BiMap + BiBTreeMap) +
+│   │                      #   BiMapDecodeError + hand-written Show
 │   ├── bbtreemap.mbt      # BiBTreeMap core: two inverse SortedMaps + chokepoints
 │   ├── bbtreemap_traits.mbt # BiBTreeMap Debug/Default/Show/Eq/Hash/ToJson/Arbitrary
 │   ├── bbtreemap_test.mbt # BiBTreeMap unit + property tests (sorted invariants)
@@ -42,6 +44,7 @@ moon fmt     # format
 │   ├── regression_wbtest.mbt # Regression: tombstone-cluster probe bug (white-box)
 │   ├── iter_test.mbt      # Iterator independence + size_hint effect
 │   ├── generics_test.mbt  # Custom-struct keys, Int boundaries, capacity stability
+│   ├── json_test.mbt      # v0.3.0 from_json suite (M1 smoke + Tier 0-2: unit/QC/model/stress/golden)
 │   ├── differential_test.mbt # Differential tests vs the real Rust bimap v0.6.3 (Tier 1)
 │   ├── differential_fixture_test.mbt # generated fixture (by tools/diffgen; test-only)
 │   ├── moon.pkg           # imports test / quickcheck / debug
@@ -203,7 +206,8 @@ maps collide identically; hardened 2026-08). This is the opposite of `indexmap`
 | `bimap_wbtest.mbt` | White-box | Strong invariants on private fields (five counters, `positions`, mask, bucket inverse, tombstones); HashDoS flood correctness + probe distance |
 | `regression_wbtest.mbt` | White-box | Tombstone-cluster probe-bug regression: sample-40 sequence with per-step invariants, duplicate-live-key bucket scans, sentinel-hash normalization |
 | `iter_test.mbt` | Unit | Simultaneous-iterator independence; `collect()` / `size_hint` effect |
-| `generics_test.mbt` | Unit | User-defined struct keys (both sides), portable Int boundary keys, capacity stability |
+| `generics_test.mbt` | Unit | User-defined struct keys (both sides), portable Int boundary keys, capacity stability, v0.3.0 from_json bounds-minimal pins |
+| `json_test.mbt` | Unit + QC + Model + Golden | v0.3.0 `from_json`/`from_json_with` full suite (M1 ordering smoke + Tier 0–2): decode/order/conflict/error-priority units, QuickCheck round-trips, naive Array model, unicode/escaped-key round-trips, conflict storms, 12k stress, golden snapshots |
 | `edge_test.mbt` / `types_test.mbt` / `coverage_test.mbt` / `more_test.mbt` | Unit | Edge cases, boundary key/value types, views/entry helpers (v0.2.0 M2), extra coverage |
 
 Conventions:

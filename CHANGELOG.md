@@ -72,7 +72,8 @@ adheres to [Semantic Versioning](https://semver.org/).
   M2/M3 implementation (BiMap + BiBTreeMap) → M4 test suite (Tier 0–2) → M5 doc sync
   (README/CHANGELOG/RELEASE_CHECKLIST/hub/counts + cmd/json_roundtrip).
 - **发布前检查:待发版会话执行** — 版本戳全量 0.2.1 → 0.3.0(moon.mod / lib.mbt VERSION /
-  README 安装示例 / cmd/* 与 bench/ 依赖 / CHANGELOG 日期)、RELEASE_CHECKLIST 逐项全绿、
+  README 安装示例 / cmd/* 与 bench/ 依赖 / CHANGELOG 日期;**cmd/json_roundtrip 已是
+  @0.3.0,勿重复 bump**)、RELEASE_CHECKLIST 逐项全绿、
   `moon publish` + 发布 zip 检查、cmd/*(含 json_roundtrip)与 bench/ 对已发布包实跑、
   双后端全量回归——完成后在本节回填勾选结果与日期。
 
