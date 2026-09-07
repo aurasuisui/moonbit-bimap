@@ -1,0 +1,7 @@
+import {
+  "aurasuisui/bimap",
+  "moonbitlang/core/json",
+  "moonbitlang/core/string",
+}
+
+pkgtype(kind: "executable")
