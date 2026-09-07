@@ -389,6 +389,20 @@ test "BiBTreeMap::from_json: duplicate text keys are last-wins" {
 }
 
 ///|
+test "BiBTreeMap::from_json: String key order follows core Compare (length first, then code points)" {
+  // core Compare for String orders by LENGTH first, then by code point — NOT
+  // plain dictionary order (SPEC §12.3 note): "bob" (len 3) < "alice" (len 5).
+  // Pinned here so the mixed-length ordering cannot regress silently.
+  let m = btree_from_json_i("{\"bob\":2,\"alice\":1,\"carol\":3}")
+  @test.assert_eq(m.into_array(), [("bob", 2), ("alice", 1), ("carol", 3)])
+  @test.assert_eq(m.first(), Some(("bob", 2)))
+  @test.assert_eq(m.last(), Some(("carol", 3)))
+  // same-length keys fall through to the code-point (lexicographic) order
+  let n = btree_from_json_i("{\"bob\":2,\"amy\":1,\"cat\":3}")
+  @test.assert_eq(n.into_array(), [("amy", 1), ("bob", 2), ("cat", 3)])
+}
+
+///|
 test "BiBTreeMap::from_json: conflict error matches the BiMap payload exactly" {
   let err = err_btree_from_json_i("{\"a\":1,\"b\":1}")
   assert_dup(err, "1", "\"a\"", "\"b\"")

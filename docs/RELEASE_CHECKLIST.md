@@ -128,3 +128,6 @@
   变体 + BiBTreeMap 差分升级),门禁逐项全绿(见 CHANGELOG `[0.2.0]` Process)。
 - **2026-08-24**:0.2.1 发布(修复 mooncakes.io 文档构建失败:移除发布包中的
   `moon.work`),门禁逐项全绿(见 CHANGELOG `[0.2.1]` Process)。
+- **2026-09-07**:0.3.0 发布(from_json/from_json_with 反序列化 + 严格双射校验 +
+  369 测试),门禁逐项全绿(见 CHANGELOG `[0.3.0]` Process);Tier 2 序列化往返
+  ⊘→✅ 在本版本闭环。

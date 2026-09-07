@@ -5,7 +5,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 adheres to [Semantic Versioning](https://semver.org/).
 
 
-## [0.3.0] - (Unreleased)
+## [0.3.0] - 2026-09-07
 
 ### Added
 - **`from_json` / `from_json_with` on `BiMap` and `BiBTreeMap`** — JSON round-trip
@@ -23,7 +23,7 @@ adheres to [Semantic Versioning](https://semver.org/).
 - **Free functions `@aurasuisui/bimap.from_json` / `from_json_with` (BiMap only,
   P1-1)** — MoonBit free functions cannot overload by return type, so BiBTreeMap is
   reached via `BiBTreeMap::from_json(...)` method calls.
-- **Test suite 335 → 368** — `src/json_test.mbt` (M1 ordering smoke + Tier 0 unit suite,
+- **Test suite 335 → 369** — `src/json_test.mbt` (M1 ordering smoke + Tier 0 unit suite,
   Tier 1 QuickCheck round-trips + naive Array model, Tier 2 unicode/escaped-key
   round-trips, conflict storms, 12k-pair stress, golden snapshots) + bounds-minimal
   compile pins in `generics_test.mbt`.
@@ -66,16 +66,30 @@ adheres to [Semantic Versioning](https://semver.org/).
   not included in 0.3.0; CI regression gate remains the known ⚠️ item.
 - **DEVPLAN.md check (plan §5)**: no "serde 集成" todo entry exists — archived doc
   needed no change.
+- **Post-publish finding (BiBTreeMap String key ordering)**: core
+  `Compare for String` is LENGTH-first, then code-point — NOT dictionary order,
+  so mixed-length String keys sort by length ("bob" < "alice"), unlike Rust's
+  `BTreeMap<String>` (the differential fixtures use Int keys and never covered
+  this). Not a bug — core semantics, consistent with the library's
+  Compare-self-canonical design; pinned by a json_test case + SPEC §12.2 note;
+  cmd/json_roundtrip uses equal-length keys for a visibly lexicographic demo.
+  Found during the release-gate cmd verification run.
 
 ### Process
 - M1 ground-truth verification (SPEC §12.1 serde record + ordering smoke test) →
   M2/M3 implementation (BiMap + BiBTreeMap) → M4 test suite (Tier 0–2) → M5 doc sync
   (README/CHANGELOG/RELEASE_CHECKLIST/hub/counts + cmd/json_roundtrip).
-- **发布前检查:待发版会话执行** — 版本戳全量 0.2.1 → 0.3.0(moon.mod / lib.mbt VERSION /
-  README 安装示例 / cmd/* 与 bench/ 依赖 / CHANGELOG 日期;**cmd/json_roundtrip 已是
-  @0.3.0,勿重复 bump**)、RELEASE_CHECKLIST 逐项全绿、
-  `moon publish` + 发布 zip 检查、cmd/*(含 json_roundtrip)与 bench/ 对已发布包实跑、
-  双后端全量回归——完成后在本节回填勾选结果与日期。
+- **发布前检查:RELEASE_CHECKLIST 全绿 @ b5ba10f**(2026-09-07,0.3.0;门禁于该
+  版本戳提交执行,发布记录见本提交)。
+  版本戳全量一致(0.3.0:moon.mod / lib.mbt VERSION / more_test 版本针 / README /
+  CLAUDE / AGENTS / MOONBIT_REF / cmd×2 / bench;cmd/json_roundtrip 预置 0.3.0 未动);
+  五步 CI 于 main 全绿(含 mbti VERSION 行刷新);双后端 native 368/368 与
+  wasm-gc 368/368;`moon publish --dry-run` 通过(server 202)且发布 zip 无 target/、
+  无 moon.work(66 文件);`cargo clean tools/diffgen`;`moon publish` server 200;
+  `moon update` 后 `cmd/{username_email,country_code,json_roundtrip}` 与 `bench/`
+  对已发布 @0.3.0 实跑验证通过(json_roundtrip 五个演示点逐项正确,含
+  `DuplicateRightValue(1, "a", "b")`;bench 10k+100k 全套跑通)。发布期间发现并钉死
+  core `Compare for String` 长度优先序(见 Notes);json_test +1 钉死测试(套件 369)。
 
 ## [0.2.1] - 2026-08-24
 

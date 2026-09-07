@@ -717,6 +717,12 @@ pub fn[K : Compare, R : FromJson + Compare] BiBTreeMap::from_json_with(
   `@sorted_map.SortedMap`(工具链裁定 2026-09,**不得**为 BiBTreeMap 引入
   Hash 约束)。
 - **与 indexmap 的 bounds 差异(2/2)**:BiBTreeMap 的 `R` 需 `FromJson + Compare`。
+- **String 键序(核心事实,发版门禁期间实测钉死)**:core `Compare for String` 为
+  **长度优先**(同长再按码点),不是字典序——`BiBTreeMap[String, ...]` 的迭代/
+  `first`/`last` 依此序。例:`{"bob":2,"alice":1,"carol":3}` →
+  `[("bob",2),("alice",1),("carol",3)]`;同长键退化回码点序(如
+  `[("amy",1),("bob",2),("cat",3)]`)。与 Rust `BTreeMap<String>` 的字典序不同
+  (差分夹具用 Int 键,未覆盖此差异),属 core 语义,由 json_test 钉死。
 ### §12.3 语义裁定(M4 以测试钉死;与计划 §3 逐条一致)
 
 - **3.1 双射冲突 → 严格报错**:JSON 对象中两个不同左键映射到同一右值时 raise

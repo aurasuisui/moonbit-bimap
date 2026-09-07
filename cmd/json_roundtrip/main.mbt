@@ -33,8 +33,51 @@ fn int_parse_key(k : String) -> Int {
 }
 
 ///|
+/// Render (String, Int) pairs like [(bob, 2), (alice, 1)].
+fn render_si(pairs : Array[(String, Int)]) -> String {
+  let sb = StringBuilder()
+  let mut first = true
+  for pair in pairs {
+    let (l, r) = pair
+    if !first {
+      sb.write_string(", ")
+    }
+    sb.write_string("(")
+    sb.write_string(l)
+    sb.write_string(", ")
+    sb.write_string(Show::to_string(r))
+    sb.write_string(")")
+    first = false
+  }
+  "[" + sb.to_string() + "]"
+}
+
+///|
+/// Render (Int, Int) pairs like [(10, 10), (20, 20)].
+fn render_ii(pairs : Array[(Int, Int)]) -> String {
+  let sb = StringBuilder()
+  let mut first = true
+  for pair in pairs {
+    let (l, r) = pair
+    if !first {
+      sb.write_string(", ")
+    }
+    sb.write_string("(")
+    sb.write_string(Show::to_string(l))
+    sb.write_string(", ")
+    sb.write_string(Show::to_string(r))
+    sb.write_string(")")
+    first = false
+  }
+  "[" + sb.to_string() + "]"
+}
+
+///|
 fn main {
-  let text = "{\"bob\":2,\"alice\":1,\"carol\":3}"
+  // Equal-length keys: core String Compare orders by length first, so with
+  // same-length keys the BiBTreeMap output below is visibly lexicographic
+  // (SPEC §12.3 note; mixed-length keys sort by length, not dictionary order).
+  let text = "{\"bob\":2,\"amy\":1,\"cat\":3}"
   let json = parse_text(text)
 
   println("=== BiMap::from_json (free function, P1-1) ===")
@@ -44,8 +87,14 @@ fn main {
       return
     }
   }
-  println("pairs in TEXT key order: \{m.into_array()}")
-  println("get_index(0) = \{m.get_index(0)}")
+  println("pairs in TEXT key order: " + render_si(m.into_array()))
+  match m.get_index(0) {
+    Some((l, r)) =>
+      println(
+        "get_index(0) = Some((" + l + ", " + Show::to_string(r) + "))",
+      )
+    None => println("get_index(0) = None")
+  }
 
   println("=== BiBTreeMap::from_json (method call) ===")
   let s : @bimap.BiBTreeMap[String, Int] = @bimap.BiBTreeMap::from_json(
@@ -56,7 +105,7 @@ fn main {
       return
     }
   }
-  println("pairs sorted by left key: \{s.into_array()}")
+  println("pairs sorted by left key: " + render_si(s.into_array()))
 
   println("=== from_json_with: total parse_key for Int keys ===")
   let keys_json = parse_text("{\"10\":10,\"20\":20}")
@@ -66,7 +115,7 @@ fn main {
       return
     }
   }
-  println("Int-keyed map: \{n.into_array()}")
+  println("Int-keyed map: " + render_ii(n.into_array()))
 
   println("=== strict bijection validation ===")
   let conflict_json = parse_text("{\"a\":1,\"b\":1}")
@@ -87,5 +136,10 @@ fn main {
       return
     }
   }
-  println("from_json(to_json()) == original: \{m == m2}")
+  let verdict = if m == m2 {
+    "true"
+  } else {
+    "false"
+  }
+  println("from_json(to_json()) == original: " + verdict)
 }

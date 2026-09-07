@@ -297,7 +297,7 @@ single-machine numbers, indicative of constant factors, not absolute speed).
 
 ```bash
 moon check   # type check
-moon test    # run all 368 tests
+moon test    # run all 369 tests
 moon fmt     # format
 moon build   # build
 ```

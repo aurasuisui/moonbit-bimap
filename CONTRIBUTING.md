@@ -7,7 +7,7 @@
 git clone https://github.com/aurasuisui/moonbit-bimap
 cd moonbit-bimap
 moon check   # type check
-moon test    # run all 368 tests
+moon test    # run all 369 tests
 moon fmt     # format
 ```
 
