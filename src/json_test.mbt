@@ -419,3 +419,230 @@ test "BiBTreeMap::from_json_with: Int keys, parse_key collisions, conflict parit
   let err = err_btree_from_json_with_i("{\"1\":5,\"2\":7,\"01\":7}")
   assert_dup(err, "7", "\"2\"", "\"01\"")
 }
+// ---------------------------------------------------------------------------
+// Tier 1 - QuickCheck round-trips
+// ---------------------------------------------------------------------------
+
+///|
+test "qc round-trip: BiMap[String, Int] to_json -> from_json preserves content and order" {
+  let maps : Array[@aurasuisui/bimap.BiMap[String, Int]] = @quickcheck.samples(
+    40,
+  )
+  let mut i = 0
+  while i < maps.length() {
+    let m = maps[i]
+    let j = @json.parse(m.to_json().stringify()) catch {
+      e =>
+        @test.fail(
+          "qc: our own ToJson output did not parse: " + Show::to_string(e),
+        )
+    }
+    let m2 = @aurasuisui/bimap.from_json(j) catch {
+      e => @test.fail("qc: from_json round-trip failed: " + Show::to_string(e))
+    }
+    @test.assert_eq(m, m2)
+    // order preservation: the insertion order survived the text round-trip
+    @test.assert_eq(m.into_array(), m2.into_array())
+    i = i + 1
+  }
+}
+
+///|
+test "qc round-trip: BiBTreeMap[String, Int] to_json -> from_json preserves content" {
+  let maps : Array[@aurasuisui/bimap.BiBTreeMap[String, Int]] = @quickcheck.samples(
+    40,
+  )
+  let mut i = 0
+  while i < maps.length() {
+    let m = maps[i]
+    let j = @json.parse(m.to_json().stringify()) catch {
+      e =>
+        @test.fail(
+          "qc: our own ToJson output did not parse: " + Show::to_string(e),
+        )
+    }
+    let m2 = @aurasuisui/bimap.BiBTreeMap::from_json(j) catch {
+      e => @test.fail("qc: BiBTreeMap round-trip failed: " + Show::to_string(e))
+    }
+    @test.assert_eq(m, m2)
+    // both sides are canonically sorted, so sequence equality also holds
+    @test.assert_eq(m.into_array(), m2.into_array())
+    i = i + 1
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Tier 1 - naive Array model (R=Int; no Map/Hash/SortedMap key bookkeeping)
+// ---------------------------------------------------------------------------
+
+///|
+/// Naive Array model of from_json_with semantics, generic in the logical key
+/// type K (needs only Eq — linear scans, no Map/Hash/SortedMap):
+/// 1. decode values in text order (core Json decode per value);
+/// 2. parse-key last-wins collapse, keeping first-seen key positions;
+/// 3. right-value dedup over SURVIVORS in text order of last occurrences.
+/// Returns the final pair list in first-seen order, or the conflict triple
+/// (right render, occupied-left render, new-left render) per SPEC §12.2.
+fn[K : Eq] model_with(
+  text : String,
+  pk : (String) -> K,
+) -> (Array[(K, Int)], (String, String, String)?) raise {
+  let raw : Map[String, Json] = match parse_ok(text) {
+    Json::Object(o) => o
+    _ => @test.fail("model: expected an object")
+  }
+  // decode in text order (core LinkedHashMap order == text order)
+  let texts : Array[String] = []
+  let vals : Array[Int] = []
+  let raws : Array[Json] = []
+  for k, v in raw {
+    texts.push(k)
+    vals.push(@json.from_json(v))
+    raws.push(v)
+  }
+  // last-wins collapse on logical keys; first-seen positions kept
+  let keys : Array[K] = []
+  let final_vals : Array[Int] = []
+  let final_text : Array[String] = []
+  let mut t = 0
+  while t < texts.length() {
+    let logical = pk(texts[t])
+    let mut slot = -1
+    let mut s = 0
+    while s < keys.length() {
+      if keys[s] == logical {
+        slot = s
+      }
+      s = s + 1
+    }
+    if slot >= 0 {
+      final_vals[slot] = vals[t]
+      final_text[slot] = texts[t]
+    } else {
+      keys.push(logical)
+      final_vals.push(vals[t])
+      final_text.push(texts[t])
+    }
+    t = t + 1
+  }
+  // dedup over survivors in text order of last occurrences
+  let right_of : Array[Int] = []
+  let left_of : Array[String] = []
+  let mut u = 0
+  while u < texts.length() {
+    let logical = pk(texts[u])
+    let mut survivor_slot = -1
+    let mut s2 = 0
+    while s2 < keys.length() {
+      if keys[s2] == logical {
+        survivor_slot = s2
+      }
+      s2 = s2 + 1
+    }
+    if survivor_slot >= 0 && final_text[survivor_slot] == texts[u] {
+      let mut dup = -1
+      let mut d = 0
+      while d < right_of.length() {
+        if right_of[d] == vals[u] {
+          dup = d
+        }
+        d = d + 1
+      }
+      if dup >= 0 {
+        return (
+          [],
+          Some(
+            (
+              Json::stringify(raws[u]),
+              Json::string(left_of[dup]).stringify(),
+              Json::string(texts[u]).stringify(),
+            ),
+          ),
+        )
+      }
+      right_of.push(vals[u])
+      left_of.push(texts[u])
+    }
+    u = u + 1
+  }
+  let pairs : Array[(K, Int)] = []
+  let mut k2 = 0
+  while k2 < keys.length() {
+    pairs.push((keys[k2], final_vals[k2]))
+    k2 = k2 + 1
+  }
+  (pairs, None)
+}
+
+///|
+/// Compare actual from_json_with (Int keys) against the model for one text.
+fn check_model_int_case(text : String) -> Unit raise {
+  let (pairs, conflict) : (Array[(Int, Int)], (String, String, String)?) = model_with(
+    text, int_parse_key,
+  )
+  match conflict {
+    Some((r, l1, l2)) => {
+      let err = err_from_json_with_i(text)
+      match err {
+        @aurasuisui/bimap.DuplicateRightValue(r2, l1b, l2b) => {
+          @test.assert_eq(r2, r)
+          @test.assert_eq(l1b, l1)
+          @test.assert_eq(l2b, l2)
+        }
+        @aurasuisui/bimap.Decode(_) =>
+          @test.fail("model: expected DuplicateRightValue, got Decode")
+      }
+    }
+    None => @test.assert_eq(from_json_with_i(text).into_array(), pairs)
+  }
+}
+
+///|
+/// Compare actual from_json (String keys) against the model (identity pk).
+fn check_model_str_case(text : String) -> Unit raise {
+  let (pairs, conflict) : (Array[(String, Int)], (String, String, String)?) = model_with(
+    text,
+    fn(k : String) -> String { k },
+  )
+  match conflict {
+    Some((r, l1, l2)) => {
+      let err = err_from_json_i(text)
+      match err {
+        @aurasuisui/bimap.DuplicateRightValue(r2, l1b, l2b) => {
+          @test.assert_eq(r2, r)
+          @test.assert_eq(l1b, l1)
+          @test.assert_eq(l2b, l2)
+        }
+        @aurasuisui/bimap.Decode(_) =>
+          @test.fail("model: expected DuplicateRightValue, got Decode")
+      }
+    }
+    None => @test.assert_eq(from_json_i(text).into_array(), pairs)
+  }
+}
+
+///|
+test "model: handcrafted texts agree with the naive Array model (Int keys)" {
+  let cases = [
+    "{}", "{\"a\":1}", "{\"b\":1,\"a\":2,\"c\":3}", "{\"a\":1,\"a\":2}", "{\"1\":1,\"01\":2}",
+    "{\"2\":9,\"1\":1,\"01\":2}", "{\"1\":5,\"2\":7,\"01\":7}", "{\"2\":7,\"01\":7,\"1\":5}",
+    "{\"1\":7,\"2\":7}", "{\"1\":7,\"2\":7,\"01\":7}",
+  ]
+  let mut i = 0
+  while i < cases.length() {
+    check_model_int_case(cases[i])
+    i = i + 1
+  }
+}
+
+///|
+test "model: handcrafted texts agree with the naive Array model (String keys)" {
+  let cases = [
+    "{}", "{\"b\":1,\"a\":2}", "{\"a\":1,\"a\":2}", "{\"a\":1,\"b\":1}", "{\"a\":1,\"b\":2,\"b\":1}",
+  ]
+  let mut i = 0
+  while i < cases.length() {
+    check_model_str_case(cases[i])
+    i = i + 1
+  }
+}
