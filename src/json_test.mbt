@@ -3,7 +3,7 @@
 
 // Milestone 1 (v0.3.0 from_json): ordering smoke test.
 //
-// Verifies the core fact pinned in SPEC §12.x item 2 — that @json parsing
+// Verifies the core fact pinned in SPEC §12.1 item 2 — that @json parsing
 // preserves TEXT key order and resolves duplicate keys last-wins (core Map is
 // a LinkedHashMap). These are the load-bearing guarantees that, in M2/M3,
 // make BiMap::from_json round-trip text order into insertion order and make
