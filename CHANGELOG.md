@@ -4,6 +4,78 @@ All notable changes to `moonbit-bimap` are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/), and this project
 adheres to [Semantic Versioning](https://semver.org/).
 
+
+## [0.3.0] - (Unreleased)
+
+### Added
+- **`from_json` / `from_json_with` on `BiMap` and `BiBTreeMap`** — JSON round-trip
+  deserialization (v0.3.0, docs/plans/v0.3.0.md): `@json` whole-object decode →
+  parse_key last-wins collapse → O(n) right-value dedup BEFORE any insertion → public
+  `from_array` build (never touches the private chokepoint fields). BiMap preserves the
+  JSON text key order as insertion order; BiBTreeMap is sorted (input key order
+  irrelevant). Duplicate keys are last-wins; two left keys decoding to the same right
+  raise `DuplicateRightValue` (strict bijection validation — the whole parse fails, no
+  partial map); decode errors pass through as `Decode` and take priority over conflict
+  detection. `from_json(m.to_json()) == m` holds with order preserved.
+- **`BiMapDecodeError`** — one error channel for both failure modes, with a hand-written
+  `Show` whose text format is LOCKED (SPEC §12.2, golden-snapshotted):
+  `DuplicateRightValue(1, "a", "b")` / `Decode(JsonDecodeError((/a, ...)))`.
+- **Free functions `@aurasuisui/bimap.from_json` / `from_json_with` (BiMap only,
+  P1-1)** — MoonBit free functions cannot overload by return type, so BiBTreeMap is
+  reached via `BiBTreeMap::from_json(...)` method calls.
+- **Test suite 335 → 368** — `src/json_test.mbt` (M1 ordering smoke + Tier 0 unit suite,
+  Tier 1 QuickCheck round-trips + naive Array model, Tier 2 unicode/escaped-key
+  round-trips, conflict storms, 12k-pair stress, golden snapshots) + bounds-minimal
+  compile pins in `generics_test.mbt`.
+- **`cmd/json_roundtrip` example** — from_json on both map types, total parse_key,
+  conflict-error handling, lossless round-trip (runs against the published `@0.3.0`;
+  verified at release per the cmd/ convention).
+- **Docs** — SPEC §12 (真源核验 §12.1 / 签名与错误格式 §12.2 / 语义 §12.3);
+  README Features + JSON round-trip usage section + Gotcha #10; RELEASE_CHECKLIST
+  Tier 2 "序列化往返" ⊘ → ✅.
+
+### Notes
+- **Toolchain ruling**: a plain `enum` cannot be raised (moonc v0.10.12 [4127]) —
+  `BiMapDecodeError` is declared `pub(all) suberror`; the public surface (name,
+  variants, payloads, derives) matches the plan §2 exactly.
+- **Rendering ruling**: R/K have no `Show` bound, so the conflict payload renders the
+  right value via `Json::stringify()` of the raw JSON node and the left keys via
+  `Json::string(k).stringify()` (core `Show for Json` is deprecated). The `Decode`
+  golden text embeds core's derived `JsonDecodeError` Show — format locked; a core
+  change would trip the golden tests, which is the intended guard.
+- **"Occupied left" adjudication (implementation-fine, now pinned)**: dedup walks the
+  COLLAPSED-OBJECT order — core Map already last-wins-collapses duplicate TEXT keys at
+  their first-seen position; parse-key non-survivor text keys are skipped. Examples:
+  `{"1":5,"2":7,"01":7}` → `DuplicateRightValue(7, "2", "01")`; 500 pairs plus a
+  trailing `"k0":1` rebind → `DuplicateRightValue(1, "k0", "k1")`.
+- **vs Rust bimap serde (SPEC §12.1 ground truth)**: the crate serializes as a serde
+  map (`collect_map`, hasher-order for BiHashMap) and its visitor uses plain `insert` —
+  conflicting right values are silently C3/C4-evicted (crate docs: "silently overwrites
+  ... non-deterministic results"). Our strict-error behavior is an ORIGINAL extension
+  aligned with our own `ToJson` format; **no differential oracle — semantics pinned by
+  the test suite** (SPEC convention).
+- **vs indexmap (two differences)**: ① bounds — BiMap's `R` needs
+  `FromJson + Hash + Eq` and BiBTreeMap's `R` needs `FromJson + Compare` (indexmap:
+  `V : FromJson` only); ② conflict semantics — strict error vs indexmap's silent
+  `insert` overwrite.
+- **`R = Json` is type-level impossible** (`Json` has no `Hash`/`Compare`) — documented,
+  deliberately untested.
+- **`parse_key` must be total (P1-2)** — no raise channel; failures are absorbed inside
+  parse_key (documented in README usage section + Gotcha #10).
+- **bench from_json large-N benchmark**: plan §4 Tier 3 marks it OPTIONAL/non-blocking —
+  not included in 0.3.0; CI regression gate remains the known ⚠️ item.
+- **DEVPLAN.md check (plan §5)**: no "serde 集成" todo entry exists — archived doc
+  needed no change.
+
+### Process
+- M1 ground-truth verification (SPEC §12.1 serde record + ordering smoke test) →
+  M2/M3 implementation (BiMap + BiBTreeMap) → M4 test suite (Tier 0–2) → M5 doc sync
+  (README/CHANGELOG/RELEASE_CHECKLIST/hub/counts + cmd/json_roundtrip).
+- **发布前检查:待发版会话执行** — 版本戳全量 0.2.1 → 0.3.0(moon.mod / lib.mbt VERSION /
+  README 安装示例 / cmd/* 与 bench/ 依赖 / CHANGELOG 日期)、RELEASE_CHECKLIST 逐项全绿、
+  `moon publish` + 发布 zip 检查、cmd/*(含 json_roundtrip)与 bench/ 对已发布包实跑、
+  双后端全量回归——完成后在本节回填勾选结果与日期。
+
 ## [0.2.1] - 2026-08-24
 
 ### Fixed

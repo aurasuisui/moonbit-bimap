@@ -62,6 +62,11 @@ fork or rename of `indexmap`.
   its same-named `right_values()` is a lazy unordered iterator, ours is an ordered snapshot)
 - **Standard traits** — `Debug`, `Default`, `Show`, `Eq`/`Hash` (**order-independent**),
   `ToJson`, plus QuickCheck `Arbitrary`
+- **JSON round-trip** — `from_json` / `from_json_with` (both map types, v0.3.0) decode
+  `{"<left>": <right>, ...}` objects with **strict bijection validation**: two left keys
+  mapping to the same right raise `DuplicateRightValue` (the whole parse fails — no silent
+  eviction); the JSON text key order becomes `BiMap` insertion order; decode errors pass
+  through as `Decode`
 
 ## Installation
 
@@ -137,12 +142,19 @@ let r = m.insert("a", 2)     // Both((a,4),(c,2))  {a↔2}  — len 2→1!
    costs O(len) in the worst case, and removing n pairs in insertion (head-first) order is
    O(n²) overall (bench-measured, see Performance). For bulk clear-outs, drain in reverse
    insertion order (each shift degenerates to O(1)) or rebuild (`from_array` / `copy`).
+10. **`from_json` validates strictly; `parse_key` must be total.** A JSON object with two
+    left keys decoding to the same right raises `DuplicateRightValue` instead of silently
+    evicting a pair (the opposite of Rust bimap's serde, which overwrites). The `parse_key`
+    you pass to `from_json_with` has **no raise channel** — absorb parse failures inside it
+    (e.g. catch `@string.parse_int` and fall back to a default). And **`R = Json` is
+    type-level impossible**: `Json` has no `Hash`/`Compare`, which the right side of both
+    map types requires.
 
 ## API Overview
 
 | Category | Methods |
 |---|---|
-| Construct | `new()`, `with_capacity(n)`, `from_array(pairs)`, `default()`, `copy()` |
+| Construct | `new()`, `with_capacity(n)`, `from_array(pairs)`, `default()`, `copy()`, `from_json(json)`, `from_json_with(json, parse_key)` |
 | Query | `len()`, `is_empty()`, `capacity()` |
 | Insert | `insert(l, r) -> Overwritten`, `insert_no_overwrite(l, r) -> Result[Unit,(L,R)]` |
 | Forward | `get_by_left(l)`, `contains_left(l)`, `remove_by_left(l) -> R?` |
@@ -154,6 +166,40 @@ let r = m.insert("a", 2)     // Both((a,4),(c,2))  {a↔2}  — len 2→1!
 | Bulk | `retain(pred)` |
 | Convert | `to_inverse() -> BiMap[R, L]` |
 | Traits | `Debug`, `Default`, `Show`, `Hash`, `Eq`, `ToJson`, `Arbitrary` |
+
+## JSON round-trip (`from_json`)
+
+`ToJson` has a strict inverse (v0.3.0): `from_json` / `from_json_with` decode a JSON
+object `{ "<left>": <right-json>, ... }` back into a bijection, with **strict bijection
+validation** — a right-value conflict raises `BiMapDecodeError::DuplicateRightValue`
+(payload: right value + both conflicting left keys), value decode errors pass through as
+`Decode` and take priority, and duplicate keys are last-wins. For `BiMap` use the free
+function; `BiBTreeMap` is reached by method call (MoonBit free functions cannot overload
+by return type). Both raise `BiMapDecodeError` — catch it, or let it propagate:
+
+```moonbit
+let json = @json.parse("{\"bob\":2,\"alice\":1}") // text -> Json
+
+// BiMap: free function; insertion order = JSON text key order
+let m : @aurasuisui/bimap.BiMap[String, Int] = @aurasuisui/bimap.from_json(json)
+
+// BiBTreeMap: method call; sorted by left key (input key order irrelevant)
+let s : @aurasuisui/bimap.BiBTreeMap[String, Int] =
+  @aurasuisui/bimap.BiBTreeMap::from_json(json)
+
+// Non-String keys: from_json_with + a TOTAL parse_key (P1-2: no raise channel —
+// absorb parse failures inside, e.g. fall back to a default):
+let n : @aurasuisui/bimap.BiMap[Int, Int] = @aurasuisui/bimap.from_json_with(
+  json,
+  fn(k) { @string.parse_int(k) catch { _ => 0 } },
+)
+```
+
+The round-trip is lossless: `from_json(m.to_json()) == m` (set equality), and for `BiMap`
+the iteration order survives as the text key order. **`parse_key` must be total.**
+**`R = Json` is type-level impossible** (`Json` lacks `Hash`/`Compare`). See
+`docs/SPEC.md` §12 and the runnable `cmd/json_roundtrip` example.
+
 
 ## BiBTreeMap — the sorted variant
 
@@ -176,7 +222,7 @@ println(m.range("a", "b").to_array())  // [("a", 1), ("b", 2)] — [lo, hi] incl
 
 | Category | Methods |
 |---|---|
-| Construct | `new()`, `from_array(pairs)`, `default()`, `copy()` |
+| Construct | `new()`, `from_array(pairs)`, `default()`, `copy()`, `from_json(json)`, `from_json_with(json, parse_key)` |
 | Query | `len()`, `is_empty()`, `first()`, `last()`, `range(lo, hi) -> Iter` |
 | Insert | `insert(l, r) -> Overwritten`, `insert_no_overwrite(l, r) -> Result[Unit,(L,R)]` |
 | Forward | `get_by_left(l)`, `contains_left(l)`, `remove_by_left(l) -> R?` |
@@ -205,6 +251,9 @@ Runnable example packages live in [`cmd/`](cmd/):
 - `cmd/username_email` — username ↔ email bidirectional lookup, iteration, and a rebind
 - `cmd/country_code` — country name ↔ ISO code (`"China" ↔ "CN"`), reverse lookup, index
   access, and non-overwriting insert
+- `cmd/json_roundtrip` — `from_json`/`from_json_with` on both map types, strict-conflict
+  error handling, and the lossless text round-trip (runs against the published `@0.3.0`
+  after release)
 
 > **Note:** the `cmd/*` example packages are standalone modules (they import the *published*
 > `aurasuisui/bimap` and are **not** part of the root package — the repo ships no workspace
@@ -247,7 +296,7 @@ single-machine numbers, indicative of constant factors, not absolute speed).
 
 ```bash
 moon check   # type check
-moon test    # run all 334 tests
+moon test    # run all 368 tests
 moon fmt     # format
 moon build   # build
 ```

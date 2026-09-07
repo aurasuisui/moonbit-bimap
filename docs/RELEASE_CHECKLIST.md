@@ -38,7 +38,7 @@
 | 压力 / 规模:大 N、扩容级联、墓碑累积、fill→drain→refill | ✅ | `bench_test.mbt`(10k/20k)、`generics_test.mbt`(fill→drain→refill 容量不膨胀、三轮) |
 | 对抗性输入:HashDoS 碰撞洪水,无超线性退化,探测距离有界 | ✅ | `bimap_wbtest.mbt`:常哈希键洪流下表仍正确、删除可用,量化 `max_probe_distance` 线性退化(对应 README Gotcha #2 的可交换哈希弱点) |
 | 迭代器 / 别名契约:fail-fast、多迭代器独立、迭代中变更行为明确 | ✅ | `iter_test.mbt`(多迭代器独立、`collect()`/size_hint 可观测效果)、`traits_test.mbt`(顺序+计数+for-in)。Fail-fast 的 abort 路径:⊘ 不可在进程内断言,已文档化 |
-| 序列化往返 + golden-file 快照 | ⊘ | 本库仅单向 `ToJson`,无 `FromJson`(设计如此,见 `docs/DEVPLAN.md`),无往返可测。Debug 快照散见 `traits_test.mbt` |
+| 序列化往返 + golden-file 快照 | ✅ | v0.3.0 from_json:`src/json_test.mbt`(Tier 0–2:单元/QC 往返/朴素模型/Unicode+转义键往返/冲突风暴/12k 压力;golden 快照锁 `ToJson` 对象文本与 `DuplicateRightValue` 消息格式,SPEC §12.2)。差分无 oracle(原创扩展),语义由测试钉死 |
 
 ## Tier 3 — 非功能 / 生产卫生
 
