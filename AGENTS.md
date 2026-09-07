@@ -41,7 +41,7 @@ regenerated `pkg.generated.mbti`, or CI fails.
 
 The repo is a SINGLE package at the root (no `moon.work` workspace manifest — the published
 module must not ship one). The `cmd/*` example packages are intentionally **not** part of the
-root package (they import the *published* `aurasuisui/bimap@0.2.1`, matching indexmap's layout),
+root package (they import the *published* `aurasuisui/bimap@0.3.0`, matching indexmap's layout),
 so root `moon check`/`moon test` never touches them. To exercise one, it must resolve the
 published package: `moon run cmd/username_email`. The `bench/` timing-benchmark module follows
 the same layout (imports the *published* package): `moon run --release bench/main.mbt` — see

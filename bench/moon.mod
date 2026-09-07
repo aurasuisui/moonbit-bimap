@@ -1,5 +1,5 @@
 import {
-  "aurasuisui/bimap@0.2.1",
+  "aurasuisui/bimap@0.3.0",
 }
 
 name = "bench/bimap_bench"

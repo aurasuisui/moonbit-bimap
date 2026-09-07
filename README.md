@@ -74,7 +74,7 @@ Add the dependency to your project's `moon.mod`:
 
 ```toml
 import {
-  "aurasuisui/bimap@0.2.1",
+  "aurasuisui/bimap@0.3.0",
 }
 ```
 
