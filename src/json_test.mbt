@@ -478,9 +478,10 @@ test "qc round-trip: BiBTreeMap[String, Int] to_json -> from_json preserves cont
 ///|
 /// Naive Array model of from_json_with semantics, generic in the logical key
 /// type K (needs only Eq — linear scans, no Map/Hash/SortedMap):
-/// 1. decode values in text order (core Json decode per value);
+/// 1. decode values in collapsed-object order (core Map: text-duplicate
+///    keys already last-wins-collapsed at their FIRST-seen position);
 /// 2. parse-key last-wins collapse, keeping first-seen key positions;
-/// 3. right-value dedup over SURVIVORS in text order of last occurrences.
+/// 3. right-value dedup over SURVIVORS in that collapsed-object order.
 /// Returns the final pair list in first-seen order, or the conflict triple
 /// (right render, occupied-left render, new-left render) per SPEC §12.2.
 fn[K : Eq] model_with(
@@ -626,7 +627,7 @@ test "model: handcrafted texts agree with the naive Array model (Int keys)" {
   let cases = [
     "{}", "{\"a\":1}", "{\"b\":1,\"a\":2,\"c\":3}", "{\"a\":1,\"a\":2}", "{\"1\":1,\"01\":2}",
     "{\"2\":9,\"1\":1,\"01\":2}", "{\"1\":5,\"2\":7,\"01\":7}", "{\"2\":7,\"01\":7,\"1\":5}",
-    "{\"1\":7,\"2\":7}", "{\"1\":7,\"2\":7,\"01\":7}",
+    "{\"1\":7,\"2\":7}", "{\"1\":7,\"2\":7,\"01\":7}", "{\"1\":5,\"2\":1,\"1\":1}",
   ]
   let mut i = 0
   while i < cases.length() {
@@ -639,10 +640,188 @@ test "model: handcrafted texts agree with the naive Array model (Int keys)" {
 test "model: handcrafted texts agree with the naive Array model (String keys)" {
   let cases = [
     "{}", "{\"b\":1,\"a\":2}", "{\"a\":1,\"a\":2}", "{\"a\":1,\"b\":1}", "{\"a\":1,\"b\":2,\"b\":1}",
+    "{\"a\":0,\"b\":1,\"a\":1}",
   ]
   let mut i = 0
   while i < cases.length() {
     check_model_str_case(cases[i])
     i = i + 1
   }
+}
+// ---------------------------------------------------------------------------
+// Tier 2 - real-world edges: unicode / empty / escaped keys round-trip
+// ---------------------------------------------------------------------------
+
+///|
+/// Build a JSON object text {"k0":v0,"k1":v1,...} with value_of(i) as the
+/// i-th value (integer literal text).
+fn build_number_object_text(n : Int, value_of : (Int) -> Int) -> String {
+  let sb = StringBuilder(size_hint=n * 12)
+  sb.write_string("{")
+  let mut i = 0
+  while i < n {
+    if i > 0 {
+      sb.write_string(",")
+    }
+    sb.write_string("\"k" + Show::to_string(i) + "\":")
+    sb.write_string(Show::to_string(value_of(i)))
+    i = i + 1
+  }
+  sb.write_string("}")
+  sb.to_string()
+}
+
+///|
+test "round-trip: unicode, empty and escaped keys survive the text round-trip (BiMap)" {
+  let keys = [
+    "中文", "😀x", "", "a\"b", "a\\b", "line\nbreak", "tab\there", "é",
+  ]
+  let pairs : Array[(String, Int)] = []
+  let mut i = 0
+  while i < keys.length() {
+    pairs.push((keys[i], i))
+    i = i + 1
+  }
+  let m = @aurasuisui/bimap.BiMap::from_array(pairs)
+  let text = m.to_json().stringify()
+  let m2 = @aurasuisui/bimap.from_json(@json.parse(text)) catch {
+    e => @test.fail("round-trip failed: " + Show::to_string(e))
+  }
+  @test.assert_eq(m, m2)
+  @test.assert_eq(m.into_array(), m2.into_array())
+}
+
+///|
+test "round-trip: unicode, empty and escaped keys survive the text round-trip (BiBTreeMap)" {
+  let keys = [
+    "中文", "😀x", "", "a\"b", "a\\b", "line\nbreak", "tab\there", "é",
+  ]
+  let pairs : Array[(String, Int)] = []
+  let mut i = 0
+  while i < keys.length() {
+    pairs.push((keys[i], i))
+    i = i + 1
+  }
+  let m = @aurasuisui/bimap.BiBTreeMap::from_array(pairs)
+  let text = m.to_json().stringify()
+  let m2 = @aurasuisui/bimap.BiBTreeMap::from_json(@json.parse(text)) catch {
+    e => @test.fail("round-trip failed: " + Show::to_string(e))
+  }
+  @test.assert_eq(m, m2)
+  @test.assert_eq(m.into_array(), m2.into_array())
+}
+
+// ---------------------------------------------------------------------------
+// Tier 2 - golden snapshots (locked formats; SPEC §12.2)
+// ---------------------------------------------------------------------------
+
+///|
+test "golden: ToJson object text for BiMap and BiBTreeMap" {
+  let m = @aurasuisui/bimap.BiMap::from_array([("b", 1), ("a", 2)])
+  @test.assert_eq(m.to_json().stringify(), "{\"b\":1,\"a\":2}")
+  let bt = @aurasuisui/bimap.BiBTreeMap::from_array([("b", 1), ("a", 2)])
+  @test.assert_eq(bt.to_json().stringify(), "{\"a\":2,\"b\":1}")
+  // quoting/escaping rules of the JSON text layer (keys with quote,
+  // backslash and newline)
+  let esc = @aurasuisui/bimap.BiMap::from_array([
+    ("a\"b", 1),
+    ("c\\d", 2),
+    ("x\ny", 3),
+  ])
+  @test.assert_eq(
+    esc.to_json().stringify(),
+    "{\"a\\\"b\":1,\"c\\\\d\":2,\"x\\ny\":3}",
+  )
+}
+
+///|
+test "golden: DuplicateRightValue message with escaped-string and unicode payloads" {
+  // right values are Strings here: their render is the JSON string text
+  let err_s = err_from_json_s("{\"a\":\"x\\\"y\",\"b\":\"x\\\"y\"}")
+  @test.assert_eq(
+    Show::to_string(err_s),
+    "DuplicateRightValue(\"x\\\"y\", \"a\", \"b\")",
+  )
+  // unicode keys and values render verbatim (no ASCII-only escaping)
+  let err_u = err_from_json_i("{\"名字\":1,\"别名\":1}")
+  @test.assert_eq(
+    Show::to_string(err_u),
+    "DuplicateRightValue(1, \"名字\", \"别名\")",
+  )
+}
+
+// ---------------------------------------------------------------------------
+// Tier 2 - conflict storms and 10k+ stress
+// ---------------------------------------------------------------------------
+
+///|
+test "conflict storm: 1000 keys sharing one right raise with the first two text keys" {
+  let text = build_number_object_text(1000, fn(_i : Int) -> Int { 7 })
+  let err = err_from_json_i(text)
+  assert_dup(err, "7", "\"k0\"", "\"k1\"")
+  @test.assert_eq(
+    Show::to_string(err),
+    "DuplicateRightValue(7, \"k0\", \"k1\")",
+  )
+}
+
+///|
+test "conflict storm: a late duplicate-key rebind creates a NEW conflict (last-wins first)" {
+  // k0..k499 hold distinct rights 0..499; the trailing "k0":1 rebinds k0 to
+  // right 1, which k1 already holds -> conflict on the NEW state.
+  let sb = StringBuilder(size_hint=6000)
+  sb.write_string("{")
+  let mut i = 0
+  while i < 500 {
+    if i > 0 {
+      sb.write_string(",")
+    }
+    sb.write_string("\"k" + Show::to_string(i) + "\":" + Show::to_string(i))
+    i = i + 1
+  }
+  sb.write_string(",\"k0\":1}")
+  let err = err_from_json_i(sb.to_string())
+  // core collapses the duplicate text key FIRST (first-seen position kept),
+  // so the dedup order is the collapsed object order: k0 -> then k1 already
+  // holds right 1 -> occupied k0, newcomer k1.
+  assert_dup(err, "1", "\"k0\"", "\"k1\"")
+  @test.assert_eq(
+    Show::to_string(err),
+    "DuplicateRightValue(1, \"k0\", \"k1\")",
+  )
+}
+
+///|
+test "stress: 12k-pair text round-trip preserves count, order and lookups" {
+  let text = build_number_object_text(12000, fn(i : Int) -> Int { i })
+  let m = from_json_i(text)
+  @test.assert_eq(m.len(), 12000)
+  @test.assert_eq(m.get_index(0), Some(("k0", 0)))
+  @test.assert_eq(m.get_index(6000), Some(("k6000", 6000)))
+  @test.assert_eq(m.get_index(11999), Some(("k11999", 11999)))
+  @test.assert_eq(m.get_by_left("k7777"), Some(7777))
+  @test.assert_eq(m.get_by_right(7777), Some("k7777"))
+  // second text round-trip agrees in content AND order
+  let text2 = m.to_json().stringify()
+  let m2 = @aurasuisui/bimap.from_json(@json.parse(text2)) catch {
+    e => @test.fail("stress round-trip failed: " + Show::to_string(e))
+  }
+  @test.assert_eq(m, m2)
+  @test.assert_eq(m.into_array(), m2.into_array())
+}
+
+///|
+test "stress: 12k-pair decode into BiBTreeMap stays correct" {
+  let text = build_number_object_text(12000, fn(i : Int) -> Int { i * 3 })
+  let bt = btree_from_json_i(text)
+  @test.assert_eq(bt.len(), 12000)
+  @test.assert_eq(bt.first(), Some(("k0", 0)))
+  @test.assert_eq(bt.get_by_left("k6000"), Some(18000))
+  @test.assert_eq(bt.get_by_right(5997), Some("k1999"))
+  let bt2 = @aurasuisui/bimap.BiBTreeMap::from_json(
+    @json.parse(bt.to_json().stringify()),
+  ) catch {
+    e => @test.fail("stress round-trip failed: " + Show::to_string(e))
+  }
+  @test.assert_eq(bt, bt2)
 }
