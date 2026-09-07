@@ -63,3 +63,29 @@ pub fn[L : Hash + Eq, R] new() -> BiMap[L, R] {
 pub fn[L : Hash + Eq, R] with_capacity(cap : Int) -> BiMap[L, R] {
   BiMap::with_capacity(cap)
 }
+
+///|
+/// Deserialize a `BiMap` from a JSON object (String keys, text order
+/// preserved). See `BiMap::from_json`.
+///
+/// **Free function covers ONLY `BiMap` (P1-1)**: MoonBit free functions
+/// cannot be distinguished by return type, so `BiMap` and `BiBTreeMap`
+/// cannot share the same `@aurasuisui/bimap.from_json` name — use
+/// `BiBTreeMap::from_json(...)` for the sorted variant.
+pub fn[R : FromJson + Hash + Eq] from_json(
+  json : Json,
+) -> BiMap[String, R] raise BiMapDecodeError {
+  BiMap::from_json(json)
+}
+
+///|
+/// Deserialize a `BiMap` from a JSON object, parsing each key from `String`
+/// (e.g. integer keys). See `BiMap::from_json_with`; `parse_key` must be
+/// total (P1-2). **Free function covers ONLY `BiMap` (P1-1)** — use
+/// `BiBTreeMap::from_json_with(...)` for the sorted variant.
+pub fn[K : Hash + Eq, R : FromJson + Hash + Eq] from_json_with(
+  json : Json,
+  parse_key : (String) -> K,
+) -> BiMap[K, R] raise BiMapDecodeError {
+  BiMap::from_json_with(json, parse_key)
+}

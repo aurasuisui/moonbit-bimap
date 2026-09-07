@@ -640,3 +640,61 @@ insertion");`json/parse.mbt` 的 `parse_object` 以 `map[name] = ctx.parse_value
 **无 `Hash`、无 `Compare`**。故 **R=Json 被 BiMap 的 `R : Hash + Eq` 与
 BiBTreeMap 的 `R : Compare` 在类型层直接排除**(光有 Eq 不够),结论不变;文档措辞
 用"类型级不可行",不写"未实现";往返测试用 R=String/Int。
+
+### §12.2 签名与错误类型(M2 起,随实现补入并锁定)
+
+```moonbit
+pub(all) suberror BiMapDecodeError {
+  Decode(@json.JsonDecodeError)              // JSON 语法/类型错误(透传)
+  DuplicateRightValue(String, String, String)
+  // 双射冲突:(右值渲染, 已占用者左键渲染, 冲突新左键渲染)
+} derive(Debug, Eq)
+// 另手写 pub impl Show for BiMapDecodeError(格式见下,已锁定)
+```
+
+**工具链裁定**:计划 §2 的 `pub enum` 修为 `pub(all) suberror`(moonc v0.10.12
+[4127] "Type is not an error type";公开表面:名字/变体/载荷/derive 不变)。
+
+**Show 格式(已锁定,禁止实现时临时改)**:
+
+- `DuplicateRightValue(<r>, <l1>, <l2>)`:三个载荷是**预渲染**字符串,以 ", " 连接。
+  右值渲染 = 冲突新对的**原始 Json 值** `Json::stringify()`(紧凑形式:数字无引号、
+  字符串带引号、转义随 stringify);左键渲染 = 文本键的 JSON 字符串渲染
+  `Json::string(k).stringify()`。例:`{"a":1,"b":1}` →
+  `DuplicateRightValue(1, "a", "b")`。
+- `Decode(<err>)`:`Decode(` + core 派生 Show(err) + `)`,含 JSON-pointer 路径。例:
+  非对象输入 → `Decode(JsonDecodeError((, Map::from_json: expected object)))`;
+  `{"a":[1]}`(R=Int)→ `Decode(JsonDecodeError((/a, Int::from_json: expected
+  number)))`。
+- "已占用者左键"裁定(实施期细化):去重按**幸存对**(每个逻辑键的最后文本出现)的
+  文本序推进——parse_key 碰撞先 last-wins 再参与冲突检测;报错时"已占用者" =
+  文本序更早的幸存左键,"新到者" = 触发冲突的左键。例:`{"1":5,"2":7,"01":7}`
+  (parse_key 把 "1"/"01" 折成同键)→ `DuplicateRightValue(7, "2", "01")`。
+
+**签名(公开 API,与计划 §2 一致)**
+
+```moonbit
+pub fn[R : FromJson + Hash + Eq] BiMap::from_json(json : Json) -> BiMap[String, R]
+  raise BiMapDecodeError
+pub fn[K : Hash + Eq, R : FromJson + Hash + Eq] BiMap::from_json_with(
+  json : Json, parse_key : (String) -> K
+) -> BiMap[K, R] raise BiMapDecodeError
+
+// lib.mbt 自由函数(P1-1:仅覆盖 BiMap):
+pub fn[R : FromJson + Hash + Eq] from_json(json : Json) -> BiMap[String, R]
+  raise BiMapDecodeError
+pub fn[K : Hash + Eq, R : FromJson + Hash + Eq] from_json_with(
+  json : Json, parse_key : (String) -> K
+) -> BiMap[K, R] raise BiMapDecodeError
+```
+
+- **P1-1**:MoonBit 顶层函数不能按返回类型区分同名函数,`@aurasuisui/bimap.from_json`
+  仅覆盖 BiMap;BiBTreeMap 一律走 `BiBTreeMap::from_json(...)` 方法调用。
+- **P1-2**:`parse_key : (String) -> K` 是**全函数**(无 raise 通道),解析失败须在
+  内部消化(如 catch `@string.parse_int` 兜底到默认值);文档标注"parse_key 必须
+  total"。
+- **与 indexmap 的 bounds 差异(1/2)**:BiMap 的 `R` 需 `FromJson + Hash + Eq`
+  (反向表对右值建哈希);indexmap 的 `from_json` 只要求 `V : FromJson`。
+
+实现路径(计划 §3.4,纪律):`@json.from_json` 整表解码 → 右值查重先于任何插入 →
+公开 `from_array` 构建;**不触 forward/backward/order/positions**。

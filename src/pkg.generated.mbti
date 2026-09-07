@@ -3,6 +3,7 @@ package "aurasuisui/bimap"
 
 import {
   "moonbitlang/core/debug",
+  "moonbitlang/core/json",
   "moonbitlang/core/quickcheck",
   "moonbitlang/core/quickcheck/splitmix",
 }
@@ -10,11 +11,20 @@ import {
 // Values
 pub const VERSION : String = "0.2.1"
 
+pub fn[R : @json.FromJson + Hash + Eq] from_json(Json) -> BiMap[String, R] raise BiMapDecodeError
+
+pub fn[K : Hash + Eq, R : @json.FromJson + Hash + Eq] from_json_with(Json, (String) -> K) -> BiMap[K, R] raise BiMapDecodeError
+
 pub fn[L : Hash + Eq, R] new() -> BiMap[L, R]
 
 pub fn[L : Hash + Eq, R] with_capacity(Int) -> BiMap[L, R]
 
 // Errors
+pub(all) suberror BiMapDecodeError {
+  Decode(@json.JsonDecodeError)
+  DuplicateRightValue(String, String, String)
+} derive(Eq, @debug.Debug)
+pub impl Show for BiMapDecodeError
 
 // Types and methods
 type BiBTreeMap[L, R]
@@ -59,6 +69,8 @@ pub fn[L, R : Hash + Eq] BiMap::contains_right(Self[L, R], R) -> Bool
 pub fn[L : Hash + Eq, R : Hash + Eq] BiMap::copy(Self[L, R]) -> Self[L, R]
 pub fn[L : Hash + Eq, R] BiMap::first(Self[L, R]) -> (L, R)?
 pub fn[L : Hash + Eq, R : Hash + Eq] BiMap::from_array(Array[(L, R)]) -> Self[L, R]
+pub fn[R : @json.FromJson + Hash + Eq] BiMap::from_json(Json) -> Self[String, R] raise BiMapDecodeError
+pub fn[K : Hash + Eq, R : @json.FromJson + Hash + Eq] BiMap::from_json_with(Json, (String) -> K) -> Self[K, R] raise BiMapDecodeError
 pub fn[L : Hash + Eq, R] BiMap::get_by_left(Self[L, R], L) -> R?
 pub fn[L, R : Hash + Eq] BiMap::get_by_right(Self[L, R], R) -> L?
 pub fn[L : Hash + Eq, R] BiMap::get_index(Self[L, R], Int) -> (L, R)?
