@@ -698,3 +698,19 @@ pub fn[K : Hash + Eq, R : FromJson + Hash + Eq] from_json_with(
 
 实现路径(计划 §3.4,纪律):`@json.from_json` 整表解码 → 右值查重先于任何插入 →
 公开 `from_array` 构建;**不触 forward/backward/order/positions**。
+**BiBTreeMap 签名(M3 补)**
+
+```moonbit
+pub fn[R : FromJson + Compare] BiBTreeMap::from_json(json : Json)
+  -> BiBTreeMap[String, R] raise BiMapDecodeError
+pub fn[K : Compare, R : FromJson + Compare] BiBTreeMap::from_json_with(
+  json : Json, parse_key : (String) -> K
+) -> BiBTreeMap[K, R] raise BiMapDecodeError
+```
+
+- 语义与 BiMap 完全一致(错误优先级、last-wins、严格冲突、载荷渲染与"已占用者"
+  裁定);输入键序无关(排序自规范)。方法调用路径,无自由函数(P1-1)。
+- 实现差异:K 仅 `Compare` 无 `Hash`,parse_key 碰撞中间去重与右值查重用
+  `@sorted_map.SortedMap`(工具链裁定 2026-09,**不得**为 BiBTreeMap 引入
+  Hash 约束)。
+- **与 indexmap 的 bounds 差异(2/2)**:BiBTreeMap 的 `R` 需 `FromJson + Compare`。

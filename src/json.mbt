@@ -215,3 +215,91 @@ pub fn[K : Hash + Eq, R : FromJson + Hash + Eq] BiMap::from_json_with(
   }
   BiMap::from_array(pairs)
 }
+// ---------------------------------------------------------------------------
+// BiBTreeMap deserialization
+// ---------------------------------------------------------------------------
+
+///|
+/// Deserialize a `BiBTreeMap` from a JSON object (String keys; the sorted
+/// map's order is self-canonical, so the input key order is irrelevant —
+/// SPEC §12.1 item 2). Duplicate text keys are last-wins (§3.2).
+///
+/// Strict bijection validation, error priority and `Decode` passthrough are
+/// identical to `BiMap::from_json`. **Call through the method (P1-1)**:
+/// `BiBTreeMap::from_json(...)` — the `@aurasuisui/bimap.from_json` free
+/// function covers only `BiMap`.
+pub fn[R : FromJson + Compare] BiBTreeMap::from_json(
+  json : Json,
+) -> BiBTreeMap[String, R] raise BiMapDecodeError {
+  BiBTreeMap::from_json_with(json, identity_parse_key)
+}
+
+///|
+/// Deserialize a `BiBTreeMap` from a JSON object, mapping each object key
+/// through `parse_key : (String) -> K` before inserting. **`parse_key`
+/// MUST be total (P1-2)** — see `BiMap::from_json_with`. parse_key
+/// collisions are last-wins, like duplicate text keys (§3.2, P2 ruling).
+///
+/// All conflict semantics are identical to `BiMap::from_json_with` — in
+/// particular the dedup pass walks the SURVIVING pairs in text order, so a
+/// `DuplicateRightValue` payload names the text-earlier left key as the
+/// occupied one. Keys need only `Compare` (no `Hash`); the intermediate
+/// dedup structures use `@sorted_map.SortedMap` accordingly.
+pub fn[K : Compare, R : FromJson + Compare] BiBTreeMap::from_json_with(
+  json : Json,
+  parse_key : (String) -> K,
+) -> BiBTreeMap[K, R] raise BiMapDecodeError {
+  // Steps 1–2 mirror BiMap::from_json_with: whole-object decode first
+  // (§3.5 error priority, Decode passthrough), then the raw object for
+  // rendering (guaranteed Object by the successful decode).
+  let obj : Map[String, R] = @json.from_json(json) catch {
+    err => raise Decode(err)
+  }
+  let raw : Map[String, Json] = match json {
+    Json::Object(raw) => raw
+    _ =>
+      abort(
+        "BiBTreeMap::from_json_with: unreachable - a non-object decoded as a Map",
+      )
+  }
+  // Step 3 — parse_key collapse, last wins. K has only Compare (no Hash),
+  // so the intermediate maps are SortedMaps (toolchain ruling 2026-09: do
+  // NOT add a Hash bound for BiBTreeMap). entries/logicals/raw_nodes keep
+  // text order for the dedup pass; final_pairs/final_text feed the build.
+  let entries = obj.to_array()
+  let logicals : Array[K] = []
+  let final_pairs : @sorted_map.SortedMap[K, R] = @sorted_map.SortedMap([])
+  let final_text : @sorted_map.SortedMap[K, String] = @sorted_map.SortedMap([])
+  let raw_nodes : Array[Json] = []
+  for i in 0..<entries.length() {
+    let (k, v) = entries[i]
+    let logical = parse_key(k)
+    logicals.push(logical)
+    final_pairs.set(logical, v)
+    final_text.set(logical, k)
+    raw_nodes.push(raw_node_of(raw, k))
+  }
+  // Step 4 — O(n) right-value dedup BEFORE any insertion, in survivor text
+  // order (same adjudication as BiMap: "occupied" is the text-earlier
+  // surviving left key).
+  let seen : @sorted_map.SortedMap[R, String] = @sorted_map.SortedMap([])
+  for i in 0..<entries.length() {
+    let (k, v) = entries[i]
+    let logical = logicals[i]
+    if final_text.get(logical) == Some(k) {
+      match seen.get(v) {
+        Some(first_left) =>
+          raise DuplicateRightValue(
+            Json::stringify(raw_nodes[i]),
+            render_key(first_left),
+            render_key(k),
+          )
+        None => seen.set(v, k)
+      }
+    }
+  }
+  // Step 5 — build through the public construction path (only C0 inserts
+  // remain). SortedMap yields pairs in ascending logical-key order;
+  // BiBTreeMap is sorted anyway, so the input order is immaterial.
+  BiBTreeMap::from_array(final_pairs.to_array())
+}

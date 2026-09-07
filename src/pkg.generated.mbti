@@ -34,6 +34,8 @@ pub fn[L, R : Compare] BiBTreeMap::contains_right(Self[L, R], R) -> Bool
 pub fn[L, R] BiBTreeMap::copy(Self[L, R]) -> Self[L, R]
 pub fn[L, R] BiBTreeMap::first(Self[L, R]) -> (L, R)?
 pub fn[L : Compare, R : Compare] BiBTreeMap::from_array(Array[(L, R)]) -> Self[L, R]
+pub fn[R : @json.FromJson + Compare] BiBTreeMap::from_json(Json) -> Self[String, R] raise BiMapDecodeError
+pub fn[K : Compare, R : @json.FromJson + Compare] BiBTreeMap::from_json_with(Json, (String) -> K) -> Self[K, R] raise BiMapDecodeError
 pub fn[L : Compare, R] BiBTreeMap::get_by_left(Self[L, R], L) -> R?
 pub fn[L, R : Compare] BiBTreeMap::get_by_right(Self[L, R], R) -> L?
 pub fn[L : Compare, R : Compare] BiBTreeMap::get_or_insert_left(Self[L, R], L, R) -> R
