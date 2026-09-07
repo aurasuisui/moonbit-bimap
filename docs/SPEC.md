@@ -666,10 +666,13 @@ pub(all) suberror BiMapDecodeError {
   非对象输入 → `Decode(JsonDecodeError((, Map::from_json: expected object)))`;
   `{"a":[1]}`(R=Int)→ `Decode(JsonDecodeError((/a, Int::from_json: expected
   number)))`。
-- "已占用者左键"裁定(实施期细化):去重按**幸存对**(每个逻辑键的最后文本出现)的
-  文本序推进——parse_key 碰撞先 last-wins 再参与冲突检测;报错时"已占用者" =
-  文本序更早的幸存左键,"新到者" = 触发冲突的左键。例:`{"1":5,"2":7,"01":7}`
-  (parse_key 把 "1"/"01" 折成同键)→ `DuplicateRightValue(7, "2", "01")`。
+- "已占用者左键"裁定(实施期细化,M4 以模型+风暴测试钉死):去重按**整表解码后的
+  折叠对象序**(core Map 已把文本重复键 last-wins 折叠、幸存键保留**首见位置**)推进;
+  parse_key 碰撞时跳过非幸存文本键(某逻辑键的非最后文本出现)——报错时
+  "已占用者" = 去重序更早的幸存左键,"新到者" = 触发冲突的左键。例:
+  `{"1":5,"2":7,"01":7}`(parse_key 把 "1"/"01" 折成同键)→
+  `DuplicateRightValue(7, "2", "01")`;文本重复键风暴例(500 对后跟 "k0":1 使 k0
+  改绑到 k1 已占的右值 1)→ `DuplicateRightValue(1, "k0", "k1")`(折叠后 k0 在首位)。
 
 **签名(公开 API,与计划 §2 一致)**
 
@@ -714,3 +717,32 @@ pub fn[K : Compare, R : FromJson + Compare] BiBTreeMap::from_json_with(
   `@sorted_map.SortedMap`(工具链裁定 2026-09,**不得**为 BiBTreeMap 引入
   Hash 约束)。
 - **与 indexmap 的 bounds 差异(2/2)**:BiBTreeMap 的 `R` 需 `FromJson + Compare`。
+### §12.3 语义裁定(M4 以测试钉死;与计划 §3 逐条一致)
+
+- **3.1 双射冲突 → 严格报错**:JSON 对象中两个不同左键映射到同一右值时 raise
+  `DuplicateRightValue`,整次解析失败,不产出半成品;载荷含右值与两个冲突左键的
+  渲染(§12.2)。对照:Rust bimap serde 是 C3/C4 静默蒸发(§12.1 核验),indexmap
+  无此约束——这是与 indexmap 的语义差异(2/2,见下)。
+- **3.2 重复键 → last wins(两种同构形态)**:文本重复键由 core Map 先行折叠
+  (last wins,**幸存键保留首见位置**,即 C2 式位置稳定);parse_key 碰撞同构:值取
+  最后文本出现、位置取首见。**先 last-wins 再查冲突**——例 `{"a":1,"b":2,"b":1}`
+  折叠得 a=1,b=1 后报冲突;去重只考察幸存对,顺序见 §12.2"已占用者"裁定。
+- **3.3 顺序与往返保证**:`BiMap::from_json(m.to_json()) == m`(Eq 集合语义)且
+  迭代序与 JSON 文本键序一致(core Map 保序,M1 冒烟 + M4 往返测试);
+  `BiBTreeMap::from_json(m.to_json()) == m` 恒成立(排序自规范,输入键序无关)。
+  非字符串键往返需要 `parse_key` = Show 的逆(M4 用 Int 键示例:parse_key 内部
+  catch `@string.parse_int` 失败兜底,P1-2)。
+- **3.4 入口非收口点**:from_json 是数据入口,不触 forward/backward/order/positions;
+  路径 = 整表解码 → O(n) 右值查重(先于任何插入)→ 公开 `from_array` 构建
+  (去重后必全 C0,无中间态蒸发)。
+- **3.5 错误优先级**:值解码错误先于冲突检测——同对象既有类型错误又有右值冲突时
+  报 `Decode`(整表解码先行天然满足);测试:`{"a":"x","b":1,"c":1}` →
+  `Decode(JsonDecodeError((/a, Int::from_json: expected number)))`。
+- **与 indexmap 的两处差异**:① bounds(BiMap 的 R 需 `FromJson + Hash + Eq`、
+  BiBTreeMap 需 `FromJson + Compare`;indexmap 只需 `V : FromJson`);② 冲突语义
+  (严格报错 vs indexmap 的 insert 静默覆盖)。另与 Rust serde 的格式/行为差异见
+  §12.1 核验记录(本库对齐自家 ToJson 插入序格式)。
+- **差分 oracle 记录**:from_json 是原创扩展(对齐本库 ToJson 格式,不对齐 Rust
+  serde 格式),**无真源 oracle**——语义由 M4 全套测试钉死(单元/模型/QC 往返/
+  golden),沿用 SPEC 惯例记录。
+- **R=Json**:类型级不可行(§12.1 项 3,无 Hash/Compare),文档记录,不写测试。
