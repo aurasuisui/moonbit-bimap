@@ -169,3 +169,50 @@ test "three fill/drain cycles leave the map healthy and capacity bounded" {
     @test.fail("capacity grew beyond the peak across fill/drain cycles")
   }
 }
+// ---------------------------------------------------------------------------
+// v0.3.0 from_json bounds (M4): bounds-minimal compile pins
+// ---------------------------------------------------------------------------
+
+///|
+/// A Hash + Eq key with NO Show: proves BiMap::from_json_with needs no Show
+/// on K (parse_key produces it from the text key).
+struct JsonKeyNoShow {
+  id : Int
+} derive(Hash, Eq, Debug)
+
+///|
+/// A Compare key with NO Hash and NO Show: proves BiBTreeMap::from_json_with
+/// needs only Compare on K (the intermediate structures are SortedMaps).
+struct BTreeJsonKey {
+  id : Int
+} derive(Compare, Eq, Debug)
+
+///|
+test "from_json bounds: BiMap::from_json_with compiles and runs with a no-Show K" {
+  // parse_key must be total (P1-2): key id = text length, no raise channel.
+  let parse_key = fn(k : String) -> JsonKeyNoShow { { id: k.length(), } }
+  let m : @aurasuisui/bimap.BiMap[JsonKeyNoShow, Int] = @aurasuisui/bimap.from_json_with(
+    @json.parse("{\"a\":7,\"bb\":9}"),
+    parse_key,
+  ) catch {
+    e => @test.fail("from_json_with failed: " + Show::to_string(e))
+  }
+  @test.assert_eq(m.len(), 2)
+  @test.assert_eq(m.get_by_left({ id: 1, }), Some(7))
+  @test.assert_eq(m.get_by_left({ id: 2, }), Some(9))
+}
+
+///|
+test "from_json bounds: BiBTreeMap::from_json_with compiles and runs with a Compare-only K" {
+  // No Hash on K anywhere — compile-time proof the sorted path stays
+  // Hash-free (toolchain ruling 2026-09).
+  let parse_key = fn(k : String) -> BTreeJsonKey { { id: k.length(), } }
+  let m : @aurasuisui/bimap.BiBTreeMap[BTreeJsonKey, Int] = @aurasuisui/bimap.BiBTreeMap::from_json_with(
+    @json.parse("{\"a\":7,\"bb\":9}"),
+    parse_key,
+  ) catch {
+    e => @test.fail("BiBTreeMap::from_json_with failed: " + Show::to_string(e))
+  }
+  @test.assert_eq(m.len(), 2)
+  @test.assert_eq(m.into_array(), [({ id: 1, }, 7), ({ id: 2, }, 9)])
+}
