@@ -4,6 +4,16 @@ All notable changes to `moonbit-bimap` are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/), and this project
 adheres to [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Fixed
+- **`cmd/json_roundtrip` conflict demo exited `main` early.** The strict-conflict
+  section's `catch { e => { ...; return } }` returned from `main`, so the fifth demo
+  point (lossless round-trip `from_json(m.to_json()) == m`) never executed. Restructured
+  to `try { ... } catch { ... }` so the expected `DuplicateRightValue` error is printed
+  and the example falls through; all five demo points now run (verified against the
+  published `@0.3.0`). The 0.3.0 release record claiming "五个演示点逐项正确" is
+  corrected below.
 
 ## [0.3.0] - 2026-09-07
 
@@ -87,8 +97,10 @@ adheres to [Semantic Versioning](https://semver.org/).
   wasm-gc 368/368;`moon publish --dry-run` 通过(server 202)且发布 zip 无 target/、
   无 moon.work(66 文件);`cargo clean tools/diffgen`;`moon publish` server 200;
   `moon update` 后 `cmd/{username_email,country_code,json_roundtrip}` 与 `bench/`
-  对已发布 @0.3.0 实跑验证通过(json_roundtrip 五个演示点逐项正确,含
-  `DuplicateRightValue(1, "a", "b")`;bench 10k+100k 全套跑通)。发布期间发现并钉死
+   对已发布 @0.3.0 实跑验证通过(bench 10k+100k 全套跑通)。【记录更正】当时 json_roundtrip
+  冲突演示分支 catch 内 `return` 提前退出 main,第五演示点(lossless round-trip)未实际
+  执行,"五个演示点逐项正确"系失真;代码已修复(见 [Unreleased])并复验五个演示点全部
+  输出正确(含 `DuplicateRightValue(1, "a", "b")`)。发布期间发现并钉死
   core `Compare for String` 长度优先序(见 Notes);json_test +1 钉死测试(套件 369)。
 
 ## [0.2.1] - 2026-08-24
