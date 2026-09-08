@@ -154,7 +154,7 @@ let r = m.insert("a", 2)     // Both((a,4),(c,2))  {a↔2}  — len 2→1!
 
 | Category | Methods |
 |---|---|
-| Construct | `new()`, `with_capacity(n)`, `from_array(pairs)`, `default()`, `copy()`, `from_json(json)`, `from_json_with(json, parse_key)` |
+| Construct | `new()`, `with_capacity(n)`, `from_array(pairs)`, `default()`（`Default` trait 实现）, `copy()`, `from_json(json)`, `from_json_with(json, parse_key)` |
 | Query | `len()`, `is_empty()`, `capacity()` |
 | Insert | `insert(l, r) -> Overwritten`, `insert_no_overwrite(l, r) -> Result[Unit,(L,R)]` |
 | Forward | `get_by_left(l)`, `contains_left(l)`, `remove_by_left(l) -> R?` |
@@ -223,7 +223,7 @@ println(m.range("a", "b").to_array())  // [("a", 1), ("b", 2)] — [lo, hi] incl
 
 | Category | Methods |
 |---|---|
-| Construct | `new()`, `from_array(pairs)`, `default()`, `copy()`, `from_json(json)`, `from_json_with(json, parse_key)` |
+| Construct | `new()`, `from_array(pairs)`, `default()`（`Default` trait 实现）, `copy()`, `from_json(json)`, `from_json_with(json, parse_key)` |
 | Query | `len()`, `is_empty()`, `first()`, `last()`, `range(lo, hi) -> Iter` |
 | Insert | `insert(l, r) -> Overwritten`, `insert_no_overwrite(l, r) -> Result[Unit,(L,R)]` |
 | Forward | `get_by_left(l)`, `contains_left(l)`, `remove_by_left(l) -> R?` |
