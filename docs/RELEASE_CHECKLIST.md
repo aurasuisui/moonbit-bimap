@@ -14,7 +14,7 @@
 
 | 项 | 现状 | 出处 |
 |---|---|---|
-| API / 单元测试:每个公开方法按文档契约逐一验证 | ✅ | `bimap_test.mbt`(44)、`edge_test.mbt`/`coverage_test.mbt`/`more_test.mbt` |
+| API / 单元测试:每个公开方法按文档契约逐一验证 | ✅ | `bimap_test.mbt`(51)、`edge_test.mbt`(68)/`coverage_test.mbt`(24)/`more_test.mbt`(24) |
 | 边界 / 异常:空 / 单元素 / 边界值(0 / -1 / 32 位极值 / 空串)/ 重复键 / 越界下标 | ✅ | `bimap_test.mbt`(get_index 越界 → None)、`types_test.mbt`、`generics_test.mbt`(定宽 32 位极值) |
 | 不变量:两侧互逆 + 五处计数 + `positions[order[i]]==i` + mask / 2 的幂 | ✅ | `bimap_wbtest.mbt`(白盒强不变量)、`property_test.mbt`(`check_bijection` 黑盒守护) |
 
@@ -27,7 +27,7 @@
 |---|---|---|
 | 模型 / 状态化属性测试 ⭐:同操作流 vs 朴素 `Array` oracle,逐步比对 | ✅ | `model_test.mbt`(差分,精确内容+顺序,5 测试含 6000 LCG + QuickCheck) |
 | 差分测试:对同一操作流与可信参考实现比对 | ✅ | `model_test.mbt`(朴素 oracle)+ `differential_test.mbt` **对 Rust 原版 `bimap` crate v0.6.3 的真实差分**(夹具由 `tools/diffgen` 生成并入库:黄金 C0–C4 + 6000 步 LCG,逐步比对 Overwritten/len + 终态对集;2026-08-19 闭环) |
-| 随机不变量:随机操作序列下双射恒成立 | ✅ | `property_test.mbt`(7)、`bench_test.mbt`(C4 洪流) |
+| 随机不变量:随机操作序列下双射恒成立 | ✅ | `property_test.mbt`(8)、`bench_test.mbt`(C4 洪流) |
 | QuickCheck `Arbitrary`:生成的双射恒满足不变量 / 顺序无关 Eq/Hash / `to_inverse` 对合 | ✅ | `arbitrary_test.mbt`(6) |
 | 模糊测试 fuzzing:字节流/操作流 fuzz 变更路径 | ⚠️ | 受限:MoonBit 暂无标准 fuzz 框架;`model_test.mbt` 的 6000-op LCG + QuickCheck 是"受限 fuzz"替身——见 `bimap_test.mbt` 与 `model_test.mbt` 顶部注释。真实字节流 fuzz 列为未来工作 |
 
