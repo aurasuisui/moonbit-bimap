@@ -81,7 +81,7 @@ test "iter: collect() materializes the full sequence in order (size_hint effect)
 
 ///|
 test "iter: collect() count equals len after mixed ops (size_hint stays correct)" {
-  let m : @aurasuisui/bimap.BiMap[Int, Int] = @aurasuisui/bimap.new()
+  let m : @aurasuisui/bimap.BiMap[Int32, Int32] = @aurasuisui/bimap.new()
   let mut i = 0
   while i < 40 {
     m.insert(i, i * 2) |> ignore
@@ -92,7 +92,7 @@ test "iter: collect() count equals len after mixed ops (size_hint stays correct)
     m.remove_by_left(j) |> ignore
     j = j + 1
   }
-  let pairs : Array[(Int, Int)] = m.iter().collect()
+  let pairs : Array[(Int32, Int32)] = m.iter().collect()
   @test.assert_eq(pairs.length(), m.len())
   @test.assert_eq(pairs.length(), 25)
   @test.assert_eq(m.lefts().collect().length(), 25)
@@ -101,8 +101,8 @@ test "iter: collect() count equals len after mixed ops (size_hint stays correct)
 
 ///|
 test "iter: collect() on an empty map yields an empty array" {
-  let m : @aurasuisui/bimap.BiMap[String, Int] = @aurasuisui/bimap.new()
-  let pairs : Array[(String, Int)] = m.iter().collect()
+  let m : @aurasuisui/bimap.BiMap[String, Int32] = @aurasuisui/bimap.new()
+  let pairs : Array[(String, Int32)] = m.iter().collect()
   @test.assert_eq(pairs.length(), 0)
   let lefts : Array[String] = m.lefts().collect()
   @test.assert_eq(lefts.length(), 0)

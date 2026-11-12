@@ -20,7 +20,7 @@
 
 ///|
 /// Index of the pair whose left key is `l`, or None.
-fn oracle_index_of_left(arr : Array[(Int, Int)], l : Int) -> Int? {
+fn oracle_index_of_left(arr : Array[(Int32, Int32)], l : Int32) -> Int32? {
   let mut i = 0
   while i < arr.length() {
     let (ll, _) = arr[i]
@@ -34,7 +34,7 @@ fn oracle_index_of_left(arr : Array[(Int, Int)], l : Int) -> Int? {
 
 ///|
 /// Index of the pair whose right value is `r`, or None.
-fn oracle_index_of_right(arr : Array[(Int, Int)], r : Int) -> Int? {
+fn oracle_index_of_right(arr : Array[(Int32, Int32)], r : Int32) -> Int32? {
   let mut i = 0
   while i < arr.length() {
     let (_, rr) = arr[i]
@@ -49,7 +49,7 @@ fn oracle_index_of_right(arr : Array[(Int, Int)], r : Int) -> Int? {
 ///|
 /// Shift-remove the element at index `i` (manual, to avoid relying on any
 /// particular Array-removal API).
-fn oracle_remove_at(arr : Array[(Int, Int)], i : Int) -> Unit {
+fn oracle_remove_at(arr : Array[(Int32, Int32)], i : Int32) -> Unit {
   let mut k = i
   let last = arr.length() - 1
   while k < last {
@@ -61,7 +61,7 @@ fn oracle_remove_at(arr : Array[(Int, Int)], i : Int) -> Unit {
 
 ///|
 /// Model `insert`, matching the library's order-preserving C0-C4 semantics.
-fn oracle_insert(arr : Array[(Int, Int)], l : Int, r : Int) -> Unit {
+fn oracle_insert(arr : Array[(Int32, Int32)], l : Int32, r : Int32) -> Unit {
   let il = oracle_index_of_left(arr, l)
   let ir = oracle_index_of_right(arr, r)
   match (il, ir) {
@@ -93,7 +93,7 @@ fn oracle_insert(arr : Array[(Int, Int)], l : Int, r : Int) -> Unit {
 
 ///|
 /// Model `remove_by_left`.
-fn oracle_remove_left(arr : Array[(Int, Int)], l : Int) -> Unit {
+fn oracle_remove_left(arr : Array[(Int32, Int32)], l : Int32) -> Unit {
   match oracle_index_of_left(arr, l) {
     Some(i) => oracle_remove_at(arr, i)
     None => ()
@@ -102,7 +102,7 @@ fn oracle_remove_left(arr : Array[(Int, Int)], l : Int) -> Unit {
 
 ///|
 /// Model `remove_by_right`.
-fn oracle_remove_right(arr : Array[(Int, Int)], r : Int) -> Unit {
+fn oracle_remove_right(arr : Array[(Int32, Int32)], r : Int32) -> Unit {
   match oracle_index_of_right(arr, r) {
     Some(i) => oracle_remove_at(arr, i)
     None => ()
@@ -112,9 +112,9 @@ fn oracle_remove_right(arr : Array[(Int, Int)], r : Int) -> Unit {
 ///|
 /// Model `insert_no_overwrite`: insert only if neither side is present.
 fn oracle_insert_no_overwrite(
-  arr : Array[(Int, Int)],
-  l : Int,
-  r : Int,
+  arr : Array[(Int32, Int32)],
+  l : Int32,
+  r : Int32,
 ) -> Unit {
   if oracle_index_of_left(arr, l) is Some(_) ||
     oracle_index_of_right(arr, r) is Some(_) {
@@ -127,7 +127,10 @@ fn oracle_insert_no_overwrite(
 ///|
 /// Model `retain`: keep only the pairs satisfying `pred`, preserving the
 /// relative order of the kept pairs.
-fn oracle_retain(arr : Array[(Int, Int)], pred : (Int, Int) -> Bool) -> Unit {
+fn oracle_retain(
+  arr : Array[(Int32, Int32)],
+  pred : (Int32, Int32) -> Bool,
+) -> Unit {
   let mut w = 0
   let mut i = 0
   while i < arr.length() {
@@ -146,8 +149,8 @@ fn oracle_retain(arr : Array[(Int, Int)], pred : (Int, Int) -> Bool) -> Unit {
 ///|
 /// Assert the real map agrees with the oracle on exact content, order, and len.
 fn assert_matches_oracle(
-  m : @aurasuisui/bimap.BiMap[Int, Int],
-  oracle : Array[(Int, Int)],
+  m : @aurasuisui/bimap.BiMap[Int32, Int32],
+  oracle : Array[(Int32, Int32)],
 ) -> Unit raise {
   @test.assert_eq(m.into_array(), oracle)
   @test.assert_eq(m.len(), oracle.length())
@@ -159,8 +162,8 @@ fn assert_matches_oracle(
 
 ///|
 test "model: the Rust golden C0-C4 sequence matches the oracle step by step" {
-  let m : @aurasuisui/bimap.BiMap[Int, Int] = @aurasuisui/bimap.new()
-  let oracle : Array[(Int, Int)] = []
+  let m : @aurasuisui/bimap.BiMap[Int32, Int32] = @aurasuisui/bimap.new()
+  let oracle : Array[(Int32, Int32)] = []
   // mirror of the golden sequence in bimap_test.mbt, but with Int keys
   let ops = [(1, 10), (2, 20), (1, 40), (3, 20), (1, 20), (1, 20)]
   let mut i = 0
@@ -175,8 +178,8 @@ test "model: the Rust golden C0-C4 sequence matches the oracle step by step" {
 
 ///|
 test "model: a C3 handoff chain matches the oracle (right value passed along)" {
-  let m : @aurasuisui/bimap.BiMap[Int, Int] = @aurasuisui/bimap.new()
-  let oracle : Array[(Int, Int)] = []
+  let m : @aurasuisui/bimap.BiMap[Int32, Int32] = @aurasuisui/bimap.new()
+  let oracle : Array[(Int32, Int32)] = []
   // right value 7 is handed from left key 1 -> 2 -> 3 -> 4 (C3 each time)
   let keys = [1, 2, 3, 4]
   let mut i = 0
@@ -192,8 +195,8 @@ test "model: a C3 handoff chain matches the oracle (right value passed along)" {
 
 ///|
 test "model: repeated C4 collapses match the oracle and keep len correct" {
-  let m : @aurasuisui/bimap.BiMap[Int, Int] = @aurasuisui/bimap.new()
-  let oracle : Array[(Int, Int)] = []
+  let m : @aurasuisui/bimap.BiMap[Int32, Int32] = @aurasuisui/bimap.new()
+  let oracle : Array[(Int32, Int32)] = []
   let mut i = 0
   while i < 30 {
     // build two disjoint pairs then collapse them
@@ -214,8 +217,8 @@ test "model: repeated C4 collapses match the oracle and keep len correct" {
 
 ///|
 test "model: 6000 deterministic mixed ops agree with the oracle after every step" {
-  let m : @aurasuisui/bimap.BiMap[Int, Int] = @aurasuisui/bimap.new()
-  let oracle : Array[(Int, Int)] = []
+  let m : @aurasuisui/bimap.BiMap[Int32, Int32] = @aurasuisui/bimap.new()
+  let oracle : Array[(Int32, Int32)] = []
   let mut state = 0x1234_5678
   let mut i = 0
   while i < 6000 {
@@ -239,7 +242,7 @@ test "model: 6000 deterministic mixed ops agree with the oracle after every step
       m.insert_no_overwrite(l, r) |> ignore
       oracle_insert_no_overwrite(oracle, l, r)
     } else {
-      let pred = fn(l : Int, r : Int) -> Bool { (l + r) % 3 != 0 }
+      let pred = fn(l : Int32, r : Int32) -> Bool { (l + r) % 3 != 0 }
       m.retain(pred)
       oracle_retain(oracle, pred)
     }
@@ -250,12 +253,12 @@ test "model: 6000 deterministic mixed ops agree with the oracle after every step
 
 ///|
 test "qc: random op sequences agree with the oracle model" {
-  let cases : Array[Array[(Int, Int)]] = @quickcheck.samples(60)
+  let cases : Array[Array[(Int32, Int32)]] = @quickcheck.samples(60)
   let mut c = 0
   while c < cases.length() {
     let pairs = cases[c]
-    let m : @aurasuisui/bimap.BiMap[Int, Int] = @aurasuisui/bimap.new()
-    let oracle : Array[(Int, Int)] = []
+    let m : @aurasuisui/bimap.BiMap[Int32, Int32] = @aurasuisui/bimap.new()
+    let oracle : Array[(Int32, Int32)] = []
     let mut i = 0
     while i < pairs.length() {
       let (l0, r0) = pairs[i]

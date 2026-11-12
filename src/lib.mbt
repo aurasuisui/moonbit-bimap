@@ -44,13 +44,14 @@ pub const VERSION : String = "0.3.0"
 ///   collapse into the single new pair and the length decreases by one (case C4).
 /// - `Pair(l, r)` — the exact pair already existed; the insert is idempotent
 ///   (case C1).
+#derive(Debug, Eq)
 pub enum Overwritten[L, R] {
   Neither
   Left(L, R)
   Right(L, R)
   Both((L, R), (L, R))
   Pair(L, R)
-} derive(Debug, Eq)
+}
 
 ///|
 /// Create a new, empty `BiMap`.
@@ -60,7 +61,7 @@ pub fn[L : Hash + Eq, R] new() -> BiMap[L, R] {
 
 ///|
 /// Create a new, empty `BiMap` with capacity for at least `cap` pairs.
-pub fn[L : Hash + Eq, R] with_capacity(cap : Int) -> BiMap[L, R] {
+pub fn[L : Hash + Eq, R] with_capacity(cap : Int32) -> BiMap[L, R] {
   BiMap::with_capacity(cap)
 }
 

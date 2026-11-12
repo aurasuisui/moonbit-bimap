@@ -10,22 +10,22 @@
 
 ///|
 /// Minimum capacity of the hash table (power of two).
-const MIN_CAPACITY : Int = 16
+const MIN_CAPACITY : Int32 = 16
 
 ///|
 /// Sentinel probe distance — entry has never been displaced.
-const NO_DISTANCE : Int = -1
+const NO_DISTANCE : Int32 = -1
 
 ///|
 /// Sentinel hash value marking a tombstone (deleted) entry.
-const TOMBSTONE_HASH : Int = -1
+const TOMBSTONE_HASH : Int32 = -1
 
 ///|
 /// Normalize a key hash so it can never equal the tombstone sentinel: a live
 /// entry whose hash equals TOMBSTONE_HASH would be invisible to probes
 /// (indistinguishable from a deleted slot). Hash::hash can return any Int —
 /// -1 included — so every stored/compared hash goes through this.
-fn normalize_hash(hash : Int) -> Int {
+fn normalize_hash(hash : Int32) -> Int32 {
   if hash == TOMBSTONE_HASH {
     0
   } else {
@@ -35,11 +35,11 @@ fn normalize_hash(hash : Int) -> Int {
 
 ///|
 /// Load factor numerator (3/4 = 0.75).
-const LOAD_FACTOR_NUMERATOR : Int = 3
+const LOAD_FACTOR_NUMERATOR : Int32 = 3
 
 ///|
 /// Load factor denominator.
-const LOAD_FACTOR_DENOMINATOR : Int = 4
+const LOAD_FACTOR_DENOMINATOR : Int32 = 4
 
 ///|
 /// An entry stored in a bucket. `key` and `hash` are immutable to preserve
@@ -47,18 +47,18 @@ const LOAD_FACTOR_DENOMINATOR : Int = 4
 priv struct Entry[K, V] {
   key : K
   value : V
-  hash : Int
-  mut distance : Int
+  hash : Int32
+  mut distance : Int32
 }
 
 ///|
 /// The pure hash table. Holds no ordering information.
 priv struct HashTab[K, V] {
   mut buckets : Array[Entry[K, V]?]
-  mut len : Int
-  mut mask : Int
-  mut tombstone_count : Int
-  mut max_probe_distance : Int
+  mut len : Int32
+  mut mask : Int32
+  mut tombstone_count : Int32
+  mut max_probe_distance : Int32
 }
 
 // ---------------------------------------------------------------------------
@@ -67,13 +67,13 @@ priv struct HashTab[K, V] {
 
 ///|
 /// Check if the current occupancy exceeds the resize threshold.
-fn should_resize_impl(len : Int, capacity : Int) -> Bool {
+fn should_resize_impl(len : Int32, capacity : Int32) -> Bool {
   len * LOAD_FACTOR_DENOMINATOR >= capacity * LOAD_FACTOR_NUMERATOR
 }
 
 ///|
 /// Compute the next power of two greater than or equal to `n`.
-fn next_power_of_two_impl(n : Int) -> Int {
+fn next_power_of_two_impl(n : Int32) -> Int32 {
   if n <= 1 {
     return 1
   }
@@ -89,8 +89,8 @@ fn next_power_of_two_impl(n : Int) -> Int {
 fn[K : Eq, V] HashTab::probe_find(
   self : HashTab[K, V],
   key : K,
-  hash : Int,
-) -> (Int, Bool) {
+  hash : Int32,
+) -> (Int32, Bool) {
   let start = hash & self.mask
   let mut i = start
   while true {
@@ -125,11 +125,11 @@ fn[K : Eq, V] HashTab::probe_find(
 fn[K : Eq, V] HashTab::robin_hood_find(
   self : HashTab[K, V],
   key : K,
-  hash : Int,
-) -> (Int, Bool) {
+  hash : Int32,
+) -> (Int32, Bool) {
   let start = hash & self.mask
   let mut i = start
-  let mut first_tombstone : Int = -1
+  let mut first_tombstone : Int32 = -1
 
   while true {
     match self.buckets[i] {
@@ -159,8 +159,8 @@ fn[K : Eq, V] HashTab::robin_hood_find(
 fn[K, V] HashTab::robin_hood_insert_at(
   self : HashTab[K, V],
   entry_param : Entry[K, V],
-  start_idx : Int,
-  hash : Int,
+  start_idx : Int32,
+  hash : Int32,
 ) -> Unit {
   let mut entry = entry_param
   let mut i = start_idx
@@ -218,7 +218,7 @@ fn[K, V] HashTab::robin_hood_insert_at(
 ///|
 /// Rebuild the table in-place at `new_cap`, clearing all tombstones.
 /// Iterates the live bucket entries (HashTab has no order array).
-fn[K, V] HashTab::rehash(self : HashTab[K, V], new_cap : Int) -> Unit {
+fn[K, V] HashTab::rehash(self : HashTab[K, V], new_cap : Int32) -> Unit {
   let cap = if new_cap > 0 { new_cap } else { self.buckets.length() }
   let new_buckets : Array[Entry[K, V]?] = Array::make(cap, None)
   let new_mask = cap - 1
@@ -284,7 +284,7 @@ fn[K, V] HashTab::rehash(self : HashTab[K, V], new_cap : Int) -> Unit {
 ///|
 /// Create a new hash table with at least `cap` buckets (rounded to a power of
 /// two, never below MIN_CAPACITY).
-fn[K, V] HashTab::with_capacity(cap : Int) -> HashTab[K, V] {
+fn[K, V] HashTab::with_capacity(cap : Int32) -> HashTab[K, V] {
   let real_cap = if cap < MIN_CAPACITY {
     MIN_CAPACITY
   } else {
@@ -394,6 +394,6 @@ fn[K : Hash + Eq, V] HashTab::contains(self : HashTab[K, V], key : K) -> Bool {
 
 ///|
 /// Current number of buckets.
-fn[K, V] HashTab::capacity(self : HashTab[K, V]) -> Int {
+fn[K, V] HashTab::capacity(self : HashTab[K, V]) -> Int32 {
   self.buckets.length()
 }

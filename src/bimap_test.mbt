@@ -29,7 +29,7 @@ fn[L : Show, R : Show] classify(
 
 ///|
 test "C0: insert into empty map returns Neither" {
-  let m : @aurasuisui/bimap.BiMap[String, Int] = @aurasuisui/bimap.new()
+  let m : @aurasuisui/bimap.BiMap[String, Int32] = @aurasuisui/bimap.new()
   @test.assert_eq(classify(m.insert("a", 1)), "Neither")
   @test.assert_eq(m.len(), 1)
   @test.assert_eq(m.get_by_left("a"), Some(1))
@@ -38,7 +38,7 @@ test "C0: insert into empty map returns Neither" {
 
 ///|
 test "C0: two fresh inserts both return Neither" {
-  let m : @aurasuisui/bimap.BiMap[String, Int] = @aurasuisui/bimap.new()
+  let m : @aurasuisui/bimap.BiMap[String, Int32] = @aurasuisui/bimap.new()
   @test.assert_eq(classify(m.insert("a", 1)), "Neither")
   @test.assert_eq(classify(m.insert("b", 2)), "Neither")
   @test.assert_eq(m.len(), 2)
@@ -46,7 +46,7 @@ test "C0: two fresh inserts both return Neither" {
 
 ///|
 test "C1: exact reinsert returns Pair and is idempotent" {
-  let m : @aurasuisui/bimap.BiMap[String, Int] = @aurasuisui/bimap.new()
+  let m : @aurasuisui/bimap.BiMap[String, Int32] = @aurasuisui/bimap.new()
   m.insert("a", 1) |> ignore
   @test.assert_eq(classify(m.insert("a", 1)), "Pair(a, 1)")
   @test.assert_eq(m.len(), 1)
@@ -56,7 +56,7 @@ test "C1: exact reinsert returns Pair and is idempotent" {
 
 ///|
 test "C2: rebinding a left key returns Left with the old right" {
-  let m : @aurasuisui/bimap.BiMap[String, Int] = @aurasuisui/bimap.new()
+  let m : @aurasuisui/bimap.BiMap[String, Int32] = @aurasuisui/bimap.new()
   m.insert("a", 1) |> ignore
   m.insert("b", 2) |> ignore
   @test.assert_eq(classify(m.insert("a", 4)), "Left(a, 1)")
@@ -68,7 +68,7 @@ test "C2: rebinding a left key returns Left with the old right" {
 
 ///|
 test "C3: rebinding a right value returns Right with the old left" {
-  let m : @aurasuisui/bimap.BiMap[String, Int] = @aurasuisui/bimap.new()
+  let m : @aurasuisui/bimap.BiMap[String, Int32] = @aurasuisui/bimap.new()
   m.insert("a", 1) |> ignore
   m.insert("b", 2) |> ignore
   @test.assert_eq(classify(m.insert("c", 2)), "Right(b, 2)")
@@ -80,7 +80,7 @@ test "C3: rebinding a right value returns Right with the old left" {
 
 ///|
 test "C4: both-sides conflict collapses two pairs into one" {
-  let m : @aurasuisui/bimap.BiMap[String, Int] = @aurasuisui/bimap.new()
+  let m : @aurasuisui/bimap.BiMap[String, Int32] = @aurasuisui/bimap.new()
   m.insert("a", 4) |> ignore
   m.insert("c", 2) |> ignore
   @test.assert_eq(classify(m.insert("a", 2)), "Both((a, 4), (c, 2))")
@@ -94,7 +94,7 @@ test "C4: both-sides conflict collapses two pairs into one" {
 
 ///|
 test "C1 right after C4: reinserting the surviving pair is Pair" {
-  let m : @aurasuisui/bimap.BiMap[String, Int] = @aurasuisui/bimap.new()
+  let m : @aurasuisui/bimap.BiMap[String, Int32] = @aurasuisui/bimap.new()
   m.insert("a", 4) |> ignore
   m.insert("c", 2) |> ignore
   m.insert("a", 2) |> ignore
@@ -104,7 +104,7 @@ test "C1 right after C4: reinserting the surviving pair is Pair" {
 
 ///|
 test "reproduce the full Rust bimap golden sequence" {
-  let m : @aurasuisui/bimap.BiMap[String, Int] = @aurasuisui/bimap.new()
+  let m : @aurasuisui/bimap.BiMap[String, Int32] = @aurasuisui/bimap.new()
   @test.assert_eq(classify(m.insert("a", 1)), "Neither")
   @test.assert_eq(m.len(), 1)
   @test.assert_eq(classify(m.insert("b", 2)), "Neither")
@@ -121,7 +121,7 @@ test "reproduce the full Rust bimap golden sequence" {
 
 ///|
 test "C2 rebinding keeps the left key's insertion position" {
-  let m : @aurasuisui/bimap.BiMap[String, Int] = @aurasuisui/bimap.new()
+  let m : @aurasuisui/bimap.BiMap[String, Int32] = @aurasuisui/bimap.new()
   m.insert("a", 1) |> ignore
   m.insert("b", 2) |> ignore
   m.insert("c", 3) |> ignore
@@ -135,7 +135,7 @@ test "C2 rebinding keeps the left key's insertion position" {
 
 ///|
 test "empty-string key behaves normally" {
-  let m : @aurasuisui/bimap.BiMap[String, Int] = @aurasuisui/bimap.new()
+  let m : @aurasuisui/bimap.BiMap[String, Int32] = @aurasuisui/bimap.new()
   @test.assert_eq(classify(m.insert("", 0)), "Neither")
   @test.assert_eq(m.get_by_left(""), Some(0))
   @test.assert_eq(classify(m.insert("", 0)), "Pair(, 0)")
@@ -149,21 +149,21 @@ test "empty-string key behaves normally" {
 
 ///|
 test "get_by_left miss returns None" {
-  let m : @aurasuisui/bimap.BiMap[String, Int] = @aurasuisui/bimap.new()
+  let m : @aurasuisui/bimap.BiMap[String, Int32] = @aurasuisui/bimap.new()
   m.insert("a", 1) |> ignore
   @test.assert_eq(m.get_by_left("zzz"), None)
 }
 
 ///|
 test "get_by_right miss returns None" {
-  let m : @aurasuisui/bimap.BiMap[String, Int] = @aurasuisui/bimap.new()
+  let m : @aurasuisui/bimap.BiMap[String, Int32] = @aurasuisui/bimap.new()
   m.insert("a", 1) |> ignore
   @test.assert_eq(m.get_by_right(999), None)
 }
 
 ///|
 test "contains_left / contains_right" {
-  let m : @aurasuisui/bimap.BiMap[String, Int] = @aurasuisui/bimap.new()
+  let m : @aurasuisui/bimap.BiMap[String, Int32] = @aurasuisui/bimap.new()
   m.insert("a", 1) |> ignore
   @test.assert_eq(m.contains_left("a"), true)
   @test.assert_eq(m.contains_left("b"), false)
@@ -173,7 +173,7 @@ test "contains_left / contains_right" {
 
 ///|
 test "lookup symmetry: get_by_left(l)==Some(r) iff get_by_right(r)==Some(l)" {
-  let m : @aurasuisui/bimap.BiMap[String, Int] = @aurasuisui/bimap.new()
+  let m : @aurasuisui/bimap.BiMap[String, Int32] = @aurasuisui/bimap.new()
   m.insert("a", 1) |> ignore
   m.insert("b", 2) |> ignore
   m.insert("c", 3) |> ignore
@@ -193,7 +193,7 @@ test "lookup symmetry: get_by_left(l)==Some(r) iff get_by_right(r)==Some(l)" {
 
 ///|
 test "remove_by_left removes both directions" {
-  let m : @aurasuisui/bimap.BiMap[String, Int] = @aurasuisui/bimap.new()
+  let m : @aurasuisui/bimap.BiMap[String, Int32] = @aurasuisui/bimap.new()
   m.insert("a", 1) |> ignore
   m.insert("b", 2) |> ignore
   @test.assert_eq(m.remove_by_left("a"), Some(1))
@@ -205,7 +205,7 @@ test "remove_by_left removes both directions" {
 
 ///|
 test "remove_by_left on missing key returns None and changes nothing" {
-  let m : @aurasuisui/bimap.BiMap[String, Int] = @aurasuisui/bimap.new()
+  let m : @aurasuisui/bimap.BiMap[String, Int32] = @aurasuisui/bimap.new()
   m.insert("a", 1) |> ignore
   @test.assert_eq(m.remove_by_left("zzz"), None)
   @test.assert_eq(m.len(), 1)
@@ -213,7 +213,7 @@ test "remove_by_left on missing key returns None and changes nothing" {
 
 ///|
 test "remove_by_right removes both directions" {
-  let m : @aurasuisui/bimap.BiMap[String, Int] = @aurasuisui/bimap.new()
+  let m : @aurasuisui/bimap.BiMap[String, Int32] = @aurasuisui/bimap.new()
   m.insert("a", 1) |> ignore
   m.insert("b", 2) |> ignore
   @test.assert_eq(m.remove_by_right(2), Some("b"))
@@ -225,7 +225,7 @@ test "remove_by_right removes both directions" {
 
 ///|
 test "remove_by_right on missing value returns None" {
-  let m : @aurasuisui/bimap.BiMap[String, Int] = @aurasuisui/bimap.new()
+  let m : @aurasuisui/bimap.BiMap[String, Int32] = @aurasuisui/bimap.new()
   m.insert("a", 1) |> ignore
   @test.assert_eq(m.remove_by_right(999), None)
   @test.assert_eq(m.len(), 1)
@@ -233,7 +233,7 @@ test "remove_by_right on missing value returns None" {
 
 ///|
 test "removal shrinks the order, keeping remaining indices correct" {
-  let m : @aurasuisui/bimap.BiMap[String, Int] = @aurasuisui/bimap.new()
+  let m : @aurasuisui/bimap.BiMap[String, Int32] = @aurasuisui/bimap.new()
   m.insert("a", 1) |> ignore
   m.insert("b", 2) |> ignore
   m.insert("c", 3) |> ignore
@@ -246,7 +246,7 @@ test "removal shrinks the order, keeping remaining indices correct" {
 
 ///|
 test "remove then reinsert reuses the tombstone path correctly" {
-  let m : @aurasuisui/bimap.BiMap[String, Int] = @aurasuisui/bimap.new()
+  let m : @aurasuisui/bimap.BiMap[String, Int32] = @aurasuisui/bimap.new()
   m.insert("a", 1) |> ignore
   m.remove_by_left("a") |> ignore
   @test.assert_eq(classify(m.insert("a", 1)), "Neither")
@@ -257,7 +257,7 @@ test "remove then reinsert reuses the tombstone path correctly" {
 
 ///|
 test "drain to empty then is_empty" {
-  let m : @aurasuisui/bimap.BiMap[String, Int] = @aurasuisui/bimap.new()
+  let m : @aurasuisui/bimap.BiMap[String, Int32] = @aurasuisui/bimap.new()
   m.insert("a", 1) |> ignore
   m.insert("b", 2) |> ignore
   m.remove_by_left("a") |> ignore
@@ -321,7 +321,7 @@ test "retain-none empties the map" {
 
 ///|
 test "retain on an empty map is a no-op" {
-  let m : @aurasuisui/bimap.BiMap[String, Int] = @aurasuisui/bimap.new()
+  let m : @aurasuisui/bimap.BiMap[String, Int32] = @aurasuisui/bimap.new()
   m.retain(fn(_, _) { false })
   @test.assert_eq(m.is_empty(), true)
 }
@@ -339,7 +339,7 @@ test "retain evaluates the predicate exactly once per pair" {
 
 ///|
 test "retain works on a C4-collapsed state" {
-  let m : @aurasuisui/bimap.BiMap[Int, Int] = @aurasuisui/bimap.new()
+  let m : @aurasuisui/bimap.BiMap[Int32, Int32] = @aurasuisui/bimap.new()
   m.insert(1, 10) |> ignore
   m.insert(2, 20) |> ignore
   m.insert(1, 20) |> ignore // C4: collapses to {1 <-> 20}
@@ -355,14 +355,14 @@ test "retain works on a C4-collapsed state" {
 
 ///|
 test "new map is empty" {
-  let m : @aurasuisui/bimap.BiMap[String, Int] = @aurasuisui/bimap.new()
+  let m : @aurasuisui/bimap.BiMap[String, Int32] = @aurasuisui/bimap.new()
   @test.assert_eq(m.is_empty(), true)
   @test.assert_eq(m.len(), 0)
 }
 
 ///|
 test "with_capacity reports at least the requested capacity" {
-  let m : @aurasuisui/bimap.BiMap[String, Int] = @aurasuisui/bimap.with_capacity(
+  let m : @aurasuisui/bimap.BiMap[String, Int32] = @aurasuisui/bimap.with_capacity(
     100,
   )
   @test.assert_eq(m.is_empty(), true)
@@ -373,7 +373,7 @@ test "with_capacity reports at least the requested capacity" {
 
 ///|
 test "into_array preserves insertion order" {
-  let m : @aurasuisui/bimap.BiMap[String, Int] = @aurasuisui/bimap.new()
+  let m : @aurasuisui/bimap.BiMap[String, Int32] = @aurasuisui/bimap.new()
   m.insert("b", 2) |> ignore
   m.insert("a", 1) |> ignore
   m.insert("c", 3) |> ignore
@@ -390,7 +390,7 @@ test "into_array preserves insertion order" {
 
 ///|
 test "insert_no_overwrite: fresh insert returns Ok" {
-  let m : @aurasuisui/bimap.BiMap[String, Int] = @aurasuisui/bimap.new()
+  let m : @aurasuisui/bimap.BiMap[String, Int32] = @aurasuisui/bimap.new()
   @test.assert_eq(m.insert_no_overwrite("a", 1), Ok(()))
   @test.assert_eq(m.len(), 1)
   @test.assert_eq(m.get_by_left("a"), Some(1))
@@ -398,7 +398,7 @@ test "insert_no_overwrite: fresh insert returns Ok" {
 
 ///|
 test "insert_no_overwrite: left conflict returns Err and changes nothing" {
-  let m : @aurasuisui/bimap.BiMap[String, Int] = @aurasuisui/bimap.new()
+  let m : @aurasuisui/bimap.BiMap[String, Int32] = @aurasuisui/bimap.new()
   m.insert("a", 1) |> ignore
   @test.assert_eq(m.insert_no_overwrite("a", 99), Err(("a", 99)))
   @test.assert_eq(m.len(), 1)
@@ -408,7 +408,7 @@ test "insert_no_overwrite: left conflict returns Err and changes nothing" {
 
 ///|
 test "insert_no_overwrite: right conflict returns Err and changes nothing" {
-  let m : @aurasuisui/bimap.BiMap[String, Int] = @aurasuisui/bimap.new()
+  let m : @aurasuisui/bimap.BiMap[String, Int32] = @aurasuisui/bimap.new()
   m.insert("a", 1) |> ignore
   @test.assert_eq(m.insert_no_overwrite("z", 1), Err(("z", 1)))
   @test.assert_eq(m.len(), 1)
@@ -418,7 +418,7 @@ test "insert_no_overwrite: right conflict returns Err and changes nothing" {
 
 ///|
 test "insert_no_overwrite: both-sides conflict (C4 shape) returns Err, no collapse" {
-  let m : @aurasuisui/bimap.BiMap[String, Int] = @aurasuisui/bimap.new()
+  let m : @aurasuisui/bimap.BiMap[String, Int32] = @aurasuisui/bimap.new()
   m.insert("a", 4) |> ignore
   m.insert("c", 2) |> ignore
   @test.assert_eq(m.insert_no_overwrite("a", 2), Err(("a", 2)))
@@ -430,7 +430,7 @@ test "insert_no_overwrite: both-sides conflict (C4 shape) returns Err, no collap
 
 ///|
 test "insert_no_overwrite: exact existing pair returns Err" {
-  let m : @aurasuisui/bimap.BiMap[String, Int] = @aurasuisui/bimap.new()
+  let m : @aurasuisui/bimap.BiMap[String, Int32] = @aurasuisui/bimap.new()
   m.insert("a", 1) |> ignore
   @test.assert_eq(m.insert_no_overwrite("a", 1), Err(("a", 1)))
   @test.assert_eq(m.len(), 1)
@@ -479,7 +479,7 @@ test "first / last on non-empty and empty maps" {
   let m = @aurasuisui/bimap.BiMap::from_array([("b", 2), ("a", 1), ("c", 3)])
   @test.assert_eq(m.first(), Some(("b", 2)))
   @test.assert_eq(m.last(), Some(("c", 3)))
-  let empty : @aurasuisui/bimap.BiMap[String, Int] = @aurasuisui/bimap.new()
+  let empty : @aurasuisui/bimap.BiMap[String, Int32] = @aurasuisui/bimap.new()
   @test.assert_eq(empty.first(), None)
   @test.assert_eq(empty.last(), None)
 }
@@ -565,7 +565,7 @@ test "copy is a deep, independent copy" {
 ///|
 test "to_inverse swaps sides and is a copy" {
   let m = @aurasuisui/bimap.BiMap::from_array([("a", 1), ("b", 2)])
-  let inv : @aurasuisui/bimap.BiMap[Int, String] = m.to_inverse()
+  let inv : @aurasuisui/bimap.BiMap[Int32, String] = m.to_inverse()
   @test.assert_eq(inv.len(), 2)
   @test.assert_eq(inv.get_by_left(1), Some("a"))
   @test.assert_eq(inv.get_by_left(2), Some("b"))

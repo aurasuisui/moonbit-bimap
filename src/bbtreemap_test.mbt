@@ -29,8 +29,8 @@ fn[L : Compare + Hash + Debug, R : Compare + Hash + Debug] check_bbtree_bijectio
 ) -> Unit raise {
   let arr = m.into_array()
   @test.assert_eq(arr.length(), m.len())
-  let lefts : Map[L, Int] = Map([])
-  let rights : Map[R, Int] = Map([])
+  let lefts : Map[L, Int32] = Map([])
+  let rights : Map[R, Int32] = Map([])
   let mut i = 0
   while i < arr.length() {
     let (l, r) = arr[i]
@@ -64,7 +64,7 @@ fn[L : Compare + Hash + Debug, R : Compare + Hash + Debug] check_bbtree_bijectio
 
 ///|
 test "C0: insert into empty map returns Neither" {
-  let m : @aurasuisui/bimap.BiBTreeMap[String, Int] = @aurasuisui/bimap.BiBTreeMap::new()
+  let m : @aurasuisui/bimap.BiBTreeMap[String, Int32] = @aurasuisui/bimap.BiBTreeMap::new()
   @test.assert_eq(bbtree_classify(m.insert("a", 1)), "Neither")
   @test.assert_eq(m.len(), 1)
   @test.assert_eq(m.get_by_left("a"), Some(1))
@@ -73,7 +73,7 @@ test "C0: insert into empty map returns Neither" {
 
 ///|
 test "C0: two fresh inserts both return Neither and stay sorted" {
-  let m : @aurasuisui/bimap.BiBTreeMap[String, Int] = @aurasuisui/bimap.BiBTreeMap::new()
+  let m : @aurasuisui/bimap.BiBTreeMap[String, Int32] = @aurasuisui/bimap.BiBTreeMap::new()
   @test.assert_eq(bbtree_classify(m.insert("b", 2)), "Neither")
   @test.assert_eq(bbtree_classify(m.insert("a", 1)), "Neither")
   @test.assert_eq(m.len(), 2)
@@ -82,7 +82,7 @@ test "C0: two fresh inserts both return Neither and stay sorted" {
 
 ///|
 test "C1: exact reinsert returns Pair and is idempotent" {
-  let m : @aurasuisui/bimap.BiBTreeMap[String, Int] = @aurasuisui/bimap.BiBTreeMap::new()
+  let m : @aurasuisui/bimap.BiBTreeMap[String, Int32] = @aurasuisui/bimap.BiBTreeMap::new()
   m.insert("a", 1) |> ignore
   @test.assert_eq(bbtree_classify(m.insert("a", 1)), "Pair(a, 1)")
   @test.assert_eq(m.len(), 1)
@@ -92,7 +92,7 @@ test "C1: exact reinsert returns Pair and is idempotent" {
 
 ///|
 test "C2: rebinding a left key returns Left with the old right" {
-  let m : @aurasuisui/bimap.BiBTreeMap[String, Int] = @aurasuisui/bimap.BiBTreeMap::new()
+  let m : @aurasuisui/bimap.BiBTreeMap[String, Int32] = @aurasuisui/bimap.BiBTreeMap::new()
   m.insert("a", 1) |> ignore
   @test.assert_eq(bbtree_classify(m.insert("a", 2)), "Left(a, 1)")
   @test.assert_eq(m.len(), 1)
@@ -103,7 +103,7 @@ test "C2: rebinding a left key returns Left with the old right" {
 
 ///|
 test "C3: a right value handed to a new left key returns Right" {
-  let m : @aurasuisui/bimap.BiBTreeMap[String, Int] = @aurasuisui/bimap.BiBTreeMap::new()
+  let m : @aurasuisui/bimap.BiBTreeMap[String, Int32] = @aurasuisui/bimap.BiBTreeMap::new()
   m.insert("a", 1) |> ignore
   @test.assert_eq(bbtree_classify(m.insert("b", 1)), "Right(a, 1)")
   @test.assert_eq(m.len(), 1)
@@ -114,7 +114,7 @@ test "C3: a right value handed to a new left key returns Right" {
 
 ///|
 test "C4: both sides conflict, collapse to one pair, len decreases" {
-  let m : @aurasuisui/bimap.BiBTreeMap[String, Int] = @aurasuisui/bimap.BiBTreeMap::new()
+  let m : @aurasuisui/bimap.BiBTreeMap[String, Int32] = @aurasuisui/bimap.BiBTreeMap::new()
   m.insert("a", 1) |> ignore
   m.insert("b", 2) |> ignore
   @test.assert_eq(bbtree_classify(m.insert("a", 2)), "Both((a, 1), (b, 2))")
@@ -126,7 +126,7 @@ test "C4: both sides conflict, collapse to one pair, len decreases" {
 
 ///|
 test "C1 after a C4 collapse stays idempotent" {
-  let m : @aurasuisui/bimap.BiBTreeMap[Int, Int] = @aurasuisui/bimap.BiBTreeMap::new()
+  let m : @aurasuisui/bimap.BiBTreeMap[Int32, Int32] = @aurasuisui/bimap.BiBTreeMap::new()
   m.insert(1, 10) |> ignore
   m.insert(2, 20) |> ignore
   m.insert(1, 20) |> ignore // C4: collapse
@@ -136,7 +136,7 @@ test "C1 after a C4 collapse stays idempotent" {
 
 ///|
 test "insert_no_overwrite refuses conflicts and inserts fresh pairs" {
-  let m : @aurasuisui/bimap.BiBTreeMap[String, Int] = @aurasuisui/bimap.BiBTreeMap::new()
+  let m : @aurasuisui/bimap.BiBTreeMap[String, Int32] = @aurasuisui/bimap.BiBTreeMap::new()
   @test.assert_eq(m.insert_no_overwrite("a", 1), Ok(()))
   @test.assert_eq(m.insert_no_overwrite("a", 2), Err(("a", 2)))
   @test.assert_eq(m.insert_no_overwrite("b", 1), Err(("b", 1)))
@@ -256,7 +256,7 @@ test "removing a missing key after draining returns None" {
 
 ///|
 test "interleaved insert and remove stay consistent" {
-  let m : @aurasuisui/bimap.BiBTreeMap[Int, Int] = @aurasuisui/bimap.BiBTreeMap::new()
+  let m : @aurasuisui/bimap.BiBTreeMap[Int32, Int32] = @aurasuisui/bimap.BiBTreeMap::new()
   let mut i = 0
   while i < 100 {
     m.insert(i, i * 3) |> ignore
@@ -291,7 +291,7 @@ test "iter yields pairs in ascending left-key order" {
 
 ///|
 test "into_array is ascending even after interleaved mutations" {
-  let m : @aurasuisui/bimap.BiBTreeMap[Int, Int] = @aurasuisui/bimap.BiBTreeMap::new()
+  let m : @aurasuisui/bimap.BiBTreeMap[Int32, Int32] = @aurasuisui/bimap.BiBTreeMap::new()
   let mut i = 0
   while i < 50 {
     m.insert(i * 7 % 40, i) |> ignore
@@ -327,7 +327,7 @@ test "last is the largest left key" {
 
 ///|
 test "first and last are None on an empty map" {
-  let m : @aurasuisui/bimap.BiBTreeMap[String, Int] = @aurasuisui/bimap.BiBTreeMap::new()
+  let m : @aurasuisui/bimap.BiBTreeMap[String, Int32] = @aurasuisui/bimap.BiBTreeMap::new()
   @test.assert_eq(m.first(), None)
   @test.assert_eq(m.last(), None)
 }
@@ -405,13 +405,13 @@ test "range over the whole key space equals into_array" {
 
 ///|
 test "range on an empty map is empty" {
-  let m : @aurasuisui/bimap.BiBTreeMap[String, Int] = @aurasuisui/bimap.BiBTreeMap::new()
+  let m : @aurasuisui/bimap.BiBTreeMap[String, Int32] = @aurasuisui/bimap.BiBTreeMap::new()
   @test.assert_eq(m.range("a", "z").to_array(), [])
 }
 
 ///|
 test "range stays correct after C2/C3/C4 mutations" {
-  let m : @aurasuisui/bimap.BiBTreeMap[Int, Int] = @aurasuisui/bimap.BiBTreeMap::new()
+  let m : @aurasuisui/bimap.BiBTreeMap[Int32, Int32] = @aurasuisui/bimap.BiBTreeMap::new()
   m.insert(1, 10) |> ignore
   m.insert(2, 20) |> ignore
   m.insert(3, 30) |> ignore
@@ -442,7 +442,7 @@ test "contains_pair: half-present sides and absent pairs are false" {
 
 ///|
 test "contains_pair on an empty map is false" {
-  let m : @aurasuisui/bimap.BiBTreeMap[String, Int] = @aurasuisui/bimap.BiBTreeMap::new()
+  let m : @aurasuisui/bimap.BiBTreeMap[String, Int32] = @aurasuisui/bimap.BiBTreeMap::new()
   @test.assert_eq(m.contains_pair("a", 1), false)
 }
 
@@ -491,7 +491,7 @@ test "right_values snapshot is independent" {
 
 ///|
 test "left_keys and right_values on an empty map are empty" {
-  let m : @aurasuisui/bimap.BiBTreeMap[String, Int] = @aurasuisui/bimap.BiBTreeMap::new()
+  let m : @aurasuisui/bimap.BiBTreeMap[String, Int32] = @aurasuisui/bimap.BiBTreeMap::new()
   @test.assert_eq(m.left_keys(), [])
   @test.assert_eq(m.right_values(), [])
 }
@@ -593,7 +593,7 @@ test "retain-none empties the map" {
 
 ///|
 test "retain on an empty map is a no-op" {
-  let m : @aurasuisui/bimap.BiBTreeMap[String, Int] = @aurasuisui/bimap.BiBTreeMap::new()
+  let m : @aurasuisui/bimap.BiBTreeMap[String, Int32] = @aurasuisui/bimap.BiBTreeMap::new()
   m.retain(fn(_, _) { false })
   @test.assert_eq(m.is_empty(), true)
 }
@@ -615,7 +615,7 @@ test "retain evaluates the predicate exactly once per pair" {
 
 ///|
 test "retain works on a C4-collapsed state" {
-  let m : @aurasuisui/bimap.BiBTreeMap[Int, Int] = @aurasuisui/bimap.BiBTreeMap::new()
+  let m : @aurasuisui/bimap.BiBTreeMap[Int32, Int32] = @aurasuisui/bimap.BiBTreeMap::new()
   m.insert(1, 10) |> ignore
   m.insert(2, 20) |> ignore
   m.insert(1, 20) |> ignore // C4: collapses to {1 <-> 20}
@@ -667,8 +667,8 @@ test "to_inverse swaps sides and stays a valid sorted bijection" {
 
 ///|
 test "new and default both start empty" {
-  let a : @aurasuisui/bimap.BiBTreeMap[String, Int] = @aurasuisui/bimap.BiBTreeMap::new()
-  let b : @aurasuisui/bimap.BiBTreeMap[String, Int] = Default::default()
+  let a : @aurasuisui/bimap.BiBTreeMap[String, Int32] = @aurasuisui/bimap.BiBTreeMap::new()
+  let b : @aurasuisui/bimap.BiBTreeMap[String, Int32] = Default::default()
   @test.assert_eq(a.is_empty(), true)
   @test.assert_eq(b.is_empty(), true)
   @test.assert_eq(a, b)
@@ -681,7 +681,7 @@ test "new and default both start empty" {
 ///|
 test "Eq: same pair set reached by different paths is equal" {
   let m1 = @aurasuisui/bimap.BiBTreeMap::from_array([("a", 1), ("b", 2)])
-  let m2 : @aurasuisui/bimap.BiBTreeMap[String, Int] = @aurasuisui/bimap.BiBTreeMap::new()
+  let m2 : @aurasuisui/bimap.BiBTreeMap[String, Int32] = @aurasuisui/bimap.BiBTreeMap::new()
   m2.insert("b", 2) |> ignore
   m2.insert("a", 1) |> ignore
   @test.assert_eq(m1, m2)
@@ -689,7 +689,7 @@ test "Eq: same pair set reached by different paths is equal" {
 
 ///|
 test "Eq: empty is not equal to non-empty" {
-  let a : @aurasuisui/bimap.BiBTreeMap[String, Int] = @aurasuisui/bimap.BiBTreeMap::new()
+  let a : @aurasuisui/bimap.BiBTreeMap[String, Int32] = @aurasuisui/bimap.BiBTreeMap::new()
   let b = @aurasuisui/bimap.BiBTreeMap::from_array([("a", 1)])
   @test.assert_not_eq(a, b)
 }
@@ -831,11 +831,11 @@ test "minimal bounds: zero-bound and one-side pins compile and run" {
 
 ///|
 test "qc: sorted bijection invariants hold after random inserts" {
-  let cases : Array[Array[(Int, Int)]] = @quickcheck.samples(50)
+  let cases : Array[Array[(Int32, Int32)]] = @quickcheck.samples(50)
   let mut c = 0
   while c < cases.length() {
     let pairs = cases[c]
-    let m : @aurasuisui/bimap.BiBTreeMap[Int, Int] = @aurasuisui/bimap.BiBTreeMap::new()
+    let m : @aurasuisui/bimap.BiBTreeMap[Int32, Int32] = @aurasuisui/bimap.BiBTreeMap::new()
     let mut i = 0
     while i < pairs.length() {
       let (l, r) = pairs[i]
@@ -849,11 +849,11 @@ test "qc: sorted bijection invariants hold after random inserts" {
 
 ///|
 test "qc: invariants hold after mixed insert / remove operations" {
-  let cases : Array[Array[(Int, Int)]] = @quickcheck.samples(50)
+  let cases : Array[Array[(Int32, Int32)]] = @quickcheck.samples(50)
   let mut c = 0
   while c < cases.length() {
     let pairs = cases[c]
-    let m : @aurasuisui/bimap.BiBTreeMap[Int, Int] = @aurasuisui/bimap.BiBTreeMap::new()
+    let m : @aurasuisui/bimap.BiBTreeMap[Int32, Int32] = @aurasuisui/bimap.BiBTreeMap::new()
     let mut i = 0
     while i < pairs.length() {
       let (l, r) = pairs[i]
@@ -873,11 +873,11 @@ test "qc: invariants hold after mixed insert / remove operations" {
 
 ///|
 test "qc: invariants hold on small-key maps (forces many C2/C3/C4)" {
-  let cases : Array[Array[(Int, Int)]] = @quickcheck.samples(50)
+  let cases : Array[Array[(Int32, Int32)]] = @quickcheck.samples(50)
   let mut c = 0
   while c < cases.length() {
     let pairs = cases[c]
-    let m : @aurasuisui/bimap.BiBTreeMap[Int, Int] = @aurasuisui/bimap.BiBTreeMap::new()
+    let m : @aurasuisui/bimap.BiBTreeMap[Int32, Int32] = @aurasuisui/bimap.BiBTreeMap::new()
     let mut i = 0
     while i < pairs.length() {
       let (l, r) = pairs[i]
@@ -891,12 +891,12 @@ test "qc: invariants hold on small-key maps (forces many C2/C3/C4)" {
 
 ///|
 test "qc: retain keeps exactly the satisfying pairs; invariants hold" {
-  let cases : Array[Array[(Int, Int)]] = @quickcheck.samples(60)
+  let cases : Array[Array[(Int32, Int32)]] = @quickcheck.samples(60)
   let mut c = 0
   while c < cases.length() {
     let pairs = cases[c]
     let m = @aurasuisui/bimap.BiBTreeMap::from_array(pairs)
-    m.retain(fn(l : Int, r : Int) -> Bool { (l + r) % 3 != 0 })
+    m.retain(fn(l : Int32, r : Int32) -> Bool { (l + r) % 3 != 0 })
     let arr = m.into_array()
     let mut i = 0
     while i < arr.length() {

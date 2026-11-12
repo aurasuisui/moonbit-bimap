@@ -45,7 +45,7 @@
 | 项 | 现状 | 出处 / 约定 |
 |---|---|---|
 | 性能基准 + 回归门禁(CI 上回归即 fail) | ⚠️ 本地基准 ✅ / CI 门禁 ❌ | `bench/` 模块:官方 `@bench` 框架、native + release、基准对象为已发布包,含内置 `Map` 基线(见 `bench/README.md`);CI 回归门禁仍未做(记入 CHANGELOG 未来工作) |
-| **跨后端 / 跨配置矩阵**(wasm-gc / wasm / native × debug/release) | ⚠️ **文档约定,不进 CI** | 库为纯 MoonBit 无后端相关代码。**约定:发版前手动至少在 native + wasm-gc 两个后端跑一遍 `moon test --target <t>` 确认通过**;不自动化进 `ci.yml`(见下"手动约定")。当前 CI 单后端(ubuntu + `latest`) |
+| **跨后端矩阵**(wasm-gc / wasm / js / native) | ✅ **CI 已自动化(2026-11)** | 库为纯 MoonBit 无后端相关代码。`ci.yml` 的 `all-backends` job 跑 `moon test --target all`(= wasm + wasm-gc + js + native,四个后端各 369/369)。`llvm` 明确**不在**支持范围:该后端仍为 nightly-only,stable 工具链报 `missing prelude.mi for target llvm`,已记入 README「Toolchain compatibility」 |
 | 并发语义:断言/声明线程安全性 | ✅ 声明 | README Gotcha #8:**非线程安全**。`BiMap` 可变 + 迭代器 fail-fast;并发读写未定义;一线程一个 `BiMap` 或外部同步 |
 | 内存:验证容量/缩容策略 | ✅ | `generics_test.mbt`(fill→drain→refill 容量不膨胀)、`bimap_wbtest.mbt`(扩容到 3/4 负载穿越、25% 墓碑再散列) |
 | Trait 契约一致性:`Eq 相等 ⇒ Hash 相等`;Show/Debug/ToJson 正确 | ✅ | `traits_test.mbt`(顺序无关 Eq/Hash 即此契约)、`arbitrary_test.mbt`(Hash 同则 Eq 同) |
@@ -55,7 +55,7 @@
 | 项 | 现状 | 出处 |
 |---|---|---|
 | 变异测试:注入故障看测试能否抓住 | ❌ 工具所限 | MoonBit 暂无标准变异测试工具,记入 CHANGELOG 未来工作 |
-| CI 流水线门禁:`moon fmt --check` → `moon check` → `moon info && git diff --exit-code` → `moon test` → `moon build` | ✅ | `.github/workflows/ci.yml`(五步全绿) |
+| CI 流水线门禁:`moon fmt --check` → `moon check` → `moon info && git diff --exit-code` → `moon test` → `moon build`,外加 `all-backends` job(`moon test --target all`) | ✅ | `.github/workflows/ci.yml`(两个 job 全绿);两个 job 都把 `moon version --all` 打进日志,便于把红构建追溯到具体 `moonc` |
 | API / ABI 稳定:公开签名快照(`pkg.generated.mbti` diff 门禁)+ semver | ✅ | `moon info && git diff --exit-code` 步骤;`moon.mod` 坚持 semver(见下"发布前必检门禁") |
 | 文档 / 示例可运行:README 代码、`cmd/` 示例编译并跑通 | ✅ 约定 | README 代码块为片段;`cmd/username_email`、`cmd/country_code` 为独立模块、**不属于根包**(仓库无 `moon.work`),发版前手动 `moon run cmd/<name>` 验证可跑(需已 `moon publish`) |
 
@@ -69,6 +69,9 @@
       徽章/安装说明里的 `@aurasuisui/bimap@<x.y.z>` == `CHANGELOG.md` 顶部的版本段标题。
 - [x] **零依赖声明确实成立**:`moon.mod` 无 `deps` 段;"纯 MoonBit、零依赖"(不依赖 `aurasuisui/indexmap`,
       Robin Hood 引擎是就地适配,非 import)——README/CONTRIBUTING/CLAUDE 三处口径一致。
+- [x] **工具链版本已记录**:`moon version --all` 的实际输出写进 README「Toolchain compatibility」表
+      (2026-11-12:`moon 0.1.20261104` / `moonc v0.10.20+65efd5b93` / `moonrun 0.1.20261104`),
+      并逐项复核五个 CI 步骤 + 四个稳定后端 + `cmd/*` 示例 + `bench/`。
 - [x] **接口快照已刷新并提交**:`moon info` 后 `git diff --exit-code` 干净(`pkg.generated.mbti`
       无未提交改动)。改过任何公开签名就必须同步提交。
 - [x] **`moon publish --dry-run` 通过**:确认 mooncakes 能打包、README 描述能解析、无缺失字段。

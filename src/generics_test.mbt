@@ -12,14 +12,15 @@
 // ---------------------------------------------------------------------------
 
 ///|
+#derive(Hash, Eq, Debug)
 struct Point {
-  x : Int
-  y : Int
-} derive(Hash, Eq, Debug)
+  x : Int32
+  y : Int32
+}
 
 ///|
 test "custom struct as the LEFT key: CRUD + C2/C3 + removal" {
-  let m : @aurasuisui/bimap.BiMap[Point, Int] = @aurasuisui/bimap.new()
+  let m : @aurasuisui/bimap.BiMap[Point, Int32] = @aurasuisui/bimap.new()
   let a = { x: 1, y: 2, }
   let b = { x: 3, y: 4, }
   m.insert(a, 100) |> ignore
@@ -81,7 +82,7 @@ test "custom struct on BOTH sides: BiMap[Point, Point] is a valid bijection" {
 test "Int boundary keys (32-bit extremes / 0 / -1) all work on both sides" {
   let int_hi = 2147483647 // 2^31 - 1
   let int_lo = 0 - 2147483647 - 1 // -(2^31)
-  let m : @aurasuisui/bimap.BiMap[Int, Int] = @aurasuisui/bimap.new()
+  let m : @aurasuisui/bimap.BiMap[Int32, Int32] = @aurasuisui/bimap.new()
   m.insert(int_lo, int_hi) |> ignore
   m.insert(0, 0) |> ignore
   m.insert(-1, 1) |> ignore
@@ -102,7 +103,7 @@ test "Int boundary keys (32-bit extremes / 0 / -1) all work on both sides" {
 test "Int extremes are distinct keys (no wraparound collision)" {
   let int_hi = 2147483647
   let int_lo = 0 - 2147483647 - 1
-  let m : @aurasuisui/bimap.BiMap[Int, String] = @aurasuisui/bimap.new()
+  let m : @aurasuisui/bimap.BiMap[Int32, String] = @aurasuisui/bimap.new()
   m.insert(int_lo, "min") |> ignore
   m.insert(int_hi, "max") |> ignore
   @test.assert_eq(m.len(), 2)
@@ -116,7 +117,7 @@ test "Int extremes are distinct keys (no wraparound collision)" {
 
 ///|
 test "capacity is stable across fill -> drain -> refill (no unbounded growth)" {
-  let m : @aurasuisui/bimap.BiMap[Int, Int] = @aurasuisui/bimap.new()
+  let m : @aurasuisui/bimap.BiMap[Int32, Int32] = @aurasuisui/bimap.new()
   // first fill: capacity grows to fit 200 pairs
   let mut i = 0
   while i < 200 {
@@ -143,7 +144,7 @@ test "capacity is stable across fill -> drain -> refill (no unbounded growth)" {
 
 ///|
 test "three fill/drain cycles leave the map healthy and capacity bounded" {
-  let m : @aurasuisui/bimap.BiMap[Int, Int] = @aurasuisui/bimap.new()
+  let m : @aurasuisui/bimap.BiMap[Int32, Int32] = @aurasuisui/bimap.new()
   let mut peak = 0
   let mut round = 0
   while round < 3 {
@@ -176,22 +177,24 @@ test "three fill/drain cycles leave the map healthy and capacity bounded" {
 ///|
 /// A Hash + Eq key with NO Show: proves BiMap::from_json_with needs no Show
 /// on K (parse_key produces it from the text key).
+#derive(Hash, Eq, Debug)
 struct JsonKeyNoShow {
-  id : Int
-} derive(Hash, Eq, Debug)
+  id : Int32
+}
 
 ///|
 /// A Compare key with NO Hash and NO Show: proves BiBTreeMap::from_json_with
 /// needs only Compare on K (the intermediate structures are SortedMaps).
+#derive(Compare, Eq, Debug)
 struct BTreeJsonKey {
-  id : Int
-} derive(Compare, Eq, Debug)
+  id : Int32
+}
 
 ///|
 test "from_json bounds: BiMap::from_json_with compiles and runs with a no-Show K" {
   // parse_key must be total (P1-2): key id = text length, no raise channel.
   let parse_key = fn(k : String) -> JsonKeyNoShow { { id: k.length(), } }
-  let m : @aurasuisui/bimap.BiMap[JsonKeyNoShow, Int] = @aurasuisui/bimap.from_json_with(
+  let m : @aurasuisui/bimap.BiMap[JsonKeyNoShow, Int32] = @aurasuisui/bimap.from_json_with(
     @json.parse("{\"a\":7,\"bb\":9}"),
     parse_key,
   ) catch {
@@ -207,7 +210,7 @@ test "from_json bounds: BiBTreeMap::from_json_with compiles and runs with a Comp
   // No Hash on K anywhere — compile-time proof the sorted path stays
   // Hash-free (toolchain ruling 2026-09).
   let parse_key = fn(k : String) -> BTreeJsonKey { { id: k.length(), } }
-  let m : @aurasuisui/bimap.BiBTreeMap[BTreeJsonKey, Int] = @aurasuisui/bimap.BiBTreeMap::from_json_with(
+  let m : @aurasuisui/bimap.BiBTreeMap[BTreeJsonKey, Int32] = @aurasuisui/bimap.BiBTreeMap::from_json_with(
     @json.parse("{\"a\":7,\"bb\":9}"),
     parse_key,
   ) catch {

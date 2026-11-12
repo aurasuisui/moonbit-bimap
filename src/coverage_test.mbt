@@ -10,7 +10,7 @@
 
 ///|
 test "insert_no_overwrite: several fresh inserts all succeed" {
-  let m : @aurasuisui/bimap.BiMap[String, Int] = @aurasuisui/bimap.new()
+  let m : @aurasuisui/bimap.BiMap[String, Int32] = @aurasuisui/bimap.new()
   @test.assert_eq(m.insert_no_overwrite("a", 1), Ok(()))
   @test.assert_eq(m.insert_no_overwrite("b", 2), Ok(()))
   @test.assert_eq(m.insert_no_overwrite("c", 3), Ok(()))
@@ -26,7 +26,7 @@ test "insert_no_overwrite: failure leaves order intact" {
 
 ///|
 test "insert_no_overwrite then insert: strict guard then forced" {
-  let m : @aurasuisui/bimap.BiMap[String, Int] = @aurasuisui/bimap.new()
+  let m : @aurasuisui/bimap.BiMap[String, Int32] = @aurasuisui/bimap.new()
   @test.assert_eq(m.insert_no_overwrite("a", 1), Ok(()))
   @test.assert_eq(m.insert_no_overwrite("a", 2), Err(("a", 2)))
   // now force the overwrite via insert
@@ -77,7 +77,7 @@ test "lefts after removals skips removed keys" {
 test "rights after a C2 rebind reflects the new value" {
   let m = @aurasuisui/bimap.BiMap::from_array([("a", 1), ("b", 2)])
   m.insert("a", 100) |> ignore
-  let rights : Array[Int] = []
+  let rights : Array[Int32] = []
   for r in m.rights() {
     rights.push(r)
   }
@@ -86,7 +86,7 @@ test "rights after a C2 rebind reflects the new value" {
 
 ///|
 test "iter count matches len after mixed ops" {
-  let m : @aurasuisui/bimap.BiMap[Int, Int] = @aurasuisui/bimap.new()
+  let m : @aurasuisui/bimap.BiMap[Int32, Int32] = @aurasuisui/bimap.new()
   let mut i = 0
   while i < 50 {
     m.insert(i, i * 2) |> ignore
@@ -119,7 +119,7 @@ test "get_index_of_right equals get_index_of_left of its partner" {
 
 ///|
 test "first/last track insertions" {
-  let m : @aurasuisui/bimap.BiMap[Int, Int] = @aurasuisui/bimap.new()
+  let m : @aurasuisui/bimap.BiMap[Int32, Int32] = @aurasuisui/bimap.new()
   m.insert(1, 1) |> ignore
   @test.assert_eq(m.first(), Some((1, 1)))
   @test.assert_eq(m.last(), Some((1, 1)))
@@ -178,7 +178,7 @@ test "to_inverse of to_inverse round-trips lookups" {
 
 ///|
 test "qc: String-keyed generated maps satisfy invariants" {
-  let maps : Array[@aurasuisui/bimap.BiMap[String, Int]] = @quickcheck.samples(
+  let maps : Array[@aurasuisui/bimap.BiMap[String, Int32]] = @quickcheck.samples(
     30,
   )
   let mut i = 0
@@ -190,7 +190,9 @@ test "qc: String-keyed generated maps satisfy invariants" {
 
 ///|
 test "qc: removing random left keys keeps invariants" {
-  let maps : Array[@aurasuisui/bimap.BiMap[Int, Int]] = @quickcheck.samples(30)
+  let maps : Array[@aurasuisui/bimap.BiMap[Int32, Int32]] = @quickcheck.samples(
+    30,
+  )
   let mut i = 0
   while i < maps.length() {
     let m = maps[i]
@@ -210,7 +212,9 @@ test "qc: removing random left keys keeps invariants" {
 
 ///|
 test "qc: removing random right keys keeps invariants" {
-  let maps : Array[@aurasuisui/bimap.BiMap[Int, Int]] = @quickcheck.samples(30)
+  let maps : Array[@aurasuisui/bimap.BiMap[Int32, Int32]] = @quickcheck.samples(
+    30,
+  )
   let mut i = 0
   while i < maps.length() {
     let m = maps[i]
@@ -230,11 +234,11 @@ test "qc: removing random right keys keeps invariants" {
 
 ///|
 test "qc: insert_no_overwrite never breaks invariants" {
-  let cases : Array[Array[(Int, Int)]] = @quickcheck.samples(30)
+  let cases : Array[Array[(Int32, Int32)]] = @quickcheck.samples(30)
   let mut c = 0
   while c < cases.length() {
     let pairs = cases[c]
-    let m : @aurasuisui/bimap.BiMap[Int, Int] = @aurasuisui/bimap.new()
+    let m : @aurasuisui/bimap.BiMap[Int32, Int32] = @aurasuisui/bimap.new()
     let mut i = 0
     while i < pairs.length() {
       let (l, r) = pairs[i]
@@ -252,7 +256,7 @@ test "qc: insert_no_overwrite never breaks invariants" {
 
 ///|
 test "capacity stays a power of two through growth" {
-  let m : @aurasuisui/bimap.BiMap[Int, Int] = @aurasuisui/bimap.new()
+  let m : @aurasuisui/bimap.BiMap[Int32, Int32] = @aurasuisui/bimap.new()
   let mut i = 0
   while i < 500 {
     m.insert(i, i) |> ignore
@@ -264,7 +268,7 @@ test "capacity stays a power of two through growth" {
 
 ///|
 test "len never exceeds the number of inserted distinct pairs" {
-  let m : @aurasuisui/bimap.BiMap[Int, Int] = @aurasuisui/bimap.new()
+  let m : @aurasuisui/bimap.BiMap[Int32, Int32] = @aurasuisui/bimap.new()
   let mut i = 0
   while i < 100 {
     m.insert(i % 10, i) |> ignore // only 10 distinct left keys

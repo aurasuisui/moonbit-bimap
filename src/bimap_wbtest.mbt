@@ -150,13 +150,13 @@ fn[L : Eq, R : Eq] check_no_duplicate_keys(m : BiMap[L, R]) -> Unit raise {
 
 ///|
 test "wb: invariants hold on an empty map" {
-  let m : BiMap[String, Int] = BiMap::new()
+  let m : BiMap[String, Int32] = BiMap::new()
   check_whitebox(m)
 }
 
 ///|
 test "wb: invariants hold across the C0-C4 golden sequence" {
-  let m : BiMap[String, Int] = BiMap::new()
+  let m : BiMap[String, Int32] = BiMap::new()
   m.insert("a", 1) |> ignore
   check_whitebox(m)
   m.insert("b", 2) |> ignore
@@ -172,7 +172,7 @@ test "wb: invariants hold across the C0-C4 golden sequence" {
 
 ///|
 test "wb: removal leaves tombstones but the live/inverse counts stay correct" {
-  let m : BiMap[Int, Int] = BiMap::new()
+  let m : BiMap[Int32, Int32] = BiMap::new()
   let mut i = 0
   while i < 20 {
     m.insert(i, i + 100) |> ignore
@@ -193,7 +193,7 @@ test "wb: removal leaves tombstones but the live/inverse counts stay correct" {
 
 ///|
 test "wb: invariants hold across a resize (buckets regrow, mask updates)" {
-  let m : BiMap[Int, Int] = BiMap::new()
+  let m : BiMap[Int32, Int32] = BiMap::new()
   @test.assert_eq(m.forward.buckets.length(), 16)
   let mut i = 0
   while i < 100 {
@@ -213,7 +213,7 @@ test "wb: invariants hold across a resize (buckets regrow, mask updates)" {
 
 ///|
 test "wb: the 25% tombstone threshold triggers a clearing rehash" {
-  let m : BiMap[Int, Int] = BiMap::new()
+  let m : BiMap[Int32, Int32] = BiMap::new()
   let mut i = 0
   while i < 50 {
     m.insert(i, i) |> ignore
@@ -246,7 +246,7 @@ test "wb: the 25% tombstone threshold triggers a clearing rehash" {
 
 ///|
 test "wb: heavy C4 traffic keeps both tables' live counts equal to len" {
-  let m : BiMap[Int, Int] = BiMap::new()
+  let m : BiMap[Int32, Int32] = BiMap::new()
   let mut i = 0
   while i < 100 {
     m.insert(i * 2, i * 10) |> ignore
@@ -260,7 +260,7 @@ test "wb: heavy C4 traffic keeps both tables' live counts equal to len" {
 
 ///|
 test "wb: invariants hold for a String-keyed map after mixed ops" {
-  let m : BiMap[String, Int] = BiMap::from_array([
+  let m : BiMap[String, Int32] = BiMap::from_array([
     ("a", 1),
     ("b", 2),
     ("c", 3),
@@ -285,7 +285,7 @@ test "wb: invariants hold for a String-keyed map after mixed ops" {
 
 ///|
 test "wb: retain keeps strong invariants (bulk chokepoint)" {
-  let m : BiMap[Int, Int] = BiMap::new()
+  let m : BiMap[Int32, Int32] = BiMap::new()
   let mut i = 0
   while i < 300 {
     m.insert(i, i * 3 + 1) |> ignore
@@ -307,9 +307,10 @@ test "wb: retain keeps strong invariants (bulk chokepoint)" {
 ///|
 /// A key whose `Hash` deliberately collapses every value onto the same bucket.
 /// `Eq` still distinguishes by `id`, so all keys are kept (a genuine flood).
+#derive(Eq, Debug)
 struct CollidingKey {
-  id : Int
-} derive(Eq, Debug)
+  id : Int32
+}
 
 ///|
 impl Hash for CollidingKey with fn hash_combine(self, hasher) {
@@ -319,7 +320,7 @@ impl Hash for CollidingKey with fn hash_combine(self, hasher) {
 
 ///|
 test "wb/hashdos: total-collision keys stay correct and removal still works" {
-  let m : BiMap[CollidingKey, Int] = BiMap::new()
+  let m : BiMap[CollidingKey, Int32] = BiMap::new()
   let n = 200
   let mut i = 0
   while i < n {
@@ -345,7 +346,7 @@ test "wb/hashdos: total-collision keys stay correct and removal still works" {
 
 ///|
 test "wb/hashdos: probe distance degrades linearly under total collision" {
-  let m : BiMap[CollidingKey, Int] = BiMap::new()
+  let m : BiMap[CollidingKey, Int32] = BiMap::new()
   let n = 200
   let mut i = 0
   while i < n {

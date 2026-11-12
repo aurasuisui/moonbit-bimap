@@ -70,21 +70,76 @@ fork or rename of `indexmap`.
 
 ## Installation
 
-Add the dependency to your project's `moon.mod`:
+Add the module to your `moon.mod`:
 
-```toml
+```bash
+moon add aurasuisui/bimap
+```
+
+That appends the dependency for you (the current manifest format — the legacy
+`moon.mod.json` / `moon.pkg.json` files were removed from the toolchain):
+
+```
+// moon.mod
 import {
   "aurasuisui/bimap@0.3.0",
 }
 ```
 
-Then import it in the relevant `moon.pkg`:
+Then import the package in the consuming package's `moon.pkg`:
 
 ```
 import {
   "aurasuisui/bimap",
 }
 ```
+
+and refer to it as `@bimap` in code. Both steps are required: with only the
+`moon.mod` dependency, `moon check` fails with
+`Cannot use @bimap: package bimap is not imported`.
+
+## Toolchain compatibility
+
+Verified on **2026-11-12** as part of the MoonBit Open Source Ecosystem
+Hackathon maintenance check:
+
+| component | version |
+|---|---|
+| `moon` | `0.1.20261104 (940aa18 2026-11-04)` |
+| `moonc` | `v0.10.20+65efd5b93 (2026-11-05)` |
+| `moonrun` | `0.1.20261104 (940aa18 2026-11-04)` |
+
+`moon version --all` reproduces that table. What was verified:
+
+| check | command | result |
+|---|---|---|
+| format | `moon fmt --check` | clean |
+| type check | `moon check` | 0 errors |
+| interface snapshot | `moon info && git diff --exit-code` | `src/pkg.generated.mbti` up to date |
+| tests | `moon test` | 369 / 369 |
+| build | `moon build` | ok |
+| examples | `moon run` in `cmd/username_email`, `cmd/country_code`, `cmd/json_roundtrip` | ok |
+| benchmark | `moon run --release --target native bench/main.mbt` | runs |
+
+**Supported backends.** The library is pure MoonBit — no FFI, no platform APIs — so
+the same 369 tests pass on every stable backend. `moon test --target all` covers
+`wasm`, `wasm-gc`, `js` and `native` (369/369 on each) and both CI jobs run it.
+**`llvm` is not supported**: that backend is still experimental and needs a nightly
+toolchain; on the stable toolchain it fails with
+`toolchain is incomplete: missing prelude.mi for target llvm`.
+
+**Version notes.**
+
+- From `moonc` v0.10.20 the canonical spelling of the 32-bit integer type is
+  `Int32` (and `UInt32`). `Int` / `UInt` remain accepted aliases of the **same**
+  type — identical ABI, no behaviour change — but `moon fmt` rewrites them, so the
+  sources and `pkg.generated.mbti` here use `Int32`.
+- `moonc` emits warning 0079 (`implicit_impl_as_method`): methods from an
+  `impl Trait for Type` are still promoted to plain methods on `Type`, and that
+  promotion is deprecated. The library always calls trait methods in qualified form
+  (`Show::to_string(x)`), so it never relies on the promotion and its behaviour is
+  unaffected; explicit `pub extend` declarations will follow once the toolchain
+  finalises the migration.
 
 ## The five insertion cases (C0–C4)
 
@@ -181,16 +236,16 @@ by return type). Both raise `BiMapDecodeError` — catch it, or let it propagate
 let json = @json.parse("{\"bob\":2,\"alice\":1}") // text -> Json
 
 // BiMap: free function; insertion order = JSON text key order
-let m : @aurasuisui/bimap.BiMap[String, Int] = @aurasuisui/bimap.from_json(json)
+let m : @aurasuisui/bimap.BiMap[String, Int32] = @aurasuisui/bimap.from_json(json)
 
 // BiBTreeMap: method call; sorted by left key (input key order irrelevant)
-let s : @aurasuisui/bimap.BiBTreeMap[String, Int] =
+let s : @aurasuisui/bimap.BiBTreeMap[String, Int32] =
   @aurasuisui/bimap.BiBTreeMap::from_json(json)
 
-// Int-keyed text: from_json_with + a TOTAL parse_key (P1-2: no raise channel —
+// Int32-keyed text: from_json_with + a TOTAL parse_key (P1-2: no raise channel —
 // absorb parse failures inside, e.g. fall back to a default):
 let ints = @json.parse("{\"10\":10,\"20\":20}")
-let n : @aurasuisui/bimap.BiMap[Int, Int] = @aurasuisui/bimap.from_json_with(
+let n : @aurasuisui/bimap.BiMap[Int32, Int32] = @aurasuisui/bimap.from_json_with(
   ints,
   fn(k) { @string.parse_int(k) catch { _ => 0 } },
 )
@@ -265,8 +320,10 @@ Runnable example packages live in [`cmd/`](cmd/):
 
 Measured with [`bench/`](bench/README.md) (official `@bench` framework,
 native backend, `--release`, benchmarking the published package) on an
-AMD Ryzen 7 7840H, Windows 11, moonc v0.10.8 (2026-08-19). Median of 5
-samples, `Int ↔ Int` maps at n = 100 000, per-operation cost:
+AMD Ryzen 7 7840H, Windows 11, moonc v0.10.8 (2026-08-19) — the historical
+measurement run; re-measure with the command at the end of this section if you need
+current numbers. Median of 5
+samples, `Int32 ↔ Int32` maps at n = 100 000, per-operation cost:
 
 | operation | BiMap | built-in `Map` |
 |---|---|---|
@@ -296,14 +353,23 @@ single-machine numbers, indicative of constant factors, not absolute speed).
 ## Development
 
 ```bash
-moon check   # type check
-moon test    # run all 369 tests
-moon fmt     # format
-moon build   # build
+moon check                # type check
+moon test                 # run all 369 tests (default backend)
+moon test --target all    # same suite on wasm, wasm-gc, js, native
+moon fmt                  # format
+moon build                # build
 ```
 
-The five-step CI pipeline runs: `moon fmt --check` → `moon check` →
-`moon info && git diff --exit-code` → `moon test` → `moon build`.
+Two CI jobs (see [`.github/workflows/ci.yml`](.github/workflows/ci.yml)):
+
+1. **check-and-test** — the five-step pipeline: `moon fmt --check` → `moon check` →
+   `moon info && git diff --exit-code` → `moon test` → `moon build`.
+2. **all-backends** — `moon test --target all` (wasm, wasm-gc, js, native).
+
+Both jobs run on `version: latest` of the official toolchain so a future
+toolchain regression surfaces on the next push, and both print
+`moon version --all` into the log so a red run can be traced to the exact
+`moonc` that produced it.
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for the architecture deep-dive and test conventions.
 

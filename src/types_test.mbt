@@ -11,7 +11,7 @@
 
 ///|
 test "BiMap[Int, Int]: basic CRUD" {
-  let m : @aurasuisui/bimap.BiMap[Int, Int] = @aurasuisui/bimap.new()
+  let m : @aurasuisui/bimap.BiMap[Int32, Int32] = @aurasuisui/bimap.new()
   m.insert(1, 100) |> ignore
   m.insert(2, 200) |> ignore
   @test.assert_eq(m.get_by_left(1), Some(100))
@@ -22,7 +22,7 @@ test "BiMap[Int, Int]: basic CRUD" {
 
 ///|
 test "BiMap[Int, Int]: negative and zero keys" {
-  let m : @aurasuisui/bimap.BiMap[Int, Int] = @aurasuisui/bimap.new()
+  let m : @aurasuisui/bimap.BiMap[Int32, Int32] = @aurasuisui/bimap.new()
   m.insert(0, 0) |> ignore
   m.insert(-1, -100) |> ignore
   m.insert(-999999, 42) |> ignore
@@ -34,7 +34,7 @@ test "BiMap[Int, Int]: negative and zero keys" {
 
 ///|
 test "BiMap[Int, Int]: large keys" {
-  let m : @aurasuisui/bimap.BiMap[Int, Int] = @aurasuisui/bimap.new()
+  let m : @aurasuisui/bimap.BiMap[Int32, Int32] = @aurasuisui/bimap.new()
   m.insert(1_000_000_000, 1) |> ignore
   m.insert(2_000_000_000, 2) |> ignore
   @test.assert_eq(m.get_by_left(1_000_000_000), Some(1))
@@ -47,7 +47,7 @@ test "BiMap[Int, Int]: large keys" {
 
 ///|
 test "BiMap[Int, String]: basic CRUD" {
-  let m : @aurasuisui/bimap.BiMap[Int, String] = @aurasuisui/bimap.new()
+  let m : @aurasuisui/bimap.BiMap[Int32, String] = @aurasuisui/bimap.new()
   m.insert(1, "one") |> ignore
   m.insert(2, "two") |> ignore
   @test.assert_eq(m.get_by_left(1), Some("one"))
@@ -58,7 +58,7 @@ test "BiMap[Int, String]: basic CRUD" {
 
 ///|
 test "BiMap[Int, String]: C2/C3 with string rights" {
-  let m : @aurasuisui/bimap.BiMap[Int, String] = @aurasuisui/bimap.new()
+  let m : @aurasuisui/bimap.BiMap[Int32, String] = @aurasuisui/bimap.new()
   m.insert(1, "x") |> ignore
   match m.insert(1, "y") {
     @aurasuisui/bimap.Left(1, "x") => ()
@@ -102,7 +102,7 @@ test "BiMap[String, String]: empty-string key and value" {
 
 ///|
 test "BiMap[Bool, Int]: basic CRUD over the two boolean keys" {
-  let m : @aurasuisui/bimap.BiMap[Bool, Int] = @aurasuisui/bimap.new()
+  let m : @aurasuisui/bimap.BiMap[Bool, Int32] = @aurasuisui/bimap.new()
   m.insert(true, 1) |> ignore
   m.insert(false, 0) |> ignore
   @test.assert_eq(m.get_by_left(true), Some(1))
@@ -113,7 +113,7 @@ test "BiMap[Bool, Int]: basic CRUD over the two boolean keys" {
 
 ///|
 test "BiMap[Bool, Int]: rebinding a boolean key (C2)" {
-  let m : @aurasuisui/bimap.BiMap[Bool, Int] = @aurasuisui/bimap.new()
+  let m : @aurasuisui/bimap.BiMap[Bool, Int32] = @aurasuisui/bimap.new()
   m.insert(true, 1) |> ignore
   match m.insert(true, 99) {
     @aurasuisui/bimap.Left(true, 1) => ()
@@ -129,7 +129,7 @@ test "BiMap[Bool, Int]: rebinding a boolean key (C2)" {
 
 ///|
 test "BiMap[Char, Int]: basic CRUD" {
-  let m : @aurasuisui/bimap.BiMap[Char, Int] = @aurasuisui/bimap.new()
+  let m : @aurasuisui/bimap.BiMap[Char, Int32] = @aurasuisui/bimap.new()
   m.insert('a', 1) |> ignore
   m.insert('z', 26) |> ignore
   @test.assert_eq(m.get_by_left('a'), Some(1))
@@ -140,7 +140,7 @@ test "BiMap[Char, Int]: basic CRUD" {
 
 ///|
 test "BiMap[Char, Int]: order preserved across char keys" {
-  let m : @aurasuisui/bimap.BiMap[Char, Int] = @aurasuisui/bimap.new()
+  let m : @aurasuisui/bimap.BiMap[Char, Int32] = @aurasuisui/bimap.new()
   m.insert('c', 3) |> ignore
   m.insert('a', 1) |> ignore
   m.insert('b', 2) |> ignore
@@ -178,7 +178,7 @@ test "BiMap[Int, Int]: order-independent Eq" {
 
 ///|
 test "BiMap[Char, Int]: copy preserves content" {
-  let m : @aurasuisui/bimap.BiMap[Char, Int] = @aurasuisui/bimap.new()
+  let m : @aurasuisui/bimap.BiMap[Char, Int32] = @aurasuisui/bimap.new()
   m.insert('x', 1) |> ignore
   m.insert('y', 2) |> ignore
   let c = m.copy()
@@ -188,10 +188,10 @@ test "BiMap[Char, Int]: copy preserves content" {
 
 ///|
 test "BiMap[Int, String]: to_inverse swaps to BiMap[String, Int]" {
-  let m : @aurasuisui/bimap.BiMap[Int, String] = @aurasuisui/bimap.new()
+  let m : @aurasuisui/bimap.BiMap[Int32, String] = @aurasuisui/bimap.new()
   m.insert(1, "one") |> ignore
   m.insert(2, "two") |> ignore
-  let inv : @aurasuisui/bimap.BiMap[String, Int] = m.to_inverse()
+  let inv : @aurasuisui/bimap.BiMap[String, Int32] = m.to_inverse()
   @test.assert_eq(inv.get_by_left("one"), Some(1))
   @test.assert_eq(inv.get_by_right(2), Some("two"))
 }
@@ -213,7 +213,7 @@ test "BiMap[Int, Int]: ToJson uses decimal-text keys" {
 
 ///|
 test "single-element map: first == last across a C2 rebind" {
-  let m : @aurasuisui/bimap.BiMap[Int, Int] = @aurasuisui/bimap.new()
+  let m : @aurasuisui/bimap.BiMap[Int32, Int32] = @aurasuisui/bimap.new()
   m.insert(5, 50) |> ignore
   @test.assert_eq(m.first(), m.last())
   m.insert(5, 500) |> ignore

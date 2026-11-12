@@ -9,7 +9,7 @@
 
 ///|
 test "C0 into a map with tombstones reuses slots" {
-  let m : @aurasuisui/bimap.BiMap[String, Int] = @aurasuisui/bimap.new()
+  let m : @aurasuisui/bimap.BiMap[String, Int32] = @aurasuisui/bimap.new()
   m.insert("a", 1) |> ignore
   m.remove_by_left("a") |> ignore
   @test.assert_eq(m.len(), 0)
@@ -23,7 +23,7 @@ test "C0 into a map with tombstones reuses slots" {
 
 ///|
 test "C2: repeated rebinds of the same left key" {
-  let m : @aurasuisui/bimap.BiMap[String, Int] = @aurasuisui/bimap.new()
+  let m : @aurasuisui/bimap.BiMap[String, Int32] = @aurasuisui/bimap.new()
   m.insert("a", 1) |> ignore
   match m.insert("a", 2) {
     @aurasuisui/bimap.Left("a", 1) => ()
@@ -52,7 +52,7 @@ test "C2 does not disturb unrelated pairs" {
 
 ///|
 test "C3: a right value handed across several left keys" {
-  let m : @aurasuisui/bimap.BiMap[String, Int] = @aurasuisui/bimap.new()
+  let m : @aurasuisui/bimap.BiMap[String, Int32] = @aurasuisui/bimap.new()
   m.insert("a", 1) |> ignore
   m.insert("b", 1) |> ignore // takes 1 from a
   @test.assert_eq(m.get_by_left("a"), None)
@@ -104,7 +104,7 @@ test "C1 idempotence does not bump observable order" {
 
 ///|
 test "insert the same left with two rights then back" {
-  let m : @aurasuisui/bimap.BiMap[String, Int] = @aurasuisui/bimap.new()
+  let m : @aurasuisui/bimap.BiMap[String, Int32] = @aurasuisui/bimap.new()
   m.insert("a", 1) |> ignore
   m.insert("a", 2) |> ignore
   m.insert("a", 1) |> ignore
@@ -254,7 +254,7 @@ test "removing a missing key after draining returns None" {
 
 ///|
 test "interleaved insert and remove stay consistent" {
-  let m : @aurasuisui/bimap.BiMap[Int, Int] = @aurasuisui/bimap.new()
+  let m : @aurasuisui/bimap.BiMap[Int32, Int32] = @aurasuisui/bimap.new()
   let mut i = 0
   while i < 100 {
     m.insert(i, i * 3) |> ignore
@@ -379,7 +379,7 @@ test "C2 rebind leaves the index unchanged" {
 
 ///|
 test "from_array on an empty array yields an empty map" {
-  let m : @aurasuisui/bimap.BiMap[String, Int] = @aurasuisui/bimap.BiMap::from_array([],
+  let m : @aurasuisui/bimap.BiMap[String, Int32] = @aurasuisui/bimap.BiMap::from_array([],
   )
   @test.assert_eq(m.is_empty(), true)
 }
@@ -407,7 +407,7 @@ test "from_array where every pair shares the right value" {
 
 ///|
 test "with_capacity(0) still works" {
-  let m : @aurasuisui/bimap.BiMap[String, Int] = @aurasuisui/bimap.with_capacity(
+  let m : @aurasuisui/bimap.BiMap[String, Int32] = @aurasuisui/bimap.with_capacity(
     0,
   )
   m.insert("a", 1) |> ignore
@@ -416,7 +416,7 @@ test "with_capacity(0) still works" {
 
 ///|
 test "with_capacity rounds up to a power of two" {
-  let m : @aurasuisui/bimap.BiMap[String, Int] = @aurasuisui/bimap.with_capacity(
+  let m : @aurasuisui/bimap.BiMap[String, Int32] = @aurasuisui/bimap.with_capacity(
     17,
   )
   // capacity must be a power of two >= 17
@@ -429,7 +429,7 @@ test "with_capacity rounds up to a power of two" {
 
 ///|
 test "capacity is always at least len" {
-  let m : @aurasuisui/bimap.BiMap[Int, Int] = @aurasuisui/bimap.new()
+  let m : @aurasuisui/bimap.BiMap[Int32, Int32] = @aurasuisui/bimap.new()
   let mut i = 0
   while i < 200 {
     m.insert(i, i) |> ignore
@@ -442,7 +442,7 @@ test "capacity is always at least len" {
 
 ///|
 test "copy of an empty map is empty and independent" {
-  let m : @aurasuisui/bimap.BiMap[String, Int] = @aurasuisui/bimap.new()
+  let m : @aurasuisui/bimap.BiMap[String, Int32] = @aurasuisui/bimap.new()
   let c = m.copy()
   c.insert("x", 1) |> ignore
   @test.assert_eq(m.is_empty(), true)
@@ -461,7 +461,7 @@ test "mutating the original does not affect an earlier copy" {
 
 ///|
 test "to_inverse of an empty map is empty" {
-  let m : @aurasuisui/bimap.BiMap[String, Int] = @aurasuisui/bimap.new()
+  let m : @aurasuisui/bimap.BiMap[String, Int32] = @aurasuisui/bimap.new()
   let inv = m.to_inverse()
   @test.assert_eq(inv.is_empty(), true)
 }
@@ -480,14 +480,14 @@ test "to_inverse of a single pair swaps it" {
 
 ///|
 test "Eq: two empty maps are equal" {
-  let a : @aurasuisui/bimap.BiMap[String, Int] = @aurasuisui/bimap.new()
-  let b : @aurasuisui/bimap.BiMap[String, Int] = @aurasuisui/bimap.new()
+  let a : @aurasuisui/bimap.BiMap[String, Int32] = @aurasuisui/bimap.new()
+  let b : @aurasuisui/bimap.BiMap[String, Int32] = @aurasuisui/bimap.new()
   @test.assert_eq(a, b)
 }
 
 ///|
 test "Eq: empty is not equal to non-empty" {
-  let a : @aurasuisui/bimap.BiMap[String, Int] = @aurasuisui/bimap.new()
+  let a : @aurasuisui/bimap.BiMap[String, Int32] = @aurasuisui/bimap.new()
   let b = @aurasuisui/bimap.BiMap::from_array([("a", 1)])
   @test.assert_not_eq(a, b)
 }
@@ -501,7 +501,7 @@ test "Hash: hashing the same map twice is stable" {
 ///|
 test "Eq: same pair set reached by different operation paths is equal" {
   let m1 = @aurasuisui/bimap.BiMap::from_array([("a", 1), ("b", 2)])
-  let m2 : @aurasuisui/bimap.BiMap[String, Int] = @aurasuisui/bimap.new()
+  let m2 : @aurasuisui/bimap.BiMap[String, Int32] = @aurasuisui/bimap.new()
   m2.insert("a", 5) |> ignore // (a,5)
   m2.insert("b", 2) |> ignore // (a,5),(b,2)
   m2.insert("c", 5) |> ignore // C3: c takes 5 from a -> (b,2),(c,5)
@@ -530,7 +530,7 @@ test "Show reflects removal" {
 
 ///|
 test "ToJson of an empty map is an empty object" {
-  let m : @aurasuisui/bimap.BiMap[String, Int] = @aurasuisui/bimap.new()
+  let m : @aurasuisui/bimap.BiMap[String, Int32] = @aurasuisui/bimap.new()
   let expected : Map[String, Json] = Map([])
   @test.assert_eq(m.to_json(), Json::object(expected))
 }
@@ -545,7 +545,7 @@ test "ToJson of a single pair" {
 
 ///|
 test "Default then insert behaves like new" {
-  let m : @aurasuisui/bimap.BiMap[String, Int] = Default::default()
+  let m : @aurasuisui/bimap.BiMap[String, Int32] = Default::default()
   m.insert("a", 1) |> ignore
   @test.assert_eq(m.get_by_left("a"), Some(1))
   @test.assert_eq(m.len(), 1)
@@ -598,7 +598,7 @@ test "contains_pair: half-present sides and absent pairs are false" {
 
 ///|
 test "contains_pair on an empty map is false" {
-  let m : @aurasuisui/bimap.BiMap[String, Int] = @aurasuisui/bimap.new()
+  let m : @aurasuisui/bimap.BiMap[String, Int32] = @aurasuisui/bimap.new()
   @test.assert_eq(m.contains_pair("a", 1), false)
 }
 
@@ -637,7 +637,7 @@ test "right_values snapshot is independent" {
 
 ///|
 test "left_keys and right_values on an empty map are empty" {
-  let m : @aurasuisui/bimap.BiMap[String, Int] = @aurasuisui/bimap.new()
+  let m : @aurasuisui/bimap.BiMap[String, Int32] = @aurasuisui/bimap.new()
   @test.assert_eq(m.left_keys(), [])
   @test.assert_eq(m.right_values(), [])
 }

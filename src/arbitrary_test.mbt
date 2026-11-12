@@ -7,7 +7,9 @@
 
 ///|
 test "qc: generated BiMaps satisfy the bijection invariants" {
-  let maps : Array[@aurasuisui/bimap.BiMap[Int, Int]] = @quickcheck.samples(50)
+  let maps : Array[@aurasuisui/bimap.BiMap[Int32, Int32]] = @quickcheck.samples(
+    50,
+  )
   let mut i = 0
   while i < maps.length() {
     check_bijection(maps[i])
@@ -17,7 +19,7 @@ test "qc: generated BiMaps satisfy the bijection invariants" {
 
 ///|
 test "qc: generated BiMaps report a consistent length" {
-  let maps : Array[@aurasuisui/bimap.BiMap[Int, String]] = @quickcheck.samples(
+  let maps : Array[@aurasuisui/bimap.BiMap[Int32, String]] = @quickcheck.samples(
     40,
   )
   let mut i = 0
@@ -30,13 +32,15 @@ test "qc: generated BiMaps report a consistent length" {
 
 ///|
 test "qc: Eq/Hash are order-independent on random maps (reverse insertion)" {
-  let maps : Array[@aurasuisui/bimap.BiMap[Int, Int]] = @quickcheck.samples(50)
+  let maps : Array[@aurasuisui/bimap.BiMap[Int32, Int32]] = @quickcheck.samples(
+    50,
+  )
   let mut i = 0
   while i < maps.length() {
     let m = maps[i]
     let pairs = m.into_array()
     // Rebuild the same pair set in reverse insertion order.
-    let rev : @aurasuisui/bimap.BiMap[Int, Int] = @aurasuisui/bimap.new()
+    let rev : @aurasuisui/bimap.BiMap[Int32, Int32] = @aurasuisui/bimap.new()
     let mut j = pairs.length() - 1
     while j >= 0 {
       let (l, r) = pairs[j]
@@ -51,7 +55,9 @@ test "qc: Eq/Hash are order-independent on random maps (reverse insertion)" {
 
 ///|
 test "qc: copy() yields an equal map" {
-  let maps : Array[@aurasuisui/bimap.BiMap[Int, Int]] = @quickcheck.samples(40)
+  let maps : Array[@aurasuisui/bimap.BiMap[Int32, Int32]] = @quickcheck.samples(
+    40,
+  )
   let mut i = 0
   while i < maps.length() {
     let m = maps[i]
@@ -63,7 +69,9 @@ test "qc: copy() yields an equal map" {
 
 ///|
 test "qc: to_inverse is an involution on random maps" {
-  let maps : Array[@aurasuisui/bimap.BiMap[Int, Int]] = @quickcheck.samples(40)
+  let maps : Array[@aurasuisui/bimap.BiMap[Int32, Int32]] = @quickcheck.samples(
+    40,
+  )
   let mut i = 0
   while i < maps.length() {
     let m = maps[i]
@@ -74,7 +82,9 @@ test "qc: to_inverse is an involution on random maps" {
 
 ///|
 test "qc: to_inverse flips every lookup" {
-  let maps : Array[@aurasuisui/bimap.BiMap[Int, Int]] = @quickcheck.samples(40)
+  let maps : Array[@aurasuisui/bimap.BiMap[Int32, Int32]] = @quickcheck.samples(
+    40,
+  )
   let mut i = 0
   while i < maps.length() {
     let m = maps[i]

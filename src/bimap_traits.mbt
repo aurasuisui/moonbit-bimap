@@ -17,7 +17,7 @@
 /// Order-sensitive fingerprint of a single pair, used as the per-pair term in
 /// the order-independent map hash. Multiplying the left hash by a constant
 /// before adding the right hash keeps `(l, r)` distinct from `(r, l)`.
-fn[L : Hash, R : Hash] pair_fingerprint(l : L, r : R) -> Int {
+fn[L : Hash, R : Hash] pair_fingerprint(l : L, r : R) -> Int32 {
   Hash::hash(l) * 0x9E3779B9 + Hash::hash(r)
 }
 
@@ -69,7 +69,7 @@ pub impl[L : Hash + Eq, R : Hash] Hash for BiMap[L, R] with fn hash_combine(
   hasher,
 ) {
   let arr = self.into_array()
-  let fps : Array[Int] = []
+  let fps : Array[Int32] = []
   let mut i = 0
   while i < arr.length() {
     let (l, r) = arr[i]

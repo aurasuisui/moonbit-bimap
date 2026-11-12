@@ -18,8 +18,8 @@ fn[L : Hash + Eq + Debug, R : Hash + Eq + Debug] check_bijection(
   // order/forward count agrees with self.len
   @test.assert_eq(arr.length(), m.len())
   // inverse holds for every pair; accumulate lefts/rights to check uniqueness
-  let lefts : Map[L, Int] = Map([])
-  let rights : Map[R, Int] = Map([])
+  let lefts : Map[L, Int32] = Map([])
+  let rights : Map[R, Int32] = Map([])
   let mut i = 0
   while i < arr.length() {
     let (l, r) = arr[i]
@@ -42,11 +42,11 @@ fn[L : Hash + Eq + Debug, R : Hash + Eq + Debug] check_bijection(
 
 ///|
 test "qc: invariants hold after random inserts" {
-  let cases : Array[Array[(Int, Int)]] = @quickcheck.samples(50)
+  let cases : Array[Array[(Int32, Int32)]] = @quickcheck.samples(50)
   let mut c = 0
   while c < cases.length() {
     let pairs = cases[c]
-    let m : @aurasuisui/bimap.BiMap[Int, Int] = @aurasuisui/bimap.new()
+    let m : @aurasuisui/bimap.BiMap[Int32, Int32] = @aurasuisui/bimap.new()
     let mut i = 0
     while i < pairs.length() {
       let (l, r) = pairs[i]
@@ -60,11 +60,11 @@ test "qc: invariants hold after random inserts" {
 
 ///|
 test "qc: invariants hold after mixed insert / remove operations" {
-  let cases : Array[Array[(Int, Int)]] = @quickcheck.samples(50)
+  let cases : Array[Array[(Int32, Int32)]] = @quickcheck.samples(50)
   let mut c = 0
   while c < cases.length() {
     let pairs = cases[c]
-    let m : @aurasuisui/bimap.BiMap[Int, Int] = @aurasuisui/bimap.new()
+    let m : @aurasuisui/bimap.BiMap[Int32, Int32] = @aurasuisui/bimap.new()
     let mut i = 0
     while i < pairs.length() {
       let (l, r) = pairs[i]
@@ -84,11 +84,11 @@ test "qc: invariants hold after mixed insert / remove operations" {
 
 ///|
 test "qc: invariants hold after insert-all then remove-half" {
-  let cases : Array[Array[(Int, Int)]] = @quickcheck.samples(40)
+  let cases : Array[Array[(Int32, Int32)]] = @quickcheck.samples(40)
   let mut c = 0
   while c < cases.length() {
     let pairs = cases[c]
-    let m : @aurasuisui/bimap.BiMap[Int, Int] = @aurasuisui/bimap.new()
+    let m : @aurasuisui/bimap.BiMap[Int32, Int32] = @aurasuisui/bimap.new()
     let mut i = 0
     while i < pairs.length() {
       let (l, r) = pairs[i]
@@ -114,11 +114,11 @@ test "qc: invariants hold after insert-all then remove-half" {
 test "qc: invariants hold on small-key maps (forces many C2/C3/C4)" {
   // Keys/values drawn from a tiny range so collisions (and thus C2/C3/C4)
   // happen constantly.
-  let cases : Array[Array[(Int, Int)]] = @quickcheck.samples(50)
+  let cases : Array[Array[(Int32, Int32)]] = @quickcheck.samples(50)
   let mut c = 0
   while c < cases.length() {
     let pairs = cases[c]
-    let m : @aurasuisui/bimap.BiMap[Int, Int] = @aurasuisui/bimap.new()
+    let m : @aurasuisui/bimap.BiMap[Int32, Int32] = @aurasuisui/bimap.new()
     let mut i = 0
     while i < pairs.length() {
       let (l, r) = pairs[i]
@@ -135,12 +135,12 @@ test "qc: retain keeps exactly the satisfying pairs; invariants hold" {
   // QuickCheck-generated maps, then retain with the shared deterministic
   // predicate; the result must equal the filtered oracle and stay a valid
   // bijection.
-  let cases : Array[Array[(Int, Int)]] = @quickcheck.samples(60)
+  let cases : Array[Array[(Int32, Int32)]] = @quickcheck.samples(60)
   let mut c = 0
   while c < cases.length() {
     let pairs = cases[c]
-    let m : @aurasuisui/bimap.BiMap[Int, Int] = @aurasuisui/bimap.new()
-    let oracle : Array[(Int, Int)] = []
+    let m : @aurasuisui/bimap.BiMap[Int32, Int32] = @aurasuisui/bimap.new()
+    let oracle : Array[(Int32, Int32)] = []
     let mut i = 0
     while i < pairs.length() {
       let (l0, r0) = pairs[i]
@@ -150,7 +150,7 @@ test "qc: retain keeps exactly the satisfying pairs; invariants hold" {
       oracle_insert(oracle, l, r)
       i = i + 1
     }
-    let pred = fn(l : Int, r : Int) -> Bool { (l + r) % 3 != 0 }
+    let pred = fn(l : Int32, r : Int32) -> Bool { (l + r) % 3 != 0 }
     m.retain(pred)
     oracle_retain(oracle, pred)
     assert_matches_oracle(m, oracle)
@@ -165,7 +165,7 @@ test "qc: retain keeps exactly the satisfying pairs; invariants hold" {
 
 ///|
 test "invariants hold after a C4 collapse" {
-  let m : @aurasuisui/bimap.BiMap[Int, Int] = @aurasuisui/bimap.new()
+  let m : @aurasuisui/bimap.BiMap[Int32, Int32] = @aurasuisui/bimap.new()
   m.insert(1, 10) |> ignore
   m.insert(2, 20) |> ignore
   m.insert(3, 30) |> ignore
@@ -180,7 +180,7 @@ test "invariants hold after a C4 collapse" {
 
 ///|
 test "invariants hold across many C4/C3 collisions" {
-  let m : @aurasuisui/bimap.BiMap[Int, Int] = @aurasuisui/bimap.new()
+  let m : @aurasuisui/bimap.BiMap[Int32, Int32] = @aurasuisui/bimap.new()
   let mut i = 0
   while i < 50 {
     m.insert(i, i + 100) |> ignore
@@ -202,7 +202,7 @@ test "invariants hold across many C4/C3 collisions" {
 
 ///|
 test "invariants hold across grow/shrink cycles" {
-  let m : @aurasuisui/bimap.BiMap[Int, Int] = @aurasuisui/bimap.new()
+  let m : @aurasuisui/bimap.BiMap[Int32, Int32] = @aurasuisui/bimap.new()
   let mut round = 0
   while round < 5 {
     let mut i = 0

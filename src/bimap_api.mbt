@@ -39,7 +39,7 @@ pub fn[L : Hash + Eq, R : Hash + Eq] BiMap::insert_no_overwrite(
 /// bounds.
 pub fn[L : Hash + Eq, R] BiMap::get_index(
   self : BiMap[L, R],
-  i : Int,
+  i : Int32,
 ) -> (L, R)? {
   if i < 0 || i >= self.order.length() {
     return None
@@ -56,7 +56,7 @@ pub fn[L : Hash + Eq, R] BiMap::get_index(
 pub fn[L : Hash + Eq, R] BiMap::get_index_of_left(
   self : BiMap[L, R],
   l : L,
-) -> Int? {
+) -> Int32? {
   self.positions.get(l)
 }
 
@@ -68,7 +68,7 @@ pub fn[L : Hash + Eq, R] BiMap::get_index_of_left(
 pub fn[L : Hash + Eq, R : Hash + Eq] BiMap::get_index_of_right(
   self : BiMap[L, R],
   r : R,
-) -> Int? {
+) -> Int32? {
   match self.backward.get(r) {
     Some(l) => self.positions.get(l)
     None => None

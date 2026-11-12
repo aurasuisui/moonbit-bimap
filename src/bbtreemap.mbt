@@ -29,8 +29,8 @@
 struct BiBTreeMap[L, R] {
   forward : @sorted_map.SortedMap[L, R]
   backward : @sorted_map.SortedMap[R, L]
-  mut len : Int
-  mut version : Int
+  mut len : Int32
+  mut version : Int32
 }
 
 // ---------------------------------------------------------------------------
@@ -319,7 +319,7 @@ pub fn[L : Compare, R : Compare] BiBTreeMap::retain(
 
 ///|
 /// Return the number of pairs in the map.
-pub fn[L, R] BiBTreeMap::len(self : BiBTreeMap[L, R]) -> Int {
+pub fn[L, R] BiBTreeMap::len(self : BiBTreeMap[L, R]) -> Int32 {
   self.len
 }
 

@@ -29,9 +29,9 @@
 /// Run an `insert` and encode its `Overwritten` result plus the resulting
 /// len into the fixture's string format.
 fn bbtree_diff_encode_insert(
-  m : @aurasuisui/bimap.BiBTreeMap[Int, Int],
-  l : Int,
-  r : Int,
+  m : @aurasuisui/bimap.BiBTreeMap[Int32, Int32],
+  l : Int32,
+  r : Int32,
 ) -> String {
   let obs = match m.insert(l, r) {
     @aurasuisui/bimap.Neither => "Neither"
@@ -48,8 +48,8 @@ fn bbtree_diff_encode_insert(
 /// Replay the full 6000-step LCG stream (same derivation as model_test.mbt /
 /// differential_test.mbt, five ops including retain with the shared
 /// deterministic predicate) and return the resulting map.
-fn bbtree_diff_run_full_stream() -> @aurasuisui/bimap.BiBTreeMap[Int, Int] {
-  let m : @aurasuisui/bimap.BiBTreeMap[Int, Int] = @aurasuisui/bimap.BiBTreeMap::new()
+fn bbtree_diff_run_full_stream() -> @aurasuisui/bimap.BiBTreeMap[Int32, Int32] {
+  let m : @aurasuisui/bimap.BiBTreeMap[Int32, Int32] = @aurasuisui/bimap.BiBTreeMap::new()
   let mut state = 0x1234_5678
   let mut i = 0
   while i < 6000 {
@@ -66,7 +66,7 @@ fn bbtree_diff_run_full_stream() -> @aurasuisui/bimap.BiBTreeMap[Int, Int] {
     } else if op == 3 {
       m.insert_no_overwrite(l, r) |> ignore
     } else {
-      m.retain(fn(l : Int, r : Int) -> Bool { (l + r) % 3 != 0 })
+      m.retain(fn(l : Int32, r : Int32) -> Bool { (l + r) % 3 != 0 })
     }
     i = i + 1
   }
@@ -79,7 +79,7 @@ fn bbtree_diff_run_full_stream() -> @aurasuisui/bimap.BiBTreeMap[Int, Int] {
 
 ///|
 test "bbtree diff vs Rust BiBTreeMap: golden C0-C4 sequence matches" {
-  let m : @aurasuisui/bimap.BiBTreeMap[Int, Int] = @aurasuisui/bimap.BiBTreeMap::new()
+  let m : @aurasuisui/bimap.BiBTreeMap[Int32, Int32] = @aurasuisui/bimap.BiBTreeMap::new()
   let golden = [(1, 10), (2, 20), (1, 40), (3, 20), (1, 20), (1, 20)]
   let mut i = 0
   while i < golden.length() {
@@ -96,7 +96,7 @@ test "bbtree diff vs Rust BiBTreeMap: golden C0-C4 sequence matches" {
 
 ///|
 test "bbtree diff vs Rust BiBTreeMap: 6000 mixed ops agree step by step" {
-  let m : @aurasuisui/bimap.BiBTreeMap[Int, Int] = @aurasuisui/bimap.BiBTreeMap::new()
+  let m : @aurasuisui/bimap.BiBTreeMap[Int32, Int32] = @aurasuisui/bimap.BiBTreeMap::new()
   let mut state = 0x1234_5678
   let mut i = 0
   while i < 6000 {
@@ -122,7 +122,7 @@ test "bbtree diff vs Rust BiBTreeMap: 6000 mixed ops agree step by step" {
         Err(_) => "Err|\{m.len()}"
       }
     } else {
-      m.retain(fn(l : Int, r : Int) -> Bool { (l + r) % 3 != 0 })
+      m.retain(fn(l : Int32, r : Int32) -> Bool { (l + r) % 3 != 0 })
       "Retain|\{m.len()}"
     }
     if actual != bbtree_diff_observations[i] {

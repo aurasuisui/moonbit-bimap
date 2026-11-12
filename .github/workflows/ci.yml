@@ -15,6 +15,10 @@ jobs:
         uses: hustcer/setup-moonbit@v1
         with:
           version: latest
+      # Records the exact toolchain a run used, so a red build can be traced to
+      # the moonc that produced it (see README "Toolchain compatibility").
+      - name: Record toolchain version
+        run: moon version --all
       - name: Format check
         run: moon fmt --check
       - name: Type check
@@ -27,3 +31,20 @@ jobs:
         run: moon test
       - name: Build
         run: moon build
+
+  # The library is pure MoonBit (no FFI, no platform APIs), so every stable
+  # backend must run the same 369-test suite. `--target all` is
+  # wasm + wasm-gc + js + native; llvm/LLVM is excluded on purpose -- it needs
+  # a nightly toolchain (it fails on stable with "missing prelude.mi").
+  all-backends:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup MoonBit
+        uses: hustcer/setup-moonbit@v1
+        with:
+          version: latest
+      - name: Record toolchain version
+        run: moon version --all
+      - name: Run tests on every stable backend
+        run: moon test --target all

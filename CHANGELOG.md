@@ -6,6 +6,29 @@ adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Changed
+- **Toolchain compatibility pass (2026-11-12, hackathon maintenance check).** Verified
+  against `moon 0.1.20261104` / `moonc v0.10.20+65efd5b93` / `moonrun 0.1.20261104`:
+  `moon fmt --check`, `moon check`, `moon info && git diff --exit-code`, `moon test`
+  (369/369) and `moon build` all pass, and the same 369 tests pass on `wasm`, `wasm-gc`,
+  `js` and `native` (`moon test --target all`). The three `cmd/*` examples and `bench/`
+  were re-run against the published `@0.3.0`. `llvm` stays unsupported on the stable
+  toolchain (`toolchain is incomplete: missing prelude.mi for target llvm`). Before this
+  pass the repo failed two of the five CI steps on that toolchain — `moon fmt --check`
+  and the `pkg.generated.mbti` freshness check.
+- **Sources and `.mbti` re-spelled `Int` → `Int32`.** `moonc` v0.10.20 canonicalises the
+  32-bit integer type to `Int32`; `Int` remains an accepted alias of the **same** type
+  (identical ABI, no behaviour change), but `moon fmt` rewrites it and `moon info` prints
+  `Int32`. The same pass re-flowed call sites that the longer spelling pushed past the
+  line width and migrated `} derive(...)` to `#derive(...)`, which v0.10.20 marks
+  deprecated. No public signature, semantic, or test expectation changed (369/369 before
+  and after).
+- **CI** — both jobs now print `moon version --all` so a red run can be traced to the
+  exact `moonc`; added an `all-backends` job running `moon test --target all`.
+- **README** — new "Toolchain compatibility" section (verified versions, per-backend
+  results, `llvm` limitation); Installation now starts from `moon add` and states that the
+  consuming package also needs the `moon.pkg` import.
+
 ### Fixed
 - **`cmd/json_roundtrip` conflict demo exited `main` early.** The strict-conflict
   section's `catch { e => { ...; return } }` returned from `main`, so the fifth demo

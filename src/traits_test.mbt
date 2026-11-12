@@ -71,8 +71,8 @@ test "Hash: equal maps have equal hashes (Eq => Hash)" {
 
 ///|
 test "Hash: empty maps hash equally" {
-  let m1 : @aurasuisui/bimap.BiMap[String, Int] = @aurasuisui/bimap.new()
-  let m2 : @aurasuisui/bimap.BiMap[String, Int] = @aurasuisui/bimap.new()
+  let m1 : @aurasuisui/bimap.BiMap[String, Int32] = @aurasuisui/bimap.new()
+  let m2 : @aurasuisui/bimap.BiMap[String, Int32] = @aurasuisui/bimap.new()
   @test.assert_eq(Hash::hash(m1), Hash::hash(m2))
 }
 
@@ -120,7 +120,7 @@ test "Show renders BiMap{left <-> right, ...} in insertion order" {
 
 ///|
 test "Show of empty map" {
-  let m : @aurasuisui/bimap.BiMap[String, Int] = @aurasuisui/bimap.new()
+  let m : @aurasuisui/bimap.BiMap[String, Int32] = @aurasuisui/bimap.new()
   @test.assert_eq(m.to_string(), "BiMap{}")
 }
 
@@ -145,7 +145,7 @@ test "Debug renders an opaque BiMap representation" {
 
 ///|
 test "default() produces an empty map" {
-  let m : @aurasuisui/bimap.BiMap[String, Int] = Default::default()
+  let m : @aurasuisui/bimap.BiMap[String, Int32] = Default::default()
   @test.assert_eq(m.is_empty(), true)
   @test.assert_eq(m.len(), 0)
 }
@@ -187,7 +187,7 @@ test "ToJson handles composite right values" {
 ///|
 test "iter yields pairs in insertion order" {
   let m = @aurasuisui/bimap.BiMap::from_array([("b", 2), ("a", 1), ("c", 3)])
-  let collected : Array[(String, Int)] = []
+  let collected : Array[(String, Int32)] = []
   let it = m.iter()
   while true {
     match it.next() {
@@ -222,7 +222,7 @@ test "lefts yields left keys in insertion order" {
 ///|
 test "rights yields right values in insertion order" {
   let m = @aurasuisui/bimap.BiMap::from_array([("b", 2), ("a", 1), ("c", 3)])
-  let collected : Array[Int] = []
+  let collected : Array[Int32] = []
   for r in m.rights() {
     collected.push(r)
   }
@@ -232,11 +232,11 @@ test "rights yields right values in insertion order" {
 ///|
 test "iterating twice gives the same order (idempotent)" {
   let m = @aurasuisui/bimap.BiMap::from_array([("b", 2), ("a", 1), ("c", 3)])
-  let first : Array[(String, Int)] = []
+  let first : Array[(String, Int32)] = []
   for p in m.iter() {
     first.push(p)
   }
-  let second : Array[(String, Int)] = []
+  let second : Array[(String, Int32)] = []
   for p in m.iter() {
     second.push(p)
   }
@@ -245,7 +245,7 @@ test "iterating twice gives the same order (idempotent)" {
 
 ///|
 test "iter on empty map yields nothing" {
-  let m : @aurasuisui/bimap.BiMap[String, Int] = @aurasuisui/bimap.new()
+  let m : @aurasuisui/bimap.BiMap[String, Int32] = @aurasuisui/bimap.new()
   let mut count = 0
   for p in m.iter() {
     ignore(p)

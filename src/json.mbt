@@ -23,6 +23,7 @@
 /// ([4127] "Type is not an error type") — error types must be declared as
 /// `suberror`. The public surface (name, variants, payloads, derives)
 /// matches docs/plans/v0.3.0.md §2 exactly.
+#derive(Debug, Eq)
 pub(all) suberror BiMapDecodeError {
   ///
   /// JSON syntax/type error from the core @json decoder, passed through
@@ -42,7 +43,7 @@ pub(all) suberror BiMapDecodeError {
   /// - left keys: the text keys, rendered as JSON strings
   ///   (`Json::string(k).stringify()` — quoting/escaping follow stringify).
   DuplicateRightValue(String, String, String)
-} derive(Debug, Eq)
+}
 
 ///|
 /// Hand-written Show — the stable text rendering shared by error messages

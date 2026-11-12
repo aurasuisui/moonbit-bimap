@@ -37,7 +37,7 @@ pub impl[L : Hash, R : Hash] Hash for BiBTreeMap[L, R] with fn hash_combine(
   hasher,
 ) {
   let arr = self.into_array()
-  let fps : Array[Int] = []
+  let fps : Array[Int32] = []
   let mut i = 0
   while i < arr.length() {
     let (l, r) = arr[i]

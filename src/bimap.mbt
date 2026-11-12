@@ -24,9 +24,9 @@ struct BiMap[L, R] {
   forward : HashTab[L, R]
   backward : HashTab[R, L]
   order : Array[L]
-  positions : Map[L, Int]
-  mut len : Int
-  mut version : Int
+  positions : Map[L, Int32]
+  mut len : Int32
+  mut version : Int32
 }
 
 // ---------------------------------------------------------------------------
@@ -41,7 +41,7 @@ pub fn[L : Hash + Eq, R] BiMap::new() -> BiMap[L, R] {
 
 ///|
 /// Create a new, empty `BiMap` with capacity for at least `cap` pairs.
-pub fn[L : Hash + Eq, R] BiMap::with_capacity(cap : Int) -> BiMap[L, R] {
+pub fn[L : Hash + Eq, R] BiMap::with_capacity(cap : Int32) -> BiMap[L, R] {
   let real_cap = if cap < MIN_CAPACITY {
     MIN_CAPACITY
   } else {
@@ -366,7 +366,7 @@ pub fn[L : Hash + Eq, R : Hash + Eq] BiMap::retain(
 
 ///|
 /// Return the number of pairs in the map.
-pub fn[L, R] BiMap::len(self : BiMap[L, R]) -> Int {
+pub fn[L, R] BiMap::len(self : BiMap[L, R]) -> Int32 {
   self.len
 }
 
@@ -378,7 +378,7 @@ pub fn[L, R] BiMap::is_empty(self : BiMap[L, R]) -> Bool {
 
 ///|
 /// Return the current bucket capacity of the underlying forward table.
-pub fn[L, R] BiMap::capacity(self : BiMap[L, R]) -> Int {
+pub fn[L, R] BiMap::capacity(self : BiMap[L, R]) -> Int32 {
   self.forward.capacity()
 }
 

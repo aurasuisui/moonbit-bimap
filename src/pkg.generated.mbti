@@ -11,19 +11,20 @@ import {
 // Values
 pub const VERSION : String = "0.3.0"
 
-pub fn[R : @json.FromJson + Hash + Eq] from_json(Json) -> BiMap[String, R] raise BiMapDecodeError
+pub fn[R : @json.FromJson + Hash + Eq] from_json(@json.Json) -> BiMap[String, R] raise BiMapDecodeError
 
-pub fn[K : Hash + Eq, R : @json.FromJson + Hash + Eq] from_json_with(Json, (String) -> K) -> BiMap[K, R] raise BiMapDecodeError
+pub fn[K : Hash + Eq, R : @json.FromJson + Hash + Eq] from_json_with(@json.Json, (String) -> K) -> BiMap[K, R] raise BiMapDecodeError
 
 pub fn[L : Hash + Eq, R] new() -> BiMap[L, R]
 
-pub fn[L : Hash + Eq, R] with_capacity(Int) -> BiMap[L, R]
+pub fn[L : Hash + Eq, R] with_capacity(Int32) -> BiMap[L, R]
 
 // Errors
+#derive(Eq, @debug.Debug)
 pub(all) suberror BiMapDecodeError {
   Decode(@json.JsonDecodeError)
   DuplicateRightValue(String, String, String)
-} derive(Eq, @debug.Debug)
+}
 pub impl Show for BiMapDecodeError
 
 // Types and methods
@@ -34,8 +35,8 @@ pub fn[L, R : Compare] BiBTreeMap::contains_right(Self[L, R], R) -> Bool
 pub fn[L, R] BiBTreeMap::copy(Self[L, R]) -> Self[L, R]
 pub fn[L, R] BiBTreeMap::first(Self[L, R]) -> (L, R)?
 pub fn[L : Compare, R : Compare] BiBTreeMap::from_array(Array[(L, R)]) -> Self[L, R]
-pub fn[R : @json.FromJson + Compare] BiBTreeMap::from_json(Json) -> Self[String, R] raise BiMapDecodeError
-pub fn[K : Compare, R : @json.FromJson + Compare] BiBTreeMap::from_json_with(Json, (String) -> K) -> Self[K, R] raise BiMapDecodeError
+pub fn[R : @json.FromJson + Compare] BiBTreeMap::from_json(@json.Json) -> Self[String, R] raise BiMapDecodeError
+pub fn[K : Compare, R : @json.FromJson + Compare] BiBTreeMap::from_json_with(@json.Json, (String) -> K) -> Self[K, R] raise BiMapDecodeError
 pub fn[L : Compare, R] BiBTreeMap::get_by_left(Self[L, R], L) -> R?
 pub fn[L, R : Compare] BiBTreeMap::get_by_right(Self[L, R], R) -> L?
 pub fn[L : Compare, R : Compare] BiBTreeMap::get_or_insert_left(Self[L, R], L, R) -> R
@@ -47,7 +48,7 @@ pub fn[L, R] BiBTreeMap::is_empty(Self[L, R]) -> Bool
 pub fn[L, R] BiBTreeMap::iter(Self[L, R]) -> Iter[(L, R)]
 pub fn[L, R] BiBTreeMap::last(Self[L, R]) -> (L, R)?
 pub fn[L, R] BiBTreeMap::left_keys(Self[L, R]) -> Array[L]
-pub fn[L, R] BiBTreeMap::len(Self[L, R]) -> Int
+pub fn[L, R] BiBTreeMap::len(Self[L, R]) -> Int32
 pub fn[L : Compare, R : Compare] BiBTreeMap::new() -> Self[L, R]
 pub fn[L : Compare, R] BiBTreeMap::range(Self[L, R], L, L) -> Iter[(L, R)]
 pub fn[L : Compare, R : Compare] BiBTreeMap::remove_by_left(Self[L, R], L) -> R?
@@ -59,25 +60,25 @@ pub impl[L : Compare, R : Compare] Default for BiBTreeMap[L, R]
 pub impl[L : Eq, R : Eq] Eq for BiBTreeMap[L, R]
 pub impl[L : Hash, R : Hash] Hash for BiBTreeMap[L, R]
 pub impl[L : Show, R : Show] Show for BiBTreeMap[L, R]
-pub impl[L : Show, R : ToJson] ToJson for BiBTreeMap[L, R]
 pub impl[L : @debug.Debug, R : @debug.Debug] @debug.Debug for BiBTreeMap[L, R]
+pub impl[L : Show, R : @json.ToJson] @json.ToJson for BiBTreeMap[L, R]
 pub impl[L : @quickcheck.Arbitrary + Compare, R : @quickcheck.Arbitrary + Compare] @quickcheck.Arbitrary for BiBTreeMap[L, R]
 
 type BiMap[L, R]
-pub fn[L, R] BiMap::capacity(Self[L, R]) -> Int
+pub fn[L, R] BiMap::capacity(Self[L, R]) -> Int32
 pub fn[L : Hash + Eq, R] BiMap::contains_left(Self[L, R], L) -> Bool
 pub fn[L : Hash + Eq, R : Eq] BiMap::contains_pair(Self[L, R], L, R) -> Bool
 pub fn[L, R : Hash + Eq] BiMap::contains_right(Self[L, R], R) -> Bool
 pub fn[L : Hash + Eq, R : Hash + Eq] BiMap::copy(Self[L, R]) -> Self[L, R]
 pub fn[L : Hash + Eq, R] BiMap::first(Self[L, R]) -> (L, R)?
 pub fn[L : Hash + Eq, R : Hash + Eq] BiMap::from_array(Array[(L, R)]) -> Self[L, R]
-pub fn[R : @json.FromJson + Hash + Eq] BiMap::from_json(Json) -> Self[String, R] raise BiMapDecodeError
-pub fn[K : Hash + Eq, R : @json.FromJson + Hash + Eq] BiMap::from_json_with(Json, (String) -> K) -> Self[K, R] raise BiMapDecodeError
+pub fn[R : @json.FromJson + Hash + Eq] BiMap::from_json(@json.Json) -> Self[String, R] raise BiMapDecodeError
+pub fn[K : Hash + Eq, R : @json.FromJson + Hash + Eq] BiMap::from_json_with(@json.Json, (String) -> K) -> Self[K, R] raise BiMapDecodeError
 pub fn[L : Hash + Eq, R] BiMap::get_by_left(Self[L, R], L) -> R?
 pub fn[L, R : Hash + Eq] BiMap::get_by_right(Self[L, R], R) -> L?
-pub fn[L : Hash + Eq, R] BiMap::get_index(Self[L, R], Int) -> (L, R)?
-pub fn[L : Hash + Eq, R] BiMap::get_index_of_left(Self[L, R], L) -> Int?
-pub fn[L : Hash + Eq, R : Hash + Eq] BiMap::get_index_of_right(Self[L, R], R) -> Int?
+pub fn[L : Hash + Eq, R] BiMap::get_index(Self[L, R], Int32) -> (L, R)?
+pub fn[L : Hash + Eq, R] BiMap::get_index_of_left(Self[L, R], L) -> Int32?
+pub fn[L : Hash + Eq, R : Hash + Eq] BiMap::get_index_of_right(Self[L, R], R) -> Int32?
 pub fn[L : Hash + Eq, R : Hash + Eq] BiMap::get_or_insert_left(Self[L, R], L, R) -> R
 pub fn[L : Hash + Eq, R : Hash + Eq] BiMap::get_or_insert_right(Self[L, R], R, L) -> L
 pub fn[L : Hash + Eq, R : Hash + Eq] BiMap::insert(Self[L, R], L, R) -> Overwritten[L, R]
@@ -88,7 +89,7 @@ pub fn[L : Hash + Eq, R] BiMap::iter(Self[L, R]) -> Iter[(L, R)]
 pub fn[L : Hash + Eq, R] BiMap::last(Self[L, R]) -> (L, R)?
 pub fn[L, R] BiMap::left_keys(Self[L, R]) -> Array[L]
 pub fn[L : Hash + Eq, R] BiMap::lefts(Self[L, R]) -> Iter[L]
-pub fn[L, R] BiMap::len(Self[L, R]) -> Int
+pub fn[L, R] BiMap::len(Self[L, R]) -> Int32
 pub fn[L : Hash + Eq, R] BiMap::new() -> Self[L, R]
 pub fn[L : Hash + Eq, R : Hash + Eq] BiMap::remove_by_left(Self[L, R], L) -> R?
 pub fn[L : Hash + Eq, R : Hash + Eq] BiMap::remove_by_right(Self[L, R], R) -> L?
@@ -96,22 +97,23 @@ pub fn[L : Hash + Eq, R : Hash + Eq] BiMap::retain(Self[L, R], (L, R) -> Bool) -
 pub fn[L : Hash + Eq, R] BiMap::right_values(Self[L, R]) -> Array[R]
 pub fn[L : Hash + Eq, R] BiMap::rights(Self[L, R]) -> Iter[R]
 pub fn[L : Hash + Eq, R : Hash + Eq] BiMap::to_inverse(Self[L, R]) -> Self[R, L]
-pub fn[L : Hash + Eq, R] BiMap::with_capacity(Int) -> Self[L, R]
+pub fn[L : Hash + Eq, R] BiMap::with_capacity(Int32) -> Self[L, R]
 pub impl[L : Hash + Eq, R] Default for BiMap[L, R]
 pub impl[L : Hash + Eq, R : Eq] Eq for BiMap[L, R]
 pub impl[L : Hash + Eq, R : Hash] Hash for BiMap[L, R]
 pub impl[L : Show + Hash + Eq, R : Show] Show for BiMap[L, R]
-pub impl[L : Show + Hash + Eq, R : ToJson] ToJson for BiMap[L, R]
 pub impl[L : @debug.Debug + Hash + Eq, R : @debug.Debug] @debug.Debug for BiMap[L, R]
+pub impl[L : Show + Hash + Eq, R : @json.ToJson] @json.ToJson for BiMap[L, R]
 pub impl[L : @quickcheck.Arbitrary + Hash + Eq, R : @quickcheck.Arbitrary + Hash + Eq] @quickcheck.Arbitrary for BiMap[L, R]
 
+#derive(Eq, @debug.Debug)
 pub enum Overwritten[L, R] {
   Neither
   Left(L, R)
   Right(L, R)
   Both((L, R), (L, R))
   Pair(L, R)
-} derive(Eq, @debug.Debug)
+}
 
 // Type aliases
 

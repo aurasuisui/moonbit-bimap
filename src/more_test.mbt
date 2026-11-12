@@ -10,7 +10,7 @@
 
 ///|
 test "C0/C1/C2/C3/C4 all reachable on a single Int,Int map" {
-  let m : @aurasuisui/bimap.BiMap[Int, Int] = @aurasuisui/bimap.new()
+  let m : @aurasuisui/bimap.BiMap[Int32, Int32] = @aurasuisui/bimap.new()
   match m.insert(1, 10) {
     @aurasuisui/bimap.Neither => ()
     _ => @test.fail("C0 expected")
@@ -40,7 +40,7 @@ test "C0/C1/C2/C3/C4 all reachable on a single Int,Int map" {
 
 ///|
 test "C2 then C3 on overlapping keys stays consistent" {
-  let m : @aurasuisui/bimap.BiMap[Int, Int] = @aurasuisui/bimap.new()
+  let m : @aurasuisui/bimap.BiMap[Int32, Int32] = @aurasuisui/bimap.new()
   m.insert(1, 1) |> ignore
   m.insert(2, 2) |> ignore
   m.insert(1, 2) |> ignore // C4 collapses (1,1) and (2,2) into (1,2)
@@ -51,7 +51,7 @@ test "C2 then C3 on overlapping keys stays consistent" {
 
 ///|
 test "many fresh inserts then exact reinserts are all Pair" {
-  let m : @aurasuisui/bimap.BiMap[Int, Int] = @aurasuisui/bimap.new()
+  let m : @aurasuisui/bimap.BiMap[Int32, Int32] = @aurasuisui/bimap.new()
   let mut i = 0
   while i < 20 {
     m.insert(i, i * 7) |> ignore
@@ -102,7 +102,9 @@ test "last after C4 collapse is the survivor" {
 
 ///|
 test "qc: Char-keyed generated maps satisfy invariants" {
-  let maps : Array[@aurasuisui/bimap.BiMap[Char, Int]] = @quickcheck.samples(20)
+  let maps : Array[@aurasuisui/bimap.BiMap[Char, Int32]] = @quickcheck.samples(
+    20,
+  )
   let mut i = 0
   while i < maps.length() {
     check_bijection(maps[i])
@@ -112,7 +114,9 @@ test "qc: Char-keyed generated maps satisfy invariants" {
 
 ///|
 test "qc: Bool-keyed maps (tiny keyspace) satisfy invariants" {
-  let maps : Array[@aurasuisui/bimap.BiMap[Bool, Int]] = @quickcheck.samples(20)
+  let maps : Array[@aurasuisui/bimap.BiMap[Bool, Int32]] = @quickcheck.samples(
+    20,
+  )
   let mut i = 0
   while i < maps.length() {
     check_bijection(maps[i])
@@ -138,11 +142,11 @@ test "qc: copy of a generated map equals the original" {
 
 ///|
 test "qc: interleaving insert and insert_no_overwrite keeps invariants" {
-  let cases : Array[Array[(Int, Int)]] = @quickcheck.samples(25)
+  let cases : Array[Array[(Int32, Int32)]] = @quickcheck.samples(25)
   let mut c = 0
   while c < cases.length() {
     let pairs = cases[c]
-    let m : @aurasuisui/bimap.BiMap[Int, Int] = @aurasuisui/bimap.new()
+    let m : @aurasuisui/bimap.BiMap[Int32, Int32] = @aurasuisui/bimap.new()
     let mut i = 0
     while i < pairs.length() {
       let (l, r) = pairs[i]
@@ -189,7 +193,7 @@ test "ToJson after removal omits the removed key" {
 
 ///|
 test "Debug of empty map (snapshot)" {
-  let m : @aurasuisui/bimap.BiMap[String, Int] = @aurasuisui/bimap.new()
+  let m : @aurasuisui/bimap.BiMap[String, Int32] = @aurasuisui/bimap.new()
   debug_inspect(
     m,
     content=(
@@ -207,7 +211,7 @@ test "Eq: maps with swapped pairs are NOT equal (ordered pairs)" {
 
 ///|
 test "is_empty flips correctly across insert/remove" {
-  let m : @aurasuisui/bimap.BiMap[Int, Int] = @aurasuisui/bimap.new()
+  let m : @aurasuisui/bimap.BiMap[Int32, Int32] = @aurasuisui/bimap.new()
   @test.assert_eq(m.is_empty(), true)
   m.insert(1, 1) |> ignore
   @test.assert_eq(m.is_empty(), false)
@@ -217,7 +221,7 @@ test "is_empty flips correctly across insert/remove" {
 
 ///|
 test "with_capacity larger than needed still functions" {
-  let m : @aurasuisui/bimap.BiMap[Int, Int] = @aurasuisui/bimap.with_capacity(
+  let m : @aurasuisui/bimap.BiMap[Int32, Int32] = @aurasuisui/bimap.with_capacity(
     1024,
   )
   m.insert(1, 1) |> ignore
@@ -244,7 +248,7 @@ test "lefts and rights have matching lengths" {
 
 ///|
 test "into_array length equals len after many ops" {
-  let m : @aurasuisui/bimap.BiMap[Int, Int] = @aurasuisui/bimap.new()
+  let m : @aurasuisui/bimap.BiMap[Int32, Int32] = @aurasuisui/bimap.new()
   let mut i = 0
   while i < 80 {
     m.insert(i % 30, i) |> ignore
@@ -284,7 +288,7 @@ test "to_inverse preserves the pair count" {
 
 ///|
 test "the two directions stay symmetric over a long deterministic sequence" {
-  let m : @aurasuisui/bimap.BiMap[Int, Int] = @aurasuisui/bimap.new()
+  let m : @aurasuisui/bimap.BiMap[Int32, Int32] = @aurasuisui/bimap.new()
   let mut state = 987654321
   let mut i = 0
   while i < 1000 {

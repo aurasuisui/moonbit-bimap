@@ -24,7 +24,7 @@ fn parse_ok(text : String) -> Json raise {
 ///|
 /// Int parse_key for from_json_with tests: TOTAL by contract (P1-2) — parse
 /// failures are absorbed and mapped to the sentinel -999 (no raise channel).
-fn int_parse_key(s : String) -> Int {
+fn int_parse_key(s : String) -> Int32 {
   @string.parse_int(s) catch {
     _ => -999
   }
@@ -32,7 +32,7 @@ fn int_parse_key(s : String) -> Int {
 
 ///|
 /// BiMap::from_json into BiMap[String, Int]; fails the test on any error.
-fn from_json_i(text : String) -> @aurasuisui/bimap.BiMap[String, Int] raise {
+fn from_json_i(text : String) -> @aurasuisui/bimap.BiMap[String, Int32] raise {
   @aurasuisui/bimap.from_json(parse_ok(text)) catch {
     e => @test.fail("from_json failed: " + Show::to_string(e))
   }
@@ -59,7 +59,9 @@ fn from_json_b(text : String) -> @aurasuisui/bimap.BiMap[String, Bool] raise {
 /// (the try/catch arms must share a type, so the error escapes via return).
 fn err_from_json_i(text : String) -> @aurasuisui/bimap.BiMapDecodeError raise {
   let j = parse_ok(text)
-  let _m : @aurasuisui/bimap.BiMap[String, Int] = @aurasuisui/bimap.from_json(j) catch {
+  let _m : @aurasuisui/bimap.BiMap[String, Int32] = @aurasuisui/bimap.from_json(
+    j,
+  ) catch {
     err => return err
   }
   abort("err_from_json_i: expected an error, got success")
@@ -91,7 +93,9 @@ fn err_from_json_b(text : String) -> @aurasuisui/bimap.BiMapDecodeError raise {
 
 ///|
 /// BiMap::from_json_with into BiMap[Int, Int] via int_parse_key.
-fn from_json_with_i(text : String) -> @aurasuisui/bimap.BiMap[Int, Int] raise {
+fn from_json_with_i(
+  text : String,
+) -> @aurasuisui/bimap.BiMap[Int32, Int32] raise {
   @aurasuisui/bimap.from_json_with(parse_ok(text), int_parse_key) catch {
     e => @test.fail("from_json_with failed: " + Show::to_string(e))
   }
@@ -103,7 +107,7 @@ fn err_from_json_with_i(
   text : String,
 ) -> @aurasuisui/bimap.BiMapDecodeError raise {
   let j = parse_ok(text)
-  let _m : @aurasuisui/bimap.BiMap[Int, Int] = @aurasuisui/bimap.from_json_with(
+  let _m : @aurasuisui/bimap.BiMap[Int32, Int32] = @aurasuisui/bimap.from_json_with(
     j, int_parse_key,
   ) catch {
     err => return err
@@ -116,7 +120,7 @@ fn err_from_json_with_i(
 /// P1-1: no free function for the sorted variant).
 fn btree_from_json_i(
   text : String,
-) -> @aurasuisui/bimap.BiBTreeMap[String, Int] raise {
+) -> @aurasuisui/bimap.BiBTreeMap[String, Int32] raise {
   @aurasuisui/bimap.BiBTreeMap::from_json(parse_ok(text)) catch {
     e => @test.fail("BiBTreeMap::from_json failed: " + Show::to_string(e))
   }
@@ -128,7 +132,7 @@ fn err_btree_from_json_i(
   text : String,
 ) -> @aurasuisui/bimap.BiMapDecodeError raise {
   let j = parse_ok(text)
-  let _m : @aurasuisui/bimap.BiBTreeMap[String, Int] = @aurasuisui/bimap.BiBTreeMap::from_json(
+  let _m : @aurasuisui/bimap.BiBTreeMap[String, Int32] = @aurasuisui/bimap.BiBTreeMap::from_json(
     j,
   ) catch {
     err => return err
@@ -140,7 +144,7 @@ fn err_btree_from_json_i(
 /// BiBTreeMap::from_json_with into BiBTreeMap[Int, Int] via int_parse_key.
 fn btree_from_json_with_i(
   text : String,
-) -> @aurasuisui/bimap.BiBTreeMap[Int, Int] raise {
+) -> @aurasuisui/bimap.BiBTreeMap[Int32, Int32] raise {
   @aurasuisui/bimap.BiBTreeMap::from_json_with(parse_ok(text), int_parse_key) catch {
     e => @test.fail("BiBTreeMap::from_json_with failed: " + Show::to_string(e))
   }
@@ -152,7 +156,7 @@ fn err_btree_from_json_with_i(
   text : String,
 ) -> @aurasuisui/bimap.BiMapDecodeError raise {
   let j = parse_ok(text)
-  let _m : @aurasuisui/bimap.BiBTreeMap[Int, Int] = @aurasuisui/bimap.BiBTreeMap::from_json_with(
+  let _m : @aurasuisui/bimap.BiBTreeMap[Int32, Int32] = @aurasuisui/bimap.BiBTreeMap::from_json_with(
     j, int_parse_key,
   ) catch {
     err => return err
@@ -187,7 +191,7 @@ fn assert_dup(
 ///|
 /// Parse an object string to an ordered Map[String, Int] (fails the test on
 /// any error).
-fn parse_ordered_map(text : String) -> Map[String, Int] raise {
+fn parse_ordered_map(text : String) -> Map[String, Int32] raise {
   @json.from_json(@json.parse(text)) catch {
     _ => @test.fail("smoke: unexpected parse/decode failure")
   }
@@ -439,7 +443,7 @@ test "BiBTreeMap::from_json_with: Int keys, parse_key collisions, conflict parit
 
 ///|
 test "qc round-trip: BiMap[String, Int] to_json -> from_json preserves content and order" {
-  let maps : Array[@aurasuisui/bimap.BiMap[String, Int]] = @quickcheck.samples(
+  let maps : Array[@aurasuisui/bimap.BiMap[String, Int32]] = @quickcheck.samples(
     40,
   )
   let mut i = 0
@@ -463,7 +467,7 @@ test "qc round-trip: BiMap[String, Int] to_json -> from_json preserves content a
 
 ///|
 test "qc round-trip: BiBTreeMap[String, Int] to_json -> from_json preserves content" {
-  let maps : Array[@aurasuisui/bimap.BiBTreeMap[String, Int]] = @quickcheck.samples(
+  let maps : Array[@aurasuisui/bimap.BiBTreeMap[String, Int32]] = @quickcheck.samples(
     40,
   )
   let mut i = 0
@@ -501,14 +505,14 @@ test "qc round-trip: BiBTreeMap[String, Int] to_json -> from_json preserves cont
 fn[K : Eq] model_with(
   text : String,
   pk : (String) -> K,
-) -> (Array[(K, Int)], (String, String, String)?) raise {
+) -> (Array[(K, Int32)], (String, String, String)?) raise {
   let raw : Map[String, Json] = match parse_ok(text) {
     Json::Object(o) => o
     _ => @test.fail("model: expected an object")
   }
   // decode in text order (core LinkedHashMap order == text order)
   let texts : Array[String] = []
-  let vals : Array[Int] = []
+  let vals : Array[Int32] = []
   let raws : Array[Json] = []
   for k, v in raw {
     texts.push(k)
@@ -517,7 +521,7 @@ fn[K : Eq] model_with(
   }
   // last-wins collapse on logical keys; first-seen positions kept
   let keys : Array[K] = []
-  let final_vals : Array[Int] = []
+  let final_vals : Array[Int32] = []
   let final_text : Array[String] = []
   let mut t = 0
   while t < texts.length() {
@@ -541,7 +545,7 @@ fn[K : Eq] model_with(
     t = t + 1
   }
   // dedup over survivors in text order of last occurrences
-  let right_of : Array[Int] = []
+  let right_of : Array[Int32] = []
   let left_of : Array[String] = []
   let mut u = 0
   while u < texts.length() {
@@ -580,7 +584,7 @@ fn[K : Eq] model_with(
     }
     u = u + 1
   }
-  let pairs : Array[(K, Int)] = []
+  let pairs : Array[(K, Int32)] = []
   let mut k2 = 0
   while k2 < keys.length() {
     pairs.push((keys[k2], final_vals[k2]))
@@ -592,7 +596,7 @@ fn[K : Eq] model_with(
 ///|
 /// Compare actual from_json_with (Int keys) against the model for one text.
 fn check_model_int_case(text : String) -> Unit raise {
-  let (pairs, conflict) : (Array[(Int, Int)], (String, String, String)?) = model_with(
+  let (pairs, conflict) : (Array[(Int32, Int32)], (String, String, String)?) = model_with(
     text, int_parse_key,
   )
   match conflict {
@@ -615,7 +619,7 @@ fn check_model_int_case(text : String) -> Unit raise {
 ///|
 /// Compare actual from_json (String keys) against the model (identity pk).
 fn check_model_str_case(text : String) -> Unit raise {
-  let (pairs, conflict) : (Array[(String, Int)], (String, String, String)?) = model_with(
+  let (pairs, conflict) : (Array[(String, Int32)], (String, String, String)?) = model_with(
     text,
     fn(k : String) -> String { k },
   )
@@ -669,7 +673,7 @@ test "model: handcrafted texts agree with the naive Array model (String keys)" {
 ///|
 /// Build a JSON object text {"k0":v0,"k1":v1,...} with value_of(i) as the
 /// i-th value (integer literal text).
-fn build_number_object_text(n : Int, value_of : (Int) -> Int) -> String {
+fn build_number_object_text(n : Int32, value_of : (Int32) -> Int32) -> String {
   let sb = StringBuilder(size_hint=n * 12)
   sb.write_string("{")
   let mut i = 0
@@ -690,7 +694,7 @@ test "round-trip: unicode, empty and escaped keys survive the text round-trip (B
   let keys = [
     "中文", "😀x", "", "a\"b", "a\\b", "line\nbreak", "tab\there", "é",
   ]
-  let pairs : Array[(String, Int)] = []
+  let pairs : Array[(String, Int32)] = []
   let mut i = 0
   while i < keys.length() {
     pairs.push((keys[i], i))
@@ -710,7 +714,7 @@ test "round-trip: unicode, empty and escaped keys survive the text round-trip (B
   let keys = [
     "中文", "😀x", "", "a\"b", "a\\b", "line\nbreak", "tab\there", "é",
   ]
-  let pairs : Array[(String, Int)] = []
+  let pairs : Array[(String, Int32)] = []
   let mut i = 0
   while i < keys.length() {
     pairs.push((keys[i], i))
@@ -770,7 +774,7 @@ test "golden: DuplicateRightValue message with escaped-string and unicode payloa
 
 ///|
 test "conflict storm: 1000 keys sharing one right raise with the first two text keys" {
-  let text = build_number_object_text(1000, fn(_i : Int) -> Int { 7 })
+  let text = build_number_object_text(1000, fn(_i : Int32) -> Int32 { 7 })
   let err = err_from_json_i(text)
   assert_dup(err, "7", "\"k0\"", "\"k1\"")
   @test.assert_eq(
@@ -807,7 +811,7 @@ test "conflict storm: a late duplicate-key rebind creates a NEW conflict (last-w
 
 ///|
 test "stress: 12k-pair text round-trip preserves count, order and lookups" {
-  let text = build_number_object_text(12000, fn(i : Int) -> Int { i })
+  let text = build_number_object_text(12000, fn(i : Int32) -> Int32 { i })
   let m = from_json_i(text)
   @test.assert_eq(m.len(), 12000)
   @test.assert_eq(m.get_index(0), Some(("k0", 0)))
@@ -826,7 +830,7 @@ test "stress: 12k-pair text round-trip preserves count, order and lookups" {
 
 ///|
 test "stress: 12k-pair decode into BiBTreeMap stays correct" {
-  let text = build_number_object_text(12000, fn(i : Int) -> Int { i * 3 })
+  let text = build_number_object_text(12000, fn(i : Int32) -> Int32 { i * 3 })
   let bt = btree_from_json_i(text)
   @test.assert_eq(bt.len(), 12000)
   @test.assert_eq(bt.first(), Some(("k0", 0)))

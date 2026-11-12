@@ -829,7 +829,7 @@ let bbtree_diff_observations : Array[String] = [
 ]
 
 ///|
-let bbtree_diff_final_pairs : Array[(Int, Int)] = [
+let bbtree_diff_final_pairs : Array[(Int32, Int32)] = [
   (1, 1),
   (4, 7),
   (6, 10),

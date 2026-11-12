@@ -8,7 +8,7 @@
 
 ///|
 test "stress: 10k sequential inserts keep invariants and lookups hit" {
-  let m : @aurasuisui/bimap.BiMap[Int, Int] = @aurasuisui/bimap.new()
+  let m : @aurasuisui/bimap.BiMap[Int32, Int32] = @aurasuisui/bimap.new()
   let mut i = 0
   while i < 10000 {
     m.insert(i, i * 2) |> ignore
@@ -27,7 +27,7 @@ test "stress: 10k sequential inserts keep invariants and lookups hit" {
 
 ///|
 test "stress: insert 10k then remove 5k keeps counts and survivors correct" {
-  let m : @aurasuisui/bimap.BiMap[Int, Int] = @aurasuisui/bimap.new()
+  let m : @aurasuisui/bimap.BiMap[Int32, Int32] = @aurasuisui/bimap.new()
   let mut i = 0
   while i < 10000 {
     m.insert(i, i + 100000) |> ignore
@@ -50,7 +50,7 @@ test "stress: insert 10k then remove 5k keeps counts and survivors correct" {
 
 ///|
 test "stress: resize cascade from 16 keeps invariants at each crossing" {
-  let m : @aurasuisui/bimap.BiMap[Int, Int] = @aurasuisui/bimap.new()
+  let m : @aurasuisui/bimap.BiMap[Int32, Int32] = @aurasuisui/bimap.new()
   @test.assert_eq(m.capacity(), 16)
   let mut i = 0
   while i < 1000 {
@@ -75,7 +75,7 @@ test "stress: resize cascade from 16 keeps invariants at each crossing" {
 
 ///|
 test "stress: tombstone buildup then rehash stays correct" {
-  let m : @aurasuisui/bimap.BiMap[Int, Int] = @aurasuisui/bimap.new()
+  let m : @aurasuisui/bimap.BiMap[Int32, Int32] = @aurasuisui/bimap.new()
   let mut i = 0
   while i < 5000 {
     m.insert(i, i) |> ignore
@@ -100,7 +100,7 @@ test "stress: tombstone buildup then rehash stays correct" {
 
 ///|
 test "stress: heavy C4 traffic keeps len consistent and non-negative" {
-  let m : @aurasuisui/bimap.BiMap[Int, Int] = @aurasuisui/bimap.new()
+  let m : @aurasuisui/bimap.BiMap[Int32, Int32] = @aurasuisui/bimap.new()
   let mut i = 0
   while i < 1000 {
     // build two disjoint pairs, then collapse them with one C4 insert
@@ -118,7 +118,7 @@ test "stress: heavy C4 traffic keeps len consistent and non-negative" {
 
 ///|
 test "stress: 20000 deterministic mixed operations end in a valid state" {
-  let m : @aurasuisui/bimap.BiMap[Int, Int] = @aurasuisui/bimap.new()
+  let m : @aurasuisui/bimap.BiMap[Int32, Int32] = @aurasuisui/bimap.new()
   let mut state = 12345
   let mut i = 0
   while i < 20000 {

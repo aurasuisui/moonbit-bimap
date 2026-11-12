@@ -48,7 +48,7 @@ test "regression: QuickCheck sample 40 (tombstone clusters + negative keys)" {
     (-14, -9),
     (5, 0),
   ]
-  let m : BiMap[Int, Int] = BiMap::new()
+  let m : BiMap[Int32, Int32] = BiMap::new()
   let mut i = 0
   while i < pairs.length() {
     let (l0, r0) = pairs[i]
@@ -71,11 +71,11 @@ test "regression: QuickCheck sample 40 (tombstone clusters + negative keys)" {
 
 ///|
 test "regression: random inserts never duplicate a live bucket entry" {
-  let cases : Array[Array[(Int, Int)]] = @quickcheck.samples(60)
+  let cases : Array[Array[(Int32, Int32)]] = @quickcheck.samples(60)
   let mut c = 0
   while c < cases.length() {
     let pairs = cases[c]
-    let m : BiMap[Int, Int] = BiMap::new()
+    let m : BiMap[Int32, Int32] = BiMap::new()
     let mut i = 0
     while i < pairs.length() {
       let (l0, r0) = pairs[i]
@@ -100,9 +100,10 @@ test "regression: normalize_hash can never return the tombstone sentinel" {
 }
 
 ///|
+#derive(Eq, Debug)
 struct SentinelKeyExact {
-  id : Int
-} derive(Eq, Debug)
+  id : Int32
+}
 
 ///|
 impl Hash for SentinelKeyExact with fn hash_combine(
@@ -113,7 +114,7 @@ impl Hash for SentinelKeyExact with fn hash_combine(
 }
 
 ///|
-impl Hash for SentinelKeyExact with fn hash(_self : SentinelKeyExact) -> Int {
+impl Hash for SentinelKeyExact with fn hash(_self : SentinelKeyExact) -> Int32 {
   // Override `hash` directly so the returned value is EXACTLY the tombstone
   // sentinel, bypassing the hasher's mix. Without normalize_hash, such a key
   // would be stored with hash -1 and become invisible to every probe.
@@ -125,7 +126,7 @@ test "regression: a key hashing EXACTLY to the tombstone sentinel stays visible"
   let k1 : SentinelKeyExact = { id: 1, }
   let k2 : SentinelKeyExact = { id: 2, }
   @test.assert_eq(Hash::hash(k1), -1) // precondition: hash really is -1
-  let m : BiMap[SentinelKeyExact, Int] = BiMap::new()
+  let m : BiMap[SentinelKeyExact, Int32] = BiMap::new()
   m.insert(k1, 10) |> ignore
   m.insert(k2, 20) |> ignore
   // pre-fix this returned None: the -1 hash made the entry look like a

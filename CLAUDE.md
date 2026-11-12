@@ -56,9 +56,9 @@ BiMap[L, R]
 ├── forward  : HashTab[L, R]   # left→right Robin Hood table
 ├── backward : HashTab[R, L]   # right→left table (reverse lookup only — NO order field)
 ├── order    : Array[L]        # left keys in insertion order (the single source of order)
-├── positions: Map[L, Int]     # left key → index in `order` (O(1) get_index_of_left)
-├── len      : Int   (mut)
-└── version  : Int   (mut)     # mutation counter for fail-fast iterators
+├── positions: Map[L, Int32]   # left key → index in `order` (O(1) get_index_of_left)
+├── len      : Int32 (mut)
+└── version  : Int32 (mut)     # mutation counter for fail-fast iterators
 ```
 
 `HashTab[K, V]` (`src/hashtable.mbt`) is a **pure** open-addressing Robin Hood table
