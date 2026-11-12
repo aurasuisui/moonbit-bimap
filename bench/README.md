@@ -30,8 +30,11 @@ per-op cost = reported ÷ N. Each bench uses `count=5` winsorized samples.
 ## Running
 
 ```bash
-moon run --release bench/main.mbt
+moon run --release --target native bench/main.mbt
 ```
+
+`--target native` is not optional for comparability: without it `moon run` defaults
+to the `wasm` backend, and the figures in `../README.md` were measured on native.
 
 The module resolves the **published** `aurasuisui/bimap` (see `moon.mod`),
 exactly like `cmd/` — so the numbers measure what users install. To benchmark

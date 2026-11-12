@@ -15,7 +15,7 @@
 | 项 | 现状 | 出处 |
 |---|---|---|
 | API / 单元测试:每个公开方法按文档契约逐一验证 | ✅ | `bimap_test.mbt`(44)、`edge_test.mbt`/`coverage_test.mbt`/`more_test.mbt` |
-| 边界 / 异常:空 / 单元素 / 边界值(0 / -1 / 32 位极值 / 空串)/ 重复键 / 越界下标 | ✅ | `bimap_test.mbt`(get_index 越界 → None)、`types_test.mbt`、`generics_test.mbt`(可移植 Int 极值) |
+| 边界 / 异常:空 / 单元素 / 边界值(0 / -1 / 32 位极值 / 空串)/ 重复键 / 越界下标 | ✅ | `bimap_test.mbt`(get_index 越界 → None)、`types_test.mbt`、`generics_test.mbt`(定宽 32 位极值) |
 | 不变量:两侧互逆 + 五处计数 + `positions[order[i]]==i` + mask / 2 的幂 | ✅ | `bimap_wbtest.mbt`(白盒强不变量)、`property_test.mbt`(`check_bijection` 黑盒守护) |
 
 > **MoonBit 限制**:迭代中变更触发 `abort`,恐慌不可被测试框架捕获——见 README "Known Issues"
@@ -88,15 +88,19 @@
 - [x] **文档同步(按 `CONTRIBUTING.md` 文档同步约定)**:有公开 API 变更 → 同步 `docs/SPEC.md` +
       `README.md` API 表;有关键决策/行为变更 → 同步 `CHANGELOG.md` Notes/Deviations;架构/流程变更 →
       同步 `CONTRIBUTING.md`;命令/工具链 → `CLAUDE.md`;增删任一文档 → `docs/README.md` 枢纽表。
-- [x] **五步 CI 全绿**:本节勾选时,主分支 `main` 的 GitHub Actions 跑过的五步(`moon fmt --check`
-      → `moon check` → `moon info && git diff --exit-code` → `moon test` → `moon build`)全绿。
+- [x] **CI 全绿(两个 job)**:本节勾选时,主分支 `main` 的 GitHub Actions 两条流水都绿——
+      `check-and-test` 的五步(`moon fmt --check` → `moon check` → `moon info && git diff --exit-code`
+      → `moon test` → `moon build`),以及 `all-backends` 的 `moon test --target all`。
 - [x] **CHANGELOG 记一行**:在本版本段加一行"发布前检查:RELEASE_CHECKLIST 全绿 @ <commit>"。
 
-### 手动约定(不进 CI,发版前人工执行)
+### 跨后端矩阵(2026-11 起已自动化)
 
-跨后端矩阵:`moon test --target native` 与 `moon test --target wasm-gc`(及可选 `--target js`)至少各跑一遍
-确认通过。库为纯 MoonBit,预期通过;若某后端失败,该后端记入 README "Known Issues" 并考虑是否阻断发版。
-**此条不自动化进 `ci.yml`**——保持 CI 单后端以控制 CI 时长,跨后端由发版前手动把关。
+`moon test --target all`(= wasm + wasm-gc + js + native)由 `ci.yml` 的 `all-backends` job 在每次
+push/PR 执行,四个后端各 369/369(2026-11-12 验证)。发版前无需再手动重跑;**若该 job 变红**,按 README
+"Known Issues" 记录并把失败后端与 `moonc` 版本一并写进发版记录,再判断是否阻断发版。
+
+`llvm` 不在支持范围:该后端仍为 nightly-only,stable 工具链报 `missing prelude.mi for target llvm`
+(见 README「Toolchain compatibility」)。
 
 ---
 
@@ -106,7 +110,7 @@
 |---|---|---|
 | ~~**对 Rust 原版 `bimap` crate 的真实差分测试**~~ | ✅ **已闭环(2026-08-19)** | `tools/diffgen`(Rust,钉死 `bimap = "=0.6.3"`)生成夹具 `src/differential_fixture_test.mbt`,`src/differential_test.mbt` 逐步比对;`moon test` 无需 Rust 工具链,仅重生成夹具时需要。见 CHANGELOG [0.1.2] |
 | **真实字节流 fuzzing**(非受限替身) | 工具所限 | 等 MoonBit 官方 fuzz 框架;`model_test.mbt` 的 6000-op LCG + QuickCheck 暂代 |
-| **性能回归门禁**(本地基准已有,CI 门禁未做) | ⚠️ 本地 ✅ / CI ❌ | 本地计时基准已就位:`bench/`(官方 `@bench` 框架,`moon run --release bench/main.mbt`);仍缺 CI 上的回归即 fail 门禁(需稳定计时设施)。见 CHANGELOG [0.1.2] |
+| **性能回归门禁**(本地基准已有,CI 门禁未做) | ⚠️ 本地 ✅ / CI ❌ | 本地计时基准已就位:`bench/`(官方 `@bench` 框架,`moon run --release --target native bench/main.mbt`);仍缺 CI 上的回归即 fail 门禁(需稳定计时设施)。见 CHANGELOG [0.1.2] |
 | **变异测试** | 工具所限 | MoonBit 暂无标准 mutator 工具 |
 | **跨后端 CI 自动矩阵** | 主动选择手动 | 见上"手动约定"——不在 CI 自动化,发版前人工跑 |
 

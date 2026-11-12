@@ -26,7 +26,7 @@ fn parse_text(text : String) -> Json {
 
 ///|
 /// Total Int parse_key (P1-2): catch parse failures and fall back to 0.
-fn int_parse_key(k : String) -> Int {
+fn int_parse_key(k : String) -> Int32 {
   @string.parse_int(k) catch {
     _ => 0
   }
@@ -34,7 +34,7 @@ fn int_parse_key(k : String) -> Int {
 
 ///|
 /// Render (String, Int) pairs like [(bob, 2), (alice, 1)].
-fn render_si(pairs : Array[(String, Int)]) -> String {
+fn render_si(pairs : Array[(String, Int32)]) -> String {
   let sb = StringBuilder()
   let mut first = true
   for pair in pairs {
@@ -54,7 +54,7 @@ fn render_si(pairs : Array[(String, Int)]) -> String {
 
 ///|
 /// Render (Int, Int) pairs like [(10, 10), (20, 20)].
-fn render_ii(pairs : Array[(Int, Int)]) -> String {
+fn render_ii(pairs : Array[(Int32, Int32)]) -> String {
   let sb = StringBuilder()
   let mut first = true
   for pair in pairs {
@@ -81,7 +81,7 @@ fn main {
   let json = parse_text(text)
 
   println("=== BiMap::from_json (free function, P1-1) ===")
-  let m : @bimap.BiMap[String, Int] = @bimap.from_json(json) catch {
+  let m : @bimap.BiMap[String, Int32] = @bimap.from_json(json) catch {
     e => {
       println("decode failed: \{e}")
       return
@@ -95,7 +95,7 @@ fn main {
   }
 
   println("=== BiBTreeMap::from_json (method call) ===")
-  let s : @bimap.BiBTreeMap[String, Int] = @bimap.BiBTreeMap::from_json(json) catch {
+  let s : @bimap.BiBTreeMap[String, Int32] = @bimap.BiBTreeMap::from_json(json) catch {
     e => {
       println("decode failed: \{e}")
       return
@@ -105,7 +105,7 @@ fn main {
 
   println("=== from_json_with: total parse_key for Int keys ===")
   let keys_json = parse_text("{\"10\":10,\"20\":20}")
-  let n : @bimap.BiMap[Int, Int] = @bimap.from_json_with(
+  let n : @bimap.BiMap[Int32, Int32] = @bimap.from_json_with(
     keys_json, int_parse_key,
   ) catch {
     e => {
@@ -118,7 +118,7 @@ fn main {
   println("=== strict bijection validation ===")
   let conflict_json = parse_text("{\"a\":1,\"b\":1}")
   try {
-    let _bad : @bimap.BiMap[String, Int] = @bimap.from_json(conflict_json)
+    let _bad : @bimap.BiMap[String, Int32] = @bimap.from_json(conflict_json)
     println("unexpected: duplicate right value was silently accepted")
   } catch {
     e => println("expected error: \{e}")
@@ -127,7 +127,7 @@ fn main {
   println("=== lossless text round-trip ===")
   let text2 = m.to_json().stringify()
   println("to_json -> \{text2}")
-  let m2 : @bimap.BiMap[String, Int] = @bimap.from_json(parse_text(text2)) catch {
+  let m2 : @bimap.BiMap[String, Int32] = @bimap.from_json(parse_text(text2)) catch {
     e => {
       println("round-trip failed: \{e}")
       return

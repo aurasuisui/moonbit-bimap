@@ -27,7 +27,7 @@ fn pair(o : (String, String)?) -> String {
 
 ///|
 /// Render an optional index.
-fn intopt(o : Int?) -> String {
+fn intopt(o : Int32?) -> String {
   match o {
     Some(i) => i.to_string()
     None => "<?>"

@@ -25,6 +25,14 @@ adheres to [Semantic Versioning](https://semver.org/).
   and after).
 - **CI** — both jobs now print `moon version --all` so a red run can be traced to the
   exact `moonc`; added an `all-backends` job running `moon test --target all`.
+- **`Int` 宽度论断已更正(历史条目保留原文).** 早期条目声称 "MoonBit 的 `Int` 宽度随后端变化";
+  当前工具链下 `Int` 是 `Int32` 的别名、在所有后端都是定宽 32 位——实测 native 与 wasm-gc
+  上 `2^31-1 + 1` 均回绕到 `-2^31`,与 `Int32` 完全一致。`src/bimap_traits.mbt`、
+  `src/bbtreemap_traits.mbt`、`src/generics_test.mbt` 中三处相关注释已同步更正。
+- **基准复现命令补 `--target native`.** 裸 `moon run` 默认走 `wasm` 后端,而 README
+  Performance 的数字是在 native 上测的;README / `bench/README.md` / `bench/main.mbt` /
+  CLAUDE / AGENTS / RELEASE_CHECKLIST 六处统一为
+  `moon run --release --target native bench/main.mbt`.
 - **README** — new "Toolchain compatibility" section (verified versions, per-backend
   results, `llvm` limitation); Installation now starts from `moon add` and states that the
   consuming package also needs the `moon.pkg` import.

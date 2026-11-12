@@ -244,23 +244,23 @@ pub fn retain(self, f : (L, R) -> Bool) -> Unit
 
 ```moonbit
 // 索引红利(来自 order/positions,这是相对 Rust/Guava 的增量)
-pub fn get_index(self, i : Int) -> (L, R)?          // 按插入序第 i 对;越界 None
-pub fn get_index_of_left(self, l : L) -> Int?        // 左键在插入序中的下标
-pub fn get_index_of_right(self, r : R) -> Int?       // = get_index_of_left(get_by_right(r));见 §6.4
+pub fn get_index(self, i : Int32) -> (L, R)?          // 按插入序第 i 对;越界 None
+pub fn get_index_of_left(self, l : L) -> Int32?       // 左键在插入序中的下标
+pub fn get_index_of_right(self, r : R) -> Int32?      // = get_index_of_left(get_by_right(r));见 §6.4
 pub fn first(self) -> (L, R)?                         // 最早插入的对
 pub fn last(self) -> (L, R)?                          // 最晚插入的对
 
 // 构造
 pub fn new() -> BiMap[L, R]
-pub fn with_capacity(cap : Int) -> BiMap[L, R]
+pub fn with_capacity(cap : Int32) -> BiMap[L, R]
 pub fn from_array(pairs : Array[(L, R)]) -> BiMap[L, R]   // 见 §6.3
 pub fn default() -> BiMap[L, R]
 pub fn copy(self) -> BiMap[L, R]                        // 深拷贝
 
 // 查询
-pub fn len(self) -> Int
+pub fn len(self) -> Int32
 pub fn is_empty(self) -> Bool
-pub fn capacity(self) -> Int
+pub fn capacity(self) -> Int32
 
 // 转换
 pub fn to_inverse(self) -> BiMap[R, L]                  // 拷贝,非实时视图(见 §6.2)
@@ -381,23 +381,23 @@ JSON 表示:对象 `{ "<l.to_string()>": <r.to_json()>, ... }`,按左键插入�
 
 ```moonbit
 // 私有纯引擎(无顺序)——从 indexmap 移植
-struct Entry[K, V] { key : K; value : V; hash : Int; mut distance : Int } derive(Debug)
+struct Entry[K, V] { key : K; value : V; hash : Int32; mut distance : Int32 } derive(Debug)
 struct HashTab[K, V] {
   mut buckets : Array[Entry[K, V]?]
-  mut len : Int
-  mut mask : Int
-  mut tombstone_count : Int
-  mut max_probe_distance : Int
+  mut len : Int32
+  mut mask : Int32
+  mut tombstone_count : Int32
+  mut max_probe_distance : Int32
 }
 
 // 公开主体
 struct BiMap[L, R] {
-  mut forward  : HashTab[L, R]   // 左→右,承载顺序
-  mut backward : HashTab[R, L]   // 右→左,仅反查,无自己的 order
-  mut order    : Array[L]        // 左键插入序(唯一一份)
-  mut positions : Map[L, Int]    // 左键 → order 下标
-  mut len : Int
-  mut version : Int              // fail-fast
+  mut forward  : HashTab[L, R]     // 左→右,承载顺序
+  mut backward : HashTab[R, L]     // 右→左,仅反查,无自己的 order
+  mut order    : Array[L]          // 左键插入序(唯一一份)
+  mut positions : Map[L, Int32]    // 左键 → order 下标
+  mut len : Int32
+  mut version : Int32              // fail-fast
 }
 ```
 
@@ -466,8 +466,8 @@ struct BiMap[L, R] {
 BiBTreeMap[L, R]
 ├── forward  : SortedMap[L, R]   // 按 L 有序
 ├── backward : SortedMap[R, L]   // 按 R 有序(反查)
-├── len      : Int   (mut)
-└── version  : Int   (mut)       // fail-fast 迭代
+├── len      : Int32   (mut)
+└── version  : Int32   (mut)       // fail-fast 迭代
 ```
 
 不变量:`∀ (l, r) ∈ forward ⟺ backward[r] == l`;`forward.length() == backward.length() == len`。
@@ -499,7 +499,7 @@ pub fn[L : Compare, R : Compare] BiBTreeMap::remove_by_left(self, l) -> R?
 pub fn[L : Compare, R : Compare] BiBTreeMap::remove_by_right(self, r) -> L?
 
 // 查询 / 排序红利
-pub fn[L, R] BiBTreeMap::len(self) -> Int
+pub fn[L, R] BiBTreeMap::len(self) -> Int32
 pub fn[L, R] BiBTreeMap::is_empty(self) -> Bool
 pub fn[L, R] BiBTreeMap::first(self) -> (L, R)?   // 最小左键(O(log n) 走向最左)
 pub fn[L, R] BiBTreeMap::last(self) -> (L, R)?    // 最大左键(O(n) 走到迭代器尾)
@@ -639,7 +639,7 @@ insertion");`json/parse.mbt` 的 `parse_object` 以 `map[name] = ctx.parse_value
 `Show`(已 #deprecated,渲染为 `Number(...)` 调试形态)、`ToJson`、`FromJson`,但
 **无 `Hash`、无 `Compare`**。故 **R=Json 被 BiMap 的 `R : Hash + Eq` 与
 BiBTreeMap 的 `R : Compare` 在类型层直接排除**(光有 Eq 不够),结论不变;文档措辞
-用"类型级不可行",不写"未实现";往返测试用 R=String/Int。
+用"类型级不可行",不写"未实现";往返测试用 R=String/Int32。
 
 ### §12.2 签名与错误类型(M2 起,随实现补入并锁定)
 
@@ -722,7 +722,7 @@ pub fn[K : Compare, R : FromJson + Compare] BiBTreeMap::from_json_with(
   `first`/`last` 依此序。例:`{"bob":2,"alice":1,"carol":3}` →
   `[("bob",2),("alice",1),("carol",3)]`;同长键退化回码点序(如
   `[("amy",1),("bob",2),("cat",3)]`)。与 Rust `BTreeMap<String>` 的字典序不同
-  (差分夹具用 Int 键,未覆盖此差异),属 core 语义,由 json_test 钉死。
+  (差分夹具用 Int32 键,未覆盖此差异),属 core 语义,由 json_test 钉死。
 ### §12.3 语义裁定(M4 以测试钉死;与计划 §3 逐条一致)
 
 - **3.1 双射冲突 → 严格报错**:JSON 对象中两个不同左键映射到同一右值时 raise
@@ -736,7 +736,7 @@ pub fn[K : Compare, R : FromJson + Compare] BiBTreeMap::from_json_with(
 - **3.3 顺序与往返保证**:`BiMap::from_json(m.to_json()) == m`(Eq 集合语义)且
   迭代序与 JSON 文本键序一致(core Map 保序,M1 冒烟 + M4 往返测试);
   `BiBTreeMap::from_json(m.to_json()) == m` 恒成立(排序自规范,输入键序无关)。
-  非字符串键往返需要 `parse_key` = Show 的逆(M4 用 Int 键示例:parse_key 内部
+  非字符串键往返需要 `parse_key` = Show 的逆(M4 用 Int32 键示例:parse_key 内部
   catch `@string.parse_int` 失败兜底,P1-2)。
 - **3.4 入口非收口点**:from_json 是数据入口,不触 forward/backward/order/positions;
   路径 = 整表解码 → O(n) 右值查重(先于任何插入)→ 公开 `from_array` 构建

@@ -73,10 +73,10 @@ test "custom struct on BOTH sides: BiMap[Point, Point] is a valid bijection" {
 // Exact integer boundary keys
 // ---------------------------------------------------------------------------
 
-// MoonBit's `Int` width is backend-dependent (64-bit on native/wasm-gc, possibly
-// narrower elsewhere) and there is no `Int::MIN`/`Int::MAX` constant. So we use
-// the 32-bit extremes, which are representable on EVERY backend. `int_lo` is
-// computed rather than written as a literal so no intermediate overflows.
+// As of moonc v0.10.20 MoonBit's `Int` is a fixed 32-bit integer (an alias of
+// `Int32`) on every backend, and there is still no `Int::MIN`/`Int::MAX`
+// constant. So we use the 32-bit extremes, which are exactly representable.
+// `int_lo` is computed rather than written as a literal so nothing overflows.
 
 ///|
 test "Int boundary keys (32-bit extremes / 0 / -1) all work on both sides" {

@@ -12,18 +12,18 @@
 // so the computed results are not optimized away.
 //
 // Run with:
-//   moon run --release bench/main.mbt
+//   moon run --release --target native bench/main.mbt
 
 ///|
 /// Same LCG as src/model_test.mbt — deterministic probe-key distribution.
-fn next_state(state : Int) -> Int {
+fn next_state(state : Int32) -> Int32 {
   (state * 1103515245 + 12345) & 0x7FFF_FFFF
 }
 
 ///|
 /// Build a BiMap with `n` distinct pairs (all C0 inserts): i <-> 2i+1.
-fn build_bimap(n : Int) -> @aurasuisui/bimap.BiMap[Int, Int] {
-  let m : @aurasuisui/bimap.BiMap[Int, Int] = @aurasuisui/bimap.new()
+fn build_bimap(n : Int32) -> @aurasuisui/bimap.BiMap[Int32, Int32] {
+  let m : @aurasuisui/bimap.BiMap[Int32, Int32] = @aurasuisui/bimap.new()
   for i in 0..<n {
     m.insert(i, i * 2 + 1) |> ignore
   }
@@ -32,8 +32,8 @@ fn build_bimap(n : Int) -> @aurasuisui/bimap.BiMap[Int, Int] {
 
 ///|
 /// Build the built-in Map baseline with the same pairs.
-fn build_map(n : Int) -> Map[Int, Int] {
-  let m : Map[Int, Int] = Map([])
+fn build_map(n : Int32) -> Map[Int32, Int32] {
+  let m : Map[Int32, Int32] = Map([])
   for i in 0..<n {
     m[i] = i * 2 + 1
   }
@@ -42,8 +42,8 @@ fn build_map(n : Int) -> Map[Int, Int] {
 
 ///|
 /// Build a BiBTreeMap with `n` distinct pairs (all C0 inserts): i <-> 2i+1.
-fn build_bbtreemap(n : Int) -> @aurasuisui/bimap.BiBTreeMap[Int, Int] {
-  let m : @aurasuisui/bimap.BiBTreeMap[Int, Int] = @aurasuisui/bimap.BiBTreeMap::new()
+fn build_bbtreemap(n : Int32) -> @aurasuisui/bimap.BiBTreeMap[Int32, Int32] {
+  let m : @aurasuisui/bimap.BiBTreeMap[Int32, Int32] = @aurasuisui/bimap.BiBTreeMap::new()
   for i in 0..<n {
     m.insert(i, i * 2 + 1) |> ignore
   }

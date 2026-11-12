@@ -105,21 +105,21 @@ moon publish                      # 发布到 mooncakes.io(需登录)
 
 ### 常量与 Entry(`map.mbt:7-28`)
 ```moonbit
-const MIN_CAPACITY : Int = 16
-const NO_DISTANCE : Int = -1
-const TOMBSTONE_HASH : Int = -1
+const MIN_CAPACITY : Int32 = 16
+const NO_DISTANCE : Int32 = -1
+const TOMBSTONE_HASH : Int32 = -1
 
 struct Entry[K, V] {
   key : K
   value : V
-  hash : Int
-  mut distance : Int
+  hash : Int32
+  mut distance : Int32
 } derive(Debug)
 ```
 
 ### 负载因子判断(`map.mbt:79-81`)
 ```moonbit
-fn should_resize_impl(len : Int, capacity : Int) -> Bool {
+fn should_resize_impl(len : Int32, capacity : Int32) -> Bool {
   len * LOAD_FACTOR_DENOMINATOR >= capacity * LOAD_FACTOR_NUMERATOR
 }
 // 其中 LOAD_FACTOR_NUMERATOR=3, LOAD_FACTOR_DENOMINATOR=4(见 hash.mbt)
@@ -127,7 +127,7 @@ fn should_resize_impl(len : Int, capacity : Int) -> Bool {
 
 ### 下一 2 的幂(`map.mbt:85-94`)
 ```moonbit
-fn next_power_of_two_impl(n : Int) -> Int {
+fn next_power_of_two_impl(n : Int32) -> Int32 {
   if n <= 1 { return 1 }
   let mut p = 1
   while p < n { p = p << 1 }
@@ -137,7 +137,7 @@ fn next_power_of_two_impl(n : Int) -> Int {
 
 ### `probe_find`(简单线性探测,用于 get/remove/contains)(`map.mbt:98-121`)
 ```moonbit
-fn[K : Eq, V] HashTab::probe_find(self, key : K, hash : Int) -> (Int, Bool) {
+fn[K : Eq, V] HashTab::probe_find(self, key : K, hash : Int32) -> (Int32, Bool) {
   let start = hash & self.mask
   let mut i = start
   while true {
@@ -157,11 +157,11 @@ fn[K : Eq, V] HashTab::probe_find(self, key : K, hash : Int) -> (Int, Bool) {
 
 ### `robin_hood_find`(带墓碑复用,用于 insert)(`map.mbt:125-162`)
 ```moonbit
-fn[K : Eq, V] HashTab::robin_hood_find(self, key : K, hash : Int) -> (Int, Bool) {
+fn[K : Eq, V] HashTab::robin_hood_find(self, key : K, hash : Int32) -> (Int32, Bool) {
   let start = hash & self.mask
   let mut i = start
   let mut dist = 0
-  let mut first_tombstone : Int = -1
+  let mut first_tombstone : Int32 = -1
   while true {
     match self.buckets[i] {
       None => {
@@ -190,7 +190,7 @@ fn[K : Eq, V] HashTab::robin_hood_find(self, key : K, hash : Int) -> (Int, Bool)
 
 ### `robin_hood_insert_at`(Robin Hood 位移插入)(`map.mbt:166-224`)
 ```moonbit
-fn[K, V] HashTab::robin_hood_insert_at(self, entry_param : Entry[K, V], start_idx : Int, hash : Int) -> Unit {
+fn[K, V] HashTab::robin_hood_insert_at(self, entry_param : Entry[K, V], start_idx : Int32, hash : Int32) -> Unit {
   let mut entry = entry_param
   let mut i = start_idx
   let mut dist = if start_idx == (hash & self.mask) {
@@ -238,7 +238,7 @@ fn[K, V] HashTab::robin_hood_insert_at(self, entry_param : Entry[K, V], start_id
 > 移植时把"遍历 `self.order`"改成"遍历 `self.buckets` 中的活条目"(因为 HashTab 没有 order)。
 > 即:扫描旧 buckets,跳过 `None` 和墓碑,把每个活 entry 用上面的位移逻辑插进 new_buckets。
 ```moonbit
-fn[K : Hash + Eq, V] HashTab::rehash(self, new_cap : Int) -> Unit {
+fn[K : Hash + Eq, V] HashTab::rehash(self, new_cap : Int32) -> Unit {
   let cap = if new_cap > 0 { new_cap } else { self.buckets.length() }
   let new_buckets : Array[Entry[K, V]?] = Array::make(cap, None)
   let new_mask = cap - 1
@@ -329,7 +329,7 @@ pub fn[L : Hash + Eq, R] BiMap::iter(self : BiMap[L, R]) -> Iter[(L, R)] {
   )
 }
 ```
-> `Iter::new(fn () -> T?, size_hint=Int)` 构造惰性迭代器,支持 `for x in it`。
+> `Iter::new(fn () -> T?, size_hint=Int32)` 构造惰性迭代器,支持 `for x in it`。
 > `lefts()`/`rights()` 同理,分别 yield `L` / `R`。`version` 快照实现 fail-fast。
 
 ---
@@ -370,7 +370,7 @@ pub impl[L : Hash + Eq, R : Hash] Hash for BiMap[L, R] with fn hash_combine(self
   // 顺序无关 ⟹ 组合不能依赖插入序;但不要用加法/异或累加——
   // 线性结构让 {(a,b),(c,d)} 与 {(a,d),(c,b)} 恒等碰撞。
   // 正确做法:排序指纹序列 = 对集合的正则形(双射无重复对),再顺序折叠:
-  let fps : Array[Int] = []
+  let fps : Array[Int32] = []
   // ... 每对 push 一个对内有序的指纹 pair_fingerprint(l, r)
   fps.sort()
   let mut acc = fnv_basis             // FNV-1a 64 常数,算术构造(字面量超限)
@@ -458,7 +458,7 @@ test "all pairs roundtrip" {
 
 // QuickCheck 生成
 test "qc: bijection invariant holds after random ops" {
-  let maps : Array[@aurasuisui/bimap.BiMap[Int, Int]] = @quickcheck.samples(20)
+  let maps : Array[@aurasuisui/bimap.BiMap[Int32, Int32]] = @quickcheck.samples(20)
   let mut i = 0
   while i < maps.length() {
     let m = maps[i]

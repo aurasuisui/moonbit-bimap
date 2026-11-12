@@ -61,9 +61,10 @@ pub impl[L : Hash + Eq, R : Eq] Eq for BiMap[L, R] with fn equal(self, other) {
 /// collision requires the fingerprint MULTISETS to match, which in turn
 /// needs hash-level control over the keys (see README Gotcha #2).
 ///
-/// Cost: O(n log n) per hash (the sort). The 64-bit FNV constants assume the
-/// 64-bit `Int` of the current backends; overflow wraps (defined behavior),
-/// and hash values are not required to agree across backends.
+/// Cost: O(n log n) per hash (the sort). As of moonc v0.10.20 `Int` is a fixed
+/// 32-bit integer (an alias of `Int32`) on every backend, so the 32-bit FNV
+/// mixing wraps identically everywhere (defined behavior). Hash values are still
+/// not a documented, stable contract across versions.
 pub impl[L : Hash + Eq, R : Hash] Hash for BiMap[L, R] with fn hash_combine(
   self,
   hasher,

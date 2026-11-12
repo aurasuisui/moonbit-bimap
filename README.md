@@ -347,7 +347,9 @@ shift, so draining n pairs head-first is O(n²) overall (measured ≈ 133 µs/op
 at n = 10 000, ≈ 90× the tail-first drain). Drain in reverse insertion
 order, or rebuild — see Gotcha #9.
 
-Reproduce with `moon run --release bench/main.mbt` (see `bench/README.md`;
+Reproduce with `moon run --release --target native bench/main.mbt` (the `--target native`
+matters: without it `moon run` defaults to the `wasm` backend, and the figures above are
+native — see `bench/README.md`;
 single-machine numbers, indicative of constant factors, not absolute speed).
 
 ## Development

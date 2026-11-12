@@ -31,7 +31,7 @@ pub impl[L : Eq, R : Eq] Eq for BiBTreeMap[L, R] with fn equal(self, other) {
 /// `pair_fingerprint` (shared helper), sort, then an order-sensitive
 /// FNV-1a-style fold mixing the length in first. Equal pair sets hash equal
 /// regardless of construction history; cost O(n log n) (the sort). Hash
-/// values are not required to agree across backends (64-bit constants).
+/// values are not a documented, stable contract across versions.
 pub impl[L : Hash, R : Hash] Hash for BiBTreeMap[L, R] with fn hash_combine(
   self,
   hasher,
