@@ -123,7 +123,7 @@ Hackathon maintenance check:
 
 **Supported backends.** The library is pure MoonBit — no FFI, no platform APIs — so
 the same 369 tests pass on every stable backend. `moon test --target all` covers
-`wasm`, `wasm-gc`, `js` and `native` (369/369 on each) and both CI jobs run it.
+`wasm`, `wasm-gc`, `js` and `native` (369/369 on each); the `all-backends` CI job runs it.
 **`llvm` is not supported**: that backend is still experimental and needs a nightly
 toolchain; on the stable toolchain it fails with
 `toolchain is incomplete: missing prelude.mi for target llvm`.
